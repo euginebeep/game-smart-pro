@@ -15,7 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut } = useAuth();
-  const { t, language } = useLanguage();
+  const { t, language, isTransitioning } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +23,7 @@ const Index = () => {
   const [hasFetched, setHasFetched] = useState(false);
   const [isToday, setIsToday] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
+  const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
   const previousLanguage = useRef(language);
 
   const handleFetchGames = useCallback(async () => {
@@ -49,12 +50,26 @@ const Index = () => {
   useEffect(() => {
     if (hasFetched && previousLanguage.current !== language) {
       previousLanguage.current = language;
-      handleFetchGames();
+      setIsUpdatingLanguage(true);
+      handleFetchGames().finally(() => setIsUpdatingLanguage(false));
     }
   }, [language, hasFetched, handleFetchGames]);
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8 relative">
+      {/* Language Update Indicator */}
+      {isUpdatingLanguage && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-primary/90 text-primary-foreground py-2 px-4 text-center text-sm font-medium animate-pulse">
+          <span className="inline-flex items-center gap-2">
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            {t('main.updatingLanguage')}
+          </span>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <Header 

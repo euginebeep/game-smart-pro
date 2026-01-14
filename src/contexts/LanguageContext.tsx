@@ -127,6 +127,7 @@ const translations: Record<Language, any> = {
       showingNext: "Não há jogos hoje. Mostrando próximos jogos disponíveis",
       footer: "uma Empresa Do Grupo",
       disclaimer: "⚠️ Aposte com responsabilidade. Este sistema é apenas para fins educacionais.",
+      updatingLanguage: "Atualizando idioma...",
     },
     trial: {
       expired: "Período de teste expirado",
@@ -525,6 +526,7 @@ const translations: Record<Language, any> = {
       showingNext: "No games today. Showing upcoming games available",
       footer: "a Company of",
       disclaimer: "⚠️ Bet responsibly. This system is for educational purposes only.",
+      updatingLanguage: "Updating language...",
     },
     trial: {
       expired: "Trial period expired",
@@ -923,6 +925,7 @@ const translations: Record<Language, any> = {
       showingNext: "No hay partidos hoy. Mostrando próximos partidos disponibles",
       footer: "una Empresa del Grupo",
       disclaimer: "⚠️ Apuesta con responsabilidad. Este sistema es solo para fines educativos.",
+      updatingLanguage: "Actualizando idioma...",
     },
     trial: {
       expired: "Período de prueba expirado",
@@ -1321,6 +1324,7 @@ const translations: Record<Language, any> = {
       showingNext: "Nessuna partita oggi. Mostrando le prossime partite disponibili",
       footer: "un'Azienda del Gruppo",
       disclaimer: "⚠️ Scommetti responsabilmente. Questo sistema è solo a scopo educativo.",
+      updatingLanguage: "Aggiornamento lingua...",
     },
     trial: {
       expired: "Periodo di prova scaduto",
