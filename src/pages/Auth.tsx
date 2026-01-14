@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Phone, Lock, Loader2 } from 'lucide-react';
+import eugineLogo from '@/assets/eugine-logo.png';
 import { z } from 'zod';
 
 const signUpSchema = z.object({
@@ -152,13 +153,15 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-              <span className="text-2xl">🧠</span>
-            </div>
+          <div className="inline-flex items-center justify-center mb-4">
+            <img 
+              src={eugineLogo} 
+              alt="EUGINE Logo" 
+              className="w-40 h-40 object-contain drop-shadow-2xl"
+            />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            EUGINE <span className="text-emerald-400">v3.0</span>
+            <span className="text-emerald-400">v3.0</span>
           </h1>
           <p className="text-slate-400">Sistema Inteligente de Análise de Odds</p>
         </div>
