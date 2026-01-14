@@ -14,6 +14,7 @@ export interface Game {
   };
   dayType?: 'today' | 'tomorrow' | 'future';
   dayLabel?: string;
+  analysis?: BettingAnalysis;
 }
 
 export interface OddsResponse {
