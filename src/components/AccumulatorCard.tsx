@@ -116,9 +116,9 @@ export function AccumulatorCard({
         <div className="flex items-center gap-1.5 sm:gap-2">
           <TrendingUp className={`w-4 h-4 sm:w-5 sm:h-5 ${config.textClass} flex-shrink-0`} />
           <p className="text-xs sm:text-sm">
-            <span className="text-muted-foreground">R$ {betAmount} → </span>
+            <span className="text-muted-foreground">$ {betAmount} → </span>
             <span className={`font-bold ${config.textClass}`}>
-              R$ {profit.toFixed(2)}
+              $ {profit.toFixed(2)}
             </span>
           </p>
         </div>

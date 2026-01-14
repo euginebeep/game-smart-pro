@@ -108,7 +108,7 @@ export function ZebraSection({ games }: ZebraSectionProps) {
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-white/20">
               <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-0.5 sm:mb-1">{t('zebra.return')}</p>
-              <p className="text-2xl sm:text-3xl font-black text-yellow-300">R$ {(betAmount * zebraData.odd).toFixed(0)}</p>
+              <p className="text-2xl sm:text-3xl font-black text-yellow-300">$ {(betAmount * zebraData.odd).toFixed(0)}</p>
             </div>
           </div>
 
@@ -117,8 +117,8 @@ export function ZebraSection({ games }: ZebraSectionProps) {
             <div className="flex items-center justify-center gap-1.5 sm:gap-2">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-300" />
               <p className="text-sm sm:text-base lg:text-lg text-white">
-                <span className="text-white/70">R$ {betAmount} → </span>
-                <span className="font-bold text-yellow-300">R$ {profit.toFixed(2)}</span>
+                <span className="text-white/70">$ {betAmount} → </span>
+                <span className="font-bold text-yellow-300">$ {profit.toFixed(2)}</span>
               </p>
             </div>
           </div>
