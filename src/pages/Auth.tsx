@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Phone, Lock, Loader2 } from 'lucide-react';
-import eugineLogo from '@/assets/eugine-logo.png';
+import eugineLogo from '@/assets/eugine-logo-new.png';
 import { z } from 'zod';
 
 const signUpSchema = z.object({
