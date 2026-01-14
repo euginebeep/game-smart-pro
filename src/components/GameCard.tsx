@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Calendar, Trophy, Lightbulb, ChevronDown, ChevronUp, DollarSign } from 'lucide-react';
 import { Game } from '@/types/game';
 import { analyzeBet } from '@/services/oddsAPI';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface GameCardProps {
   game: Game;
@@ -10,15 +11,18 @@ interface GameCardProps {
 
 export function GameCard({ game, delay }: GameCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { t, language } = useLanguage();
 
   const analysis = useMemo(() => analyzeBet(game), [game]);
 
-  const formattedDate = new Date(game.startTime).toLocaleDateString('pt-BR', {
+  const dateLocale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : language === 'it' ? 'it-IT' : 'en-US';
+
+  const formattedDate = new Date(game.startTime).toLocaleDateString(dateLocale, {
     day: '2-digit',
     month: '2-digit',
   });
 
-  const formattedTime = new Date(game.startTime).toLocaleTimeString('pt-BR', {
+  const formattedTime = new Date(game.startTime).toLocaleTimeString(dateLocale, {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -68,7 +72,7 @@ export function GameCard({ game, delay }: GameCardProps) {
         {/* Main Odd */}
         <div className="text-left sm:text-right mt-2 lg:mt-0">
           <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground mb-0.5 sm:mb-1">
-            Melhor Odd
+            {t('gameCard.bestOdd')}
           </p>
           <p className="text-3xl sm:text-4xl lg:text-5xl font-black gradient-text-success">
             {bestOdd.toFixed(2)}
@@ -92,9 +96,9 @@ export function GameCard({ game, delay }: GameCardProps) {
           </p>
           <div className="bg-primary/20 rounded-lg sm:rounded-xl p-2 sm:p-3 inline-block">
             <p className="text-xs sm:text-sm">
-              <span className="text-muted-foreground">Aposta R$ 40 → </span>
+              <span className="text-muted-foreground">{t('gameCard.bet')} 40 → </span>
               <span className="text-primary font-bold">
-                Lucro R$ {analysis.profit.toFixed(2)}
+                {t('gameCard.profit')} {analysis.profit.toFixed(2)}
               </span>
             </p>
           </div>
@@ -105,20 +109,20 @@ export function GameCard({ game, delay }: GameCardProps) {
           <div className="flex items-center gap-2 mb-2 sm:mb-3">
             <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
             <h3 className="font-bold text-warning uppercase tracking-wide text-xs sm:text-sm">
-              Análise de Mercado
+              {t('gameCard.marketAnalysis')}
             </h3>
           </div>
           <p className="text-foreground/90 text-xs sm:text-sm leading-relaxed">
-            O mercado está precificando odds que indicam {game.odds.home < game.odds.away 
-              ? `${game.homeTeam} como favorito` 
+            {t('gameCard.marketPricing')} {game.odds.home < game.odds.away 
+              ? `${game.homeTeam} ${t('gameCard.asFavorite')}` 
               : game.odds.home > game.odds.away 
-                ? `${game.awayTeam} como favorito`
-                : 'um jogo equilibrado'
+                ? `${game.awayTeam} ${t('gameCard.asFavorite')}`
+                : t('gameCard.balancedGame')
             }. 
             {game.odds.draw > 0 && game.odds.draw < 3.5 && 
-              ' Alta probabilidade de empate segundo as casas.'}
+              ` ${t('gameCard.highDrawProb')}`}
             {game.odds.over > 0 && game.odds.over < 2.0 && 
-              ' Expectativa de jogo com muitos gols.'}
+              ` ${t('gameCard.manyGoalsExpected')}`}
           </p>
         </div>
       </div>
@@ -130,16 +134,16 @@ export function GameCard({ game, delay }: GameCardProps) {
           className="flex items-center gap-2 text-accent hover:text-accent/80 transition-colors font-semibold text-sm"
         >
           {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {expanded ? 'Ocultar todas as odds' : 'Ver todas as odds'}
+          {expanded ? t('gameCard.hideAllOdds') : t('gameCard.showAllOdds')}
         </button>
 
         {expanded && (
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 animate-fade-in-up">
-            <OddBox label="Casa" value={game.odds.home} />
-            <OddBox label="Empate" value={game.odds.draw} />
-            <OddBox label="Fora" value={game.odds.away} />
-            <OddBox label="Over 2.5" value={game.odds.over} highlight />
-            <OddBox label="Under 2.5" value={game.odds.under} />
+            <OddBox label={t('gameCard.home')} value={game.odds.home} />
+            <OddBox label={t('gameCard.draw')} value={game.odds.draw} />
+            <OddBox label={t('gameCard.away')} value={game.odds.away} />
+            <OddBox label={t('gameCard.over')} value={game.odds.over} highlight />
+            <OddBox label={t('gameCard.under')} value={game.odds.under} />
           </div>
         )}
       </div>
