@@ -287,7 +287,7 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
           under: totals?.outcomes.find((o: any) => o.name === 'Under')?.price || 1.9,
         },
         dayType,
-        dayLabel: getDayLabel(startTime, lang)
+        dayLabel: '' // Será preenchido por translateCachedData
       };
     })
     .filter((game): game is Game => game !== null);
@@ -296,20 +296,17 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível processar os jogos encontrados');
   }
   
-  // Adicionar análise de apostas a cada jogo
-  const gamesWithAnalysis = games.map(game => ({
-    ...game,
-    analysis: analyzeBet(game, lang)
-  }));
+  console.log(`Total de ${games.length} jogos processados para análise`);
   
-  console.log(`Total de ${gamesWithAnalysis.length} jogos processados para análise`);
-  
+  // Retornar jogos SEM análise para o cache (análise é traduzida dinamicamente)
+  // A análise será adicionada pelo translateCachedData ou na resposta direta
   return { 
-    games: gamesWithAnalysis, 
+    games: games, // Jogos sem análise para permitir tradução dinâmica
     remaining: apiRemaining,
     isToday: resultado.diaEncontrado === 0,
     alertMessage: resultado.mensagem,
-    foundDate: resultado.dataAlvo.toISOString()
+    foundDate: resultado.dataAlvo.toISOString(),
+    _lang: lang // Idioma original da requisição (para referência)
   };
 }
 
@@ -479,8 +476,11 @@ serve(async (req) => {
     // Salvar no cache (não bloqueia a resposta)
     saveToCache(supabaseAdmin, result).catch(err => console.error('Erro ao salvar cache:', err));
     
+    // Adicionar análise e dayLabel traduzidos para a resposta direta
+    const translatedResult = translateCachedData(result, validLang);
+    
     return new Response(
-      JSON.stringify({ ...result, fromCache: false }),
+      JSON.stringify({ ...translatedResult, fromCache: false }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
