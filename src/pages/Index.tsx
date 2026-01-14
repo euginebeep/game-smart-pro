@@ -16,15 +16,19 @@ const Index = () => {
   const [error, setError] = useState<string | null>(null);
   const [apiRemaining, setApiRemaining] = useState<number | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
+  const [isToday, setIsToday] = useState(true);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const handleFetchGames = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const { games: fetchedGames, remaining } = await fetchOdds();
+      const { games: fetchedGames, remaining, isToday: today, alertMessage: msg } = await fetchOdds();
       setGames(fetchedGames);
       setApiRemaining(remaining);
+      setIsToday(today);
+      setAlertMessage(msg);
       setHasFetched(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro desconhecido ao buscar jogos';
@@ -76,11 +80,15 @@ const Index = () => {
           {/* Games List */}
           {!loading && games.length > 0 && (
             <div className="space-y-6">
-              {/* Success indicator */}
+              {/* Day Alert */}
               <Alert 
-                type="success" 
-                title={`${games.length} jogos encontrados!`} 
-                message="Análises geradas automaticamente com base nas odds atuais." 
+                type={isToday ? "success" : "info"} 
+                title={alertMessage} 
+                message={
+                  isToday 
+                    ? "Mostrando jogos de hoje que começam em mais de 10 minutos"
+                    : "Não há jogos hoje. Mostrando próximos jogos disponíveis"
+                } 
               />
               
               {/* Game Cards */}

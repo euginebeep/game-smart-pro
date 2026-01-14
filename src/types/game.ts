@@ -12,11 +12,16 @@ export interface Game {
     over: number;
     under: number;
   };
+  dayType?: 'today' | 'tomorrow' | 'future';
+  dayLabel?: string;
 }
 
 export interface OddsResponse {
   games: Game[];
   remaining: number;
+  isToday: boolean;
+  alertMessage: string;
+  foundDate: Date;
 }
 
 export interface BettingAnalysis {

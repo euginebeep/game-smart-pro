@@ -42,9 +42,21 @@ export function GameCard({ game, delay }: GameCardProps) {
           
           {/* Badges */}
           <div className="flex flex-wrap gap-2">
+            {/* Day Badge */}
+            {game.dayLabel && (
+              <div className={`badge ${
+                game.dayType === 'today' 
+                  ? 'bg-red-500/20 text-red-400 border-red-500/30' 
+                  : game.dayType === 'tomorrow'
+                    ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                    : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+              }`}>
+                <span className="font-semibold">{game.dayLabel}</span>
+              </div>
+            )}
             <div className="badge badge-info">
               <Calendar className="w-4 h-4" />
-              <span>{formattedDate} às {formattedTime}</span>
+              <span>{formattedTime}</span>
             </div>
             <div className="badge badge-success">
               <Trophy className="w-4 h-4" />
