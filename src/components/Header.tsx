@@ -1,12 +1,13 @@
-import { Zap, TrendingUp } from 'lucide-react';
+import { Zap, TrendingUp, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   onFetch: () => void;
   loading: boolean;
   apiRemaining: number | null;
+  onSignOut?: () => void;
 }
 
-export function Header({ onFetch, loading, apiRemaining }: HeaderProps) {
+export function Header({ onFetch, loading, apiRemaining, onSignOut }: HeaderProps) {
   const today = new Date().toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -67,6 +68,17 @@ export function Header({ onFetch, loading, apiRemaining }: HeaderProps) {
             <Zap className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? 'Buscando...' : 'Buscar Jogos REAIS'}</span>
           </button>
+
+          {/* Sign Out Button */}
+          {onSignOut && (
+            <button
+              onClick={onSignOut}
+              className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white transition-colors"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
     </header>
