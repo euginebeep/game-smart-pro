@@ -2,10 +2,115 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// ============= CONFIGURAÇÕES DE SEGURANÇA =============
+
+// Lista de origens permitidas (CORS restrito)
+const ALLOWED_ORIGINS = [
+  'https://game-smart-pro.lovable.app',
+  'https://id-preview--aab53d6d-d532-46c9-ba03-774d15718c4d.lovable.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+];
+
+// Rate limiting por usuário (em memória - para produção usar Redis/KV)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX = 30; // Máximo de requisições
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // Janela de 1 minuto
+
+// Função para validar e obter origem CORS
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('Origin') || '';
+  
+  // Verificar se a origem está na lista permitida
+  const allowedOrigin = ALLOWED_ORIGINS.find(allowed => 
+    origin === allowed || origin.endsWith('.lovable.app')
+  ) || '';
+  
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin || ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+
+// Rate limiter
+function checkRateLimit(userId: string): { allowed: boolean; remaining: number; resetIn: number } {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(userId);
+  
+  // Limpar entradas antigas periodicamente
+  if (rateLimitMap.size > 1000) {
+    for (const [key, value] of rateLimitMap.entries()) {
+      if (value.resetTime < now) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+  
+  if (!userLimit || userLimit.resetTime < now) {
+    // Primeira requisição ou janela expirada
+    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1, resetIn: RATE_LIMIT_WINDOW_MS };
+  }
+  
+  if (userLimit.count >= RATE_LIMIT_MAX) {
+    const resetIn = userLimit.resetTime - now;
+    return { allowed: false, remaining: 0, resetIn };
+  }
+  
+  userLimit.count++;
+  return { 
+    allowed: true, 
+    remaining: RATE_LIMIT_MAX - userLimit.count, 
+    resetIn: userLimit.resetTime - now 
+  };
+}
+
+// Logger seguro - nunca expõe secrets
+function secureLog(level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>) {
+  const timestamp = new Date().toISOString();
+  const sanitizedData = data ? sanitizeLogData(data) : undefined;
+  
+  const logEntry = {
+    timestamp,
+    level,
+    message,
+    ...(sanitizedData && { data: sanitizedData })
+  };
+  
+  switch (level) {
+    case 'error':
+      console.error(JSON.stringify(logEntry));
+      break;
+    case 'warn':
+      console.warn(JSON.stringify(logEntry));
+      break;
+    default:
+      console.log(JSON.stringify(logEntry));
+  }
+}
+
+// Sanitiza dados para log - remove campos sensíveis
+function sanitizeLogData(data: Record<string, unknown>): Record<string, unknown> {
+  const sensitiveKeys = ['apiKey', 'api_key', 'token', 'secret', 'password', 'authorization', 'key'];
+  const sanitized: Record<string, unknown> = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    if (sensitiveKeys.some(sk => key.toLowerCase().includes(sk))) {
+      sanitized[key] = '[REDACTED]';
+    } else if (typeof value === 'string' && value.length > 100) {
+      sanitized[key] = value.substring(0, 50) + '...[truncated]';
+    } else if (typeof value === 'object' && value !== null) {
+      sanitized[key] = sanitizeLogData(value as Record<string, unknown>);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  
+  return sanitized;
+}
 
 // ============= LÓGICA PROTEGIDA DO EUGINE =============
 
@@ -143,7 +248,7 @@ function buscarJogosDisponiveis(oddsData: any[], lang: string = 'pt'): { jogos: 
     if (jogosValidos.length > 0) {
       const diaTexto = dataAlvo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
       
-      console.log(`✅ Encontrados ${jogosValidos.length} jogos para dia +${diasNoFuturo}`);
+      secureLog('info', `Jogos encontrados para dia +${diasNoFuturo}`, { count: jogosValidos.length });
       
       return {
         jogos: jogosValidos,
@@ -155,7 +260,7 @@ function buscarJogosDisponiveis(oddsData: any[], lang: string = 'pt'): { jogos: 
       };
     }
     
-    console.log(`⚠️ Nenhum jogo válido para dia +${diasNoFuturo}. Tentando próximo dia...`);
+    secureLog('warn', `Nenhum jogo válido para dia +${diasNoFuturo}`);
   }
   
   throw new Error('Nenhum jogo encontrado nos próximos 7 dias');
@@ -186,20 +291,25 @@ function getDayLabel(dataJogo: Date, lang: string = 'pt'): string {
 // Buscar odds da API externa
 async function fetchOddsFromAPI(lang: string = 'pt') {
   if (!API_KEY) {
-    throw new Error('API key não configurada');
+    secureLog('error', 'API key não configurada no backend');
+    throw new Error('Configuração do servidor incompleta');
   }
 
-  // Buscar esportes disponíveis
-  const sportsResponse = await fetch(`${API_BASE}/sports?apiKey=${API_KEY}`);
+  // Buscar esportes disponíveis - não loga a URL com apiKey
+  const sportsUrl = `${API_BASE}/sports`;
+  secureLog('info', 'Buscando esportes disponíveis', { endpoint: sportsUrl });
+  
+  const sportsResponse = await fetch(`${sportsUrl}?apiKey=${API_KEY}`);
   
   if (!sportsResponse.ok) {
+    secureLog('error', 'Erro ao buscar esportes', { status: sportsResponse.status });
     throw new Error(`Erro ao buscar esportes: ${sportsResponse.status}`);
   }
   
   const sports = await sportsResponse.json();
   const remaining = sportsResponse.headers.get('x-requests-remaining');
   
-  console.log('Esportes disponíveis:', sports.length);
+  secureLog('info', 'Esportes carregados', { total: sports.length, apiRemaining: remaining });
   
   // Filtrar futebol
   const soccerSports = sports.filter((s: any) => 
@@ -212,14 +322,14 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   
   const activeSports = soccerSports.filter((s: any) => s.active);
   
-  console.log('Campeonatos ativos:', activeSports.length);
+  secureLog('info', 'Campeonatos de futebol ativos', { count: activeSports.length });
   
   // Buscar jogos de múltiplos campeonatos
   let allOddsData: any[] = [];
   let apiRemaining = parseInt(remaining || '0');
   
   for (const sport of activeSports) {
-    console.log('Buscando odds para:', sport.title);
+    secureLog('info', 'Buscando odds', { league: sport.title });
     
     try {
       const oddsResponse = await fetch(
@@ -227,7 +337,7 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
       );
       
       if (!oddsResponse.ok) {
-        console.warn(`Erro ao buscar ${sport.title}: ${oddsResponse.status}`);
+        secureLog('warn', 'Erro ao buscar liga', { league: sport.title, status: oddsResponse.status });
         continue;
       }
       
@@ -242,10 +352,14 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
         allOddsData = [...allOddsData, ...jogosComLiga];
       }
       
-      console.log(`${oddsData?.length || 0} jogos de ${sport.title}. Total acumulado: ${allOddsData.length}`);
+      secureLog('info', 'Odds carregadas', { 
+        league: sport.title, 
+        games: oddsData?.length || 0, 
+        totalAccumulated: allOddsData.length 
+      });
       
     } catch (err) {
-      console.warn(`Erro ao processar ${sport.title}:`, err);
+      secureLog('warn', 'Erro ao processar liga', { league: sport.title });
       continue;
     }
   }
@@ -296,17 +410,16 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível processar os jogos encontrados');
   }
   
-  console.log(`Total de ${games.length} jogos processados para análise`);
+  secureLog('info', 'Jogos processados com sucesso', { count: games.length });
   
   // Retornar jogos SEM análise para o cache (análise é traduzida dinamicamente)
-  // A análise será adicionada pelo translateCachedData ou na resposta direta
   return { 
-    games: games, // Jogos sem análise para permitir tradução dinâmica
+    games: games,
     remaining: apiRemaining,
     isToday: resultado.diaEncontrado === 0,
     alertMessage: resultado.mensagem,
     foundDate: resultado.dataAlvo.toISOString(),
-    _lang: lang // Idioma original da requisição (para referência)
+    _lang: lang
   };
 }
 
@@ -331,17 +444,17 @@ async function getFromCache(supabaseAdmin: any): Promise<any | null> {
     .single();
   
   if (error || !data) {
-    console.log('Cache miss ou erro:', error?.message);
+    secureLog('info', 'Cache miss', { cacheKey });
     return null;
   }
   
   // Verificar se expirou
   if (new Date(data.expires_at) < new Date()) {
-    console.log('Cache expirado');
+    secureLog('info', 'Cache expirado', { cacheKey });
     return null;
   }
   
-  console.log('✅ Cache hit! Usando dados em cache');
+  secureLog('info', 'Cache hit', { cacheKey });
   return data.data;
 }
 
@@ -361,9 +474,9 @@ async function saveToCache(supabaseAdmin: any, data: any): Promise<void> {
     }, { onConflict: 'cache_key' });
   
   if (error) {
-    console.error('Erro ao salvar cache:', error);
+    secureLog('error', 'Erro ao salvar cache', { cacheKey });
   } else {
-    console.log('✅ Cache salvo com sucesso, expira em', CACHE_DURATION_MINUTES, 'minutos');
+    secureLog('info', 'Cache salvo', { cacheKey, expiresInMinutes: CACHE_DURATION_MINUTES });
   }
 }
 
@@ -403,15 +516,40 @@ function translateCachedData(cachedData: any, lang: string): any {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validar método HTTP
+  if (req.method !== 'POST' && req.method !== 'GET') {
+    return new Response(
+      JSON.stringify({ error: 'Método não permitido' }), 
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Validar origem (além do CORS header)
+  const origin = req.headers.get('Origin') || '';
+  const isAllowedOrigin = ALLOWED_ORIGINS.some(allowed => 
+    origin === allowed || origin.endsWith('.lovable.app')
+  );
+  
+  if (origin && !isAllowedOrigin) {
+    secureLog('warn', 'Requisição de origem não autorizada', { origin: origin.substring(0, 50) });
+    return new Response(
+      JSON.stringify({ error: 'Origem não autorizada' }), 
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {
     // Verificar autenticação
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
+      secureLog('warn', 'Requisição sem autenticação');
       return new Response(
         JSON.stringify({ error: 'Não autorizado' }), 
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -440,14 +578,49 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
     
     if (claimsError || !claimsData?.claims) {
-      console.error('Erro de autenticação:', claimsError);
+      secureLog('warn', 'Token inválido');
       return new Response(
         JSON.stringify({ error: 'Token inválido' }), 
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Usuário autenticado:', claimsData.claims.sub, 'Idioma:', validLang);
+    const userId = claimsData.claims.sub as string;
+    
+    // ============= RATE LIMITING =============
+    const rateLimit = checkRateLimit(userId);
+    
+    // Adicionar headers de rate limit na resposta
+    const rateLimitHeaders = {
+      'X-RateLimit-Limit': RATE_LIMIT_MAX.toString(),
+      'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+      'X-RateLimit-Reset': Math.ceil(rateLimit.resetIn / 1000).toString(),
+    };
+    
+    if (!rateLimit.allowed) {
+      secureLog('warn', 'Rate limit excedido', { userId: userId.substring(0, 8) + '...' });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Limite de requisições excedido. Tente novamente em alguns segundos.',
+          retryAfter: Math.ceil(rateLimit.resetIn / 1000)
+        }), 
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            ...rateLimitHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil(rateLimit.resetIn / 1000).toString()
+          } 
+        }
+      );
+    }
+
+    secureLog('info', 'Requisição autenticada', { 
+      userId: userId.substring(0, 8) + '...', 
+      lang: validLang,
+      rateLimitRemaining: rateLimit.remaining 
+    });
 
     // Cliente admin para operações de cache
     const supabaseAdmin = createClient(
@@ -465,28 +638,31 @@ serve(async (req) => {
       
       return new Response(
         JSON.stringify(translatedData),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Cache miss - buscar da API
-    console.log('🔄 Buscando dados frescos da API...');
+    secureLog('info', 'Buscando dados frescos da API');
     const result = await fetchOddsFromAPI(validLang);
     
     // Salvar no cache (não bloqueia a resposta)
-    saveToCache(supabaseAdmin, result).catch(err => console.error('Erro ao salvar cache:', err));
+    saveToCache(supabaseAdmin, result).catch(err => 
+      secureLog('error', 'Erro ao salvar cache em background')
+    );
     
     // Adicionar análise e dayLabel traduzidos para a resposta direta
     const translatedResult = translateCachedData(result, validLang);
     
     return new Response(
       JSON.stringify({ ...translatedResult, fromCache: false }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: unknown) {
-    console.error('Erro na função fetch-odds:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erro interno';
+    secureLog('error', 'Erro na função fetch-odds', { error: errorMessage });
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
