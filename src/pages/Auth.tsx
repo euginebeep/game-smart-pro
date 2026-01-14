@@ -152,8 +152,8 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-4 sm:mb-6">
-          <div className="inline-flex items-center justify-center mb-2 sm:mb-3">
+        <div className="text-center mb-2 sm:mb-3">
+          <div className="inline-flex items-center justify-center">
             <img 
               src={eugineLogo} 
               alt="EUGINE Logo" 
@@ -162,7 +162,7 @@ export default function Auth() {
               className="w-72 h-72 sm:w-96 md:w-[480px] sm:h-96 md:h-[480px] object-contain drop-shadow-2xl"
             />
           </div>
-          <p className="text-slate-400 text-sm sm:text-base">Sistema Inteligente Eugine Analytics</p>
+          <p className="text-slate-400 text-sm sm:text-base -mt-4 sm:-mt-6">Sistema Inteligente Eugine Analytics</p>
         </div>
 
         {/* Auth Card */}
@@ -275,8 +275,15 @@ export default function Auth() {
           )}
         </div>
 
-        <p className="text-center text-slate-500 text-xs mt-6">
-          Ao continuar, você concorda com nossos Termos de Uso e Política de Privacidade
+        <p className="text-center text-slate-500 text-xs mt-4 sm:mt-6">
+          Ao continuar, você concorda com nossos{' '}
+          <button type="button" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
+            Termos de Uso
+          </button>{' '}
+          e{' '}
+          <button type="button" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
+            Política de Privacidade
+          </button>
         </p>
       </div>
     </div>
