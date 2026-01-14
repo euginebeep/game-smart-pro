@@ -149,27 +149,27 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4">
-            <div className="p-3 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
               <img 
                 src={eugineLogo} 
                 alt="EUGINE Logo" 
-                className="w-48 h-48 object-contain drop-shadow-2xl"
+                className="w-32 h-32 sm:w-40 md:w-48 sm:h-40 md:h-48 object-contain drop-shadow-2xl"
               />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
             <span className="text-emerald-400">v3.0</span>
           </h1>
-          <p className="text-slate-400">Sistema Inteligente de Análise de Odds</p>
+          <p className="text-slate-400 text-sm sm:text-base">Sistema Inteligente de Análise de Odds</p>
         </div>
 
         {/* Auth Card */}
-        <div className="glass-card p-8 rounded-2xl">
+        <div className="glass-card p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl">
           <div className="flex gap-2 mb-6">
             <button
               type="button"

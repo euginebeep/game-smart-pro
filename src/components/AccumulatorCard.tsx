@@ -62,31 +62,31 @@ export function AccumulatorCard({
 
   return (
     <article 
-      className={`glass-card p-6 animate-fade-in-up opacity-0 ${config.bgClass} ${config.borderClass}`}
+      className={`glass-card p-4 sm:p-5 lg:p-6 animate-fade-in-up opacity-0 ${config.bgClass} ${config.borderClass}`}
       style={{ animationDelay: `${delay * 100}ms` }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-3xl">{emoji}</span>
-        <div className="flex-1">
-          <h3 className={`text-lg font-bold ${config.textClass}`}>{title}</h3>
-          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-bold ${config.bgClass} ${config.textClass}`}>
-            <Icon className="w-3 h-3" />
+      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <span className="text-2xl sm:text-3xl">{emoji}</span>
+        <div className="flex-1 min-w-0">
+          <h3 className={`text-sm sm:text-base lg:text-lg font-bold ${config.textClass} truncate`}>{title}</h3>
+          <div className={`inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold ${config.bgClass} ${config.textClass}`}>
+            <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             {config.label}
           </div>
         </div>
       </div>
 
       {/* Bets List */}
-      <div className="space-y-2 mb-4">
+      <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
         {bets.map((bet, idx) => (
-          <div key={idx} className="bg-secondary/50 rounded-xl p-3 border border-border">
-            <div className="flex justify-between items-center">
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">{bet.match}</p>
-                <p className="text-xs text-muted-foreground">{bet.bet}</p>
+          <div key={idx} className="bg-secondary/50 rounded-lg sm:rounded-xl p-2 sm:p-3 border border-border">
+            <div className="flex justify-between items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{bet.match}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{bet.bet}</p>
               </div>
-              <span className={`text-lg font-bold ${config.textClass}`}>
+              <span className={`text-base sm:text-lg font-bold ${config.textClass} flex-shrink-0`}>
                 @{bet.odd.toFixed(2)}
               </span>
             </div>
@@ -95,29 +95,29 @@ export function AccumulatorCard({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-secondary/50 rounded-xl p-3 text-center border border-border">
-          <p className="text-xs text-muted-foreground uppercase mb-1">Odd Total</p>
-          <p className={`text-2xl font-black ${config.textClass}`}>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="bg-secondary/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-border">
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">Odd Total</p>
+          <p className={`text-xl sm:text-2xl font-black ${config.textClass}`}>
             {totalOdd.toFixed(2)}
           </p>
         </div>
-        <div className="bg-secondary/50 rounded-xl p-3 text-center border border-border">
-          <p className="text-xs text-muted-foreground uppercase mb-1">Chance</p>
-          <p className={`text-2xl font-black ${config.textClass}`}>
+        <div className="bg-secondary/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-border">
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">Chance</p>
+          <p className={`text-xl sm:text-2xl font-black ${config.textClass}`}>
             {chancePercent}%
           </p>
         </div>
       </div>
 
       {/* Profit */}
-      <div className={`rounded-xl p-4 ${config.bgClass} border ${config.borderClass}`}>
-        <div className="flex items-center gap-2">
-          <TrendingUp className={`w-5 h-5 ${config.textClass}`} />
-          <p className="text-sm">
-            <span className="text-muted-foreground">Aposta R$ {betAmount} → </span>
+      <div className={`rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 ${config.bgClass} border ${config.borderClass}`}>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <TrendingUp className={`w-4 h-4 sm:w-5 sm:h-5 ${config.textClass} flex-shrink-0`} />
+          <p className="text-xs sm:text-sm">
+            <span className="text-muted-foreground">R$ {betAmount} → </span>
             <span className={`font-bold ${config.textClass}`}>
-              Lucro R$ {profit.toFixed(2)}
+              R$ {profit.toFixed(2)}
             </span>
           </p>
         </div>
