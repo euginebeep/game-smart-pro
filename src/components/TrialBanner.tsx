@@ -1,5 +1,6 @@
 import { Clock, Crown } from 'lucide-react';
 import { Button } from './ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TrialBannerProps {
   daysRemaining: number;
@@ -7,6 +8,8 @@ interface TrialBannerProps {
 }
 
 export function TrialBanner({ daysRemaining, isExpired }: TrialBannerProps) {
+  const { t } = useLanguage();
+
   if (isExpired) {
     return (
       <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl p-4 mb-6">
@@ -16,13 +19,13 @@ export function TrialBanner({ daysRemaining, isExpired }: TrialBannerProps) {
               <Clock className="w-5 h-5 text-red-400" />
             </div>
             <div>
-              <h3 className="text-white font-semibold">Período de teste expirado</h3>
-              <p className="text-slate-400 text-sm">Assine um plano para continuar usando o Eugine</p>
+              <h3 className="text-white font-semibold">{t('trial.expired')}</h3>
+              <p className="text-slate-400 text-sm">{t('trial.expiredDesc')}</p>
             </div>
           </div>
           <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white">
             <Crown className="w-4 h-4 mr-2" />
-            Ver Planos
+            {t('trial.viewPlans')}
           </Button>
         </div>
       </div>
@@ -39,14 +42,14 @@ export function TrialBanner({ daysRemaining, isExpired }: TrialBannerProps) {
             </div>
             <div>
               <h3 className="text-white font-semibold">
-                {daysRemaining === 1 ? 'Último dia de teste!' : `${daysRemaining} dias restantes`}
+                {daysRemaining === 1 ? t('trial.lastDay') : `${daysRemaining} ${t('trial.daysRemaining')}`}
               </h3>
-              <p className="text-slate-400 text-sm">Assine agora e não perca acesso</p>
+              <p className="text-slate-400 text-sm">{t('trial.subscribeNow')}</p>
             </div>
           </div>
           <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white">
             <Crown className="w-4 h-4 mr-2" />
-            Ver Planos
+            {t('trial.viewPlans')}
           </Button>
         </div>
       </div>
@@ -58,7 +61,7 @@ export function TrialBanner({ daysRemaining, isExpired }: TrialBannerProps) {
       <div className="flex items-center justify-center gap-2 text-emerald-400">
         <Clock className="w-4 h-4" />
         <span className="text-sm font-medium">
-          Período de teste: <strong>{daysRemaining} dias</strong> restantes
+          {t('trial.trialPeriod')} <strong>{daysRemaining} {t('trial.days')}</strong> {t('trial.remaining')}
         </span>
       </div>
     </div>

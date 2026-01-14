@@ -11,9 +11,11 @@ import { TrialBanner } from '@/components/TrialBanner';
 import { fetchOdds } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut } = useAuth();
+  const { t } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,13 +36,13 @@ const Index = () => {
       setAlertMessage(msg);
       setHasFetched(true);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro desconhecido ao buscar jogos';
+      const message = err instanceof Error ? err.message : t('main.unknownError');
       setError(message);
-      console.error('Erro ao buscar jogos:', err);
+      console.error('Error fetching games:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
@@ -62,7 +64,7 @@ const Index = () => {
           {error && (
             <Alert 
               type="error" 
-              title="Erro ao buscar jogos" 
+              title={t('main.errorFetching')} 
               message={error} 
             />
           )}
@@ -79,8 +81,8 @@ const Index = () => {
           {!loading && !error && games.length === 0 && hasFetched && (
             <Alert 
               type="success" 
-              title="Busca concluída" 
-              message="Nenhum jogo de futebol disponível no momento. Tente novamente mais tarde." 
+              title={t('main.searchComplete')} 
+              message={t('main.noGamesAvailable')} 
             />
           )}
 
@@ -91,11 +93,7 @@ const Index = () => {
               <Alert 
                 type={isToday ? "success" : "info"} 
                 title={alertMessage} 
-                message={
-                  isToday 
-                    ? "Mostrando jogos de hoje que começam em mais de 10 minutos"
-                    : "Não há jogos hoje. Mostrando próximos jogos disponíveis"
-                } 
+                message={isToday ? t('main.showingToday') : t('main.showingNext')} 
               />
               
               {/* Game Cards */}
@@ -124,10 +122,10 @@ const Index = () => {
         {/* Footer */}
         <footer className="mt-8 sm:mt-12 lg:mt-16 text-center px-2">
           <p className="text-muted-foreground text-xs sm:text-sm">
-            EUGINE v3.0 • uma Empresa Do Grupo <span className="text-accent font-semibold">GS ITALYINVESTMENTS</span>
+            EUGINE v3.0 • {t('main.footer')} <span className="text-accent font-semibold">GS ITALYINVESTMENTS</span>
           </p>
           <p className="text-muted-foreground/60 text-[10px] sm:text-xs mt-1 sm:mt-2">
-            ⚠️ Aposte com responsabilidade. Este sistema é apenas para fins educacionais.
+            {t('main.disclaimer')}
           </p>
         </footer>
       </div>
