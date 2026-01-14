@@ -53,66 +53,85 @@ export async function fetchOdds(): Promise<OddsResponse> {
       throw new Error('Nenhum campeonato de futebol disponível');
     }
     
-    // Pegar primeiro campeonato que tem jogos in-season
-    const activeSport = soccerSports.find((s: any) => s.active) || soccerSports[0];
+    // Pegar campeonatos ativos
+    const activeSports = soccerSports.filter((s: any) => s.active);
     
-    console.log('Buscando odds para:', activeSport);
+    console.log('Campeonatos ativos:', activeSports);
     
-    // Buscar odds - SEM barra antes do ?
-    const oddsResponse = await fetch(
-      `${API_BASE}/sports/${activeSport.key}/odds?apiKey=${API_KEY}&regions=us&markets=h2h,totals&oddsFormat=decimal`
-    );
+    // Buscar jogos de múltiplos campeonatos até ter 5
+    let allGames: Game[] = [];
+    let apiRemaining = parseInt(remaining || '0');
     
-    if (!oddsResponse.ok) {
-      const errorText = await oddsResponse.text();
-      throw new Error(`Erro ${oddsResponse.status}: ${errorText}`);
+    for (const sport of activeSports) {
+      if (allGames.length >= 5) break;
+      
+      console.log('Buscando odds para:', sport.title);
+      
+      try {
+        const oddsResponse = await fetch(
+          `${API_BASE}/sports/${sport.key}/odds?apiKey=${API_KEY}&regions=us&markets=h2h,totals&oddsFormat=decimal`
+        );
+        
+        if (!oddsResponse.ok) {
+          console.warn(`Erro ao buscar ${sport.title}: ${oddsResponse.status}`);
+          continue;
+        }
+        
+        apiRemaining = parseInt(oddsResponse.headers.get('x-requests-remaining') || '0');
+        const oddsData = await oddsResponse.json();
+        
+        if (!oddsData || oddsData.length === 0) continue;
+        
+        // Processar jogos deste campeonato
+        const gamesFromLeague: Game[] = oddsData
+          .map((game: any) => {
+            const bookmaker = game.bookmakers?.[0];
+            if (!bookmaker) return null;
+            
+            const h2h = bookmaker.markets?.find((m: any) => m.key === 'h2h');
+            const totals = bookmaker.markets?.find((m: any) => m.key === 'totals');
+            
+            if (!h2h) return null;
+            
+            return {
+              id: game.id || `${game.home_team}-${game.away_team}`,
+              homeTeam: game.home_team,
+              awayTeam: game.away_team,
+              league: sport.title,
+              startTime: new Date(game.commence_time),
+              bookmaker: bookmaker.title,
+              odds: {
+                home: h2h.outcomes.find((o: any) => o.name === game.home_team)?.price || 2.0,
+                draw: h2h.outcomes.find((o: any) => o.name === 'Draw')?.price || 3.2,
+                away: h2h.outcomes.find((o: any) => o.name === game.away_team)?.price || 3.5,
+                over: totals?.outcomes.find((o: any) => o.name === 'Over')?.price || 1.85,
+                under: totals?.outcomes.find((o: any) => o.name === 'Under')?.price || 1.9,
+              }
+            };
+          })
+          .filter((game): game is Game => game !== null);
+        
+        // Adicionar jogos até completar 5
+        const slotsRemaining = 5 - allGames.length;
+        allGames = [...allGames, ...gamesFromLeague.slice(0, slotsRemaining)];
+        
+        console.log(`${gamesFromLeague.length} jogos de ${sport.title}. Total: ${allGames.length}`);
+        
+      } catch (err) {
+        console.warn(`Erro ao processar ${sport.title}:`, err);
+        continue;
+      }
     }
     
-    const oddsData = await oddsResponse.json();
-    
-    console.log('Odds recebidas:', oddsData);
-    
-    if (!oddsData || oddsData.length === 0) {
-      throw new Error('Nenhum jogo disponível no momento');
+    if (allGames.length === 0) {
+      throw new Error('Não foi possível encontrar jogos disponíveis');
     }
     
-    // Processar jogos
-    const games: Game[] = oddsData
-      .slice(0, 5)
-      .map((game: any, idx: number) => {
-        const bookmaker = game.bookmakers?.[0];
-        if (!bookmaker) return null;
-        
-        const h2h = bookmaker.markets?.find((m: any) => m.key === 'h2h');
-        const totals = bookmaker.markets?.find((m: any) => m.key === 'totals');
-        
-        if (!h2h) return null;
-        
-        return {
-          id: idx + 1,
-          homeTeam: game.home_team,
-          awayTeam: game.away_team,
-          league: activeSport.title,
-          startTime: new Date(game.commence_time),
-          bookmaker: bookmaker.title,
-          odds: {
-            home: h2h.outcomes.find((o: any) => o.name === game.home_team)?.price || 2.0,
-            draw: h2h.outcomes.find((o: any) => o.name === 'Draw')?.price || 3.2,
-            away: h2h.outcomes.find((o: any) => o.name === game.away_team)?.price || 3.5,
-            over: totals?.outcomes.find((o: any) => o.name === 'Over')?.price || 1.85,
-            under: totals?.outcomes.find((o: any) => o.name === 'Under')?.price || 1.9,
-          }
-        };
-      })
-      .filter((game): game is Game => game !== null);
-    
-    if (games.length === 0) {
-      throw new Error('Não foi possível processar os jogos');
-    }
+    console.log(`Total de ${allGames.length} jogos encontrados para análise`);
     
     return { 
-      games, 
-      remaining: parseInt(remaining || '0') 
+      games: allGames, 
+      remaining: apiRemaining 
     };
     
   } catch (error) {
