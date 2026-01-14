@@ -13,10 +13,10 @@ export function Loading() {
         {/* Text */}
         <div>
           <p className="text-xl font-semibold text-foreground mb-2">
-            🌐 Conectando com The Odds API...
+            🧠 Eugine Calculando as Melhores Odds...
           </p>
           <p className="text-muted-foreground">
-            Buscando jogos e odds em tempo real
+            Analisando jogos em tempo real
           </p>
         </div>
 
