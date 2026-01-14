@@ -4,6 +4,9 @@ import { GameCard } from '@/components/GameCard';
 import { Loading } from '@/components/Loading';
 import { Alert } from '@/components/Alert';
 import { EmptyState } from '@/components/EmptyState';
+import { AccumulatorsSection } from '@/components/AccumulatorsSection';
+import { PremiumDoubleSection } from '@/components/PremiumDoubleSection';
+import { ZebraSection } from '@/components/ZebraSection';
 import { fetchOdds } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 
@@ -88,6 +91,17 @@ const Index = () => {
                   delay={index} 
                 />
               ))}
+
+              {/* NEW SECTIONS */}
+              
+              {/* Section 1: Accumulators */}
+              <AccumulatorsSection games={games} />
+
+              {/* Section 2: Premium Double */}
+              <PremiumDoubleSection games={games} />
+
+              {/* Section 3: Zebra of the Day */}
+              <ZebraSection games={games} />
             </div>
           )}
         </main>
