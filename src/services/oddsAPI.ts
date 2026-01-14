@@ -17,7 +17,7 @@ export function analyzeBet(game: Game & { analysis?: BettingAnalysis }): Betting
   };
 }
 
-export async function fetchOdds(): Promise<OddsResponse> {
+export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -28,7 +28,8 @@ export async function fetchOdds(): Promise<OddsResponse> {
     const { data, error } = await supabase.functions.invoke('fetch-odds', {
       headers: {
         Authorization: `Bearer ${session.access_token}`
-      }
+      },
+      body: { lang: language }
     });
 
     if (error) {

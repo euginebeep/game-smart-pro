@@ -36,22 +36,75 @@ interface BettingAnalysis {
   profit: number;
 }
 
+// Traduções das análises
+const analysisTranslations: Record<string, Record<string, any>> = {
+  pt: {
+    over25: 'MAIS DE 2.5 GOLS',
+    over25Reason: (odd: string, home: string, away: string) => 
+      `Odd de ${odd} indica alta expectativa de gols. Mercado aposta em jogo movimentado entre ${home} e ${away}.`,
+    btts: 'AMBAS EQUIPES MARCAM',
+    bttsReason: (homeOdd: string, awayOdd: string) => 
+      `Jogo equilibrado com odds similares (Casa: ${homeOdd} / Fora: ${awayOdd}). Times tendem a ter boa performance ofensiva.`,
+  },
+  en: {
+    over25: 'OVER 2.5 GOALS',
+    over25Reason: (odd: string, home: string, away: string) => 
+      `Odd of ${odd} indicates high goal expectation. Market betting on an eventful game between ${home} and ${away}.`,
+    btts: 'BOTH TEAMS TO SCORE',
+    bttsReason: (homeOdd: string, awayOdd: string) => 
+      `Balanced game with similar odds (Home: ${homeOdd} / Away: ${awayOdd}). Teams tend to have good offensive performance.`,
+  },
+  es: {
+    over25: 'MÁS DE 2.5 GOLES',
+    over25Reason: (odd: string, home: string, away: string) => 
+      `Cuota de ${odd} indica alta expectativa de goles. El mercado apuesta por un partido con muchos goles entre ${home} y ${away}.`,
+    btts: 'AMBOS EQUIPOS MARCAN',
+    bttsReason: (homeOdd: string, awayOdd: string) => 
+      `Partido equilibrado con cuotas similares (Local: ${homeOdd} / Visitante: ${awayOdd}). Los equipos tienden a tener buen rendimiento ofensivo.`,
+  },
+  it: {
+    over25: 'PIÙ DI 2.5 GOL',
+    over25Reason: (odd: string, home: string, away: string) => 
+      `Quota di ${odd} indica alta aspettativa di gol. Il mercato scommette su una partita movimentata tra ${home} e ${away}.`,
+    btts: 'ENTRAMBE SEGNANO',
+    bttsReason: (homeOdd: string, awayOdd: string) => 
+      `Partita equilibrata con quote simili (Casa: ${homeOdd} / Trasferta: ${awayOdd}). Le squadre tendono ad avere buone prestazioni offensive.`,
+  },
+};
+
+// Day labels translations
+const dayLabelsTranslations: Record<string, Record<string, string>> = {
+  pt: { today: '🔴 HOJE', tomorrow: '📅 AMANHÃ' },
+  en: { today: '🔴 TODAY', tomorrow: '📅 TOMORROW' },
+  es: { today: '🔴 HOY', tomorrow: '📅 MAÑANA' },
+  it: { today: '🔴 OGGI', tomorrow: '📅 DOMANI' },
+};
+
+// Alert messages translations
+const alertTranslations: Record<string, Record<string, string>> = {
+  pt: { today: '🔴 JOGOS DE HOJE', tomorrow: '📅 JOGOS DE AMANHÃ', future: '📅 JOGOS DE' },
+  en: { today: '🔴 TODAY\'S GAMES', tomorrow: '📅 TOMORROW\'S GAMES', future: '📅 GAMES ON' },
+  es: { today: '🔴 PARTIDOS DE HOY', tomorrow: '📅 PARTIDOS DE MAÑANA', future: '📅 PARTIDOS DEL' },
+  it: { today: '🔴 PARTITE DI OGGI', tomorrow: '📅 PARTITE DI DOMANI', future: '📅 PARTITE DEL' },
+};
+
 // Análise de apostas - LÓGICA SECRETA
-function analyzeBet(game: Game): BettingAnalysis {
+function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
   const betAmount = 40;
+  const t = analysisTranslations[lang] || analysisTranslations['pt'];
   
   if (game.odds.over > 0 && game.odds.over < 2.0) {
     return {
-      type: 'MAIS DE 2.5 GOLS',
-      reason: `Odd de ${game.odds.over.toFixed(2)} indica alta expectativa de gols. Mercado aposta em jogo movimentado entre ${game.homeTeam} e ${game.awayTeam}.`,
+      type: t.over25,
+      reason: t.over25Reason(game.odds.over.toFixed(2), game.homeTeam, game.awayTeam),
       profit: parseFloat((betAmount * game.odds.over - betAmount).toFixed(2))
     };
   }
   
   const avgOdd = (game.odds.home + game.odds.away) / 2;
   return {
-    type: 'AMBAS EQUIPES MARCAM',
-    reason: `Jogo equilibrado com odds similares (Casa: ${game.odds.home.toFixed(2)} / Fora: ${game.odds.away.toFixed(2)}). Times tendem a ter boa performance ofensiva.`,
+    type: t.btts,
+    reason: t.bttsReason(game.odds.home.toFixed(2), game.odds.away.toFixed(2)),
     profit: parseFloat((betAmount * avgOdd - betAmount).toFixed(2))
   };
 }
@@ -76,8 +129,10 @@ function filtrarJogosValidos(jogos: any[], dataReferencia: Date): any[] {
 }
 
 // Buscar jogos dia por dia até encontrar
-function buscarJogosDisponiveis(oddsData: any[]): { jogos: any[]; diaEncontrado: number; dataAlvo: Date; mensagem: string } {
+function buscarJogosDisponiveis(oddsData: any[], lang: string = 'pt'): { jogos: any[]; diaEncontrado: number; dataAlvo: Date; mensagem: string } {
   const hoje = new Date();
+  const alerts = alertTranslations[lang] || alertTranslations['pt'];
+  const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
   
   for (let diasNoFuturo = 0; diasNoFuturo <= 7; diasNoFuturo++) {
     const dataAlvo = new Date(hoje);
@@ -86,19 +141,17 @@ function buscarJogosDisponiveis(oddsData: any[]): { jogos: any[]; diaEncontrado:
     const jogosValidos = filtrarJogosValidos(oddsData, dataAlvo);
     
     if (jogosValidos.length > 0) {
-      const diaTexto = diasNoFuturo === 0 ? 'HOJE' : 
-                       diasNoFuturo === 1 ? 'AMANHÃ' :
-                       dataAlvo.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      const diaTexto = dataAlvo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
       
-      console.log(`✅ Encontrados ${jogosValidos.length} jogos para ${diaTexto}`);
+      console.log(`✅ Encontrados ${jogosValidos.length} jogos para dia +${diasNoFuturo}`);
       
       return {
         jogos: jogosValidos,
         diaEncontrado: diasNoFuturo,
         dataAlvo: dataAlvo,
-        mensagem: diasNoFuturo === 0 ? '🔴 JOGOS DE HOJE' :
-                  diasNoFuturo === 1 ? '📅 JOGOS DE AMANHÃ' :
-                  `📅 JOGOS DE ${diaTexto}`
+        mensagem: diasNoFuturo === 0 ? alerts.today :
+                  diasNoFuturo === 1 ? alerts.tomorrow :
+                  `${alerts.future} ${diaTexto}`
       };
     }
     
@@ -114,7 +167,7 @@ function getDayType(diaEncontrado: number): 'today' | 'tomorrow' | 'future' {
   return 'future';
 }
 
-function getDayLabel(dataJogo: Date): string {
+function getDayLabel(dataJogo: Date, lang: string = 'pt'): string {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   
@@ -122,14 +175,16 @@ function getDayLabel(dataJogo: Date): string {
   dataJogoNormalizada.setHours(0, 0, 0, 0);
   
   const diffDias = Math.round((dataJogoNormalizada.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+  const dayLabels = dayLabelsTranslations[lang] || dayLabelsTranslations['pt'];
+  const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
   
-  if (diffDias === 0) return '🔴 HOJE';
-  if (diffDias === 1) return '📅 AMANHÃ';
-  return `📅 ${dataJogo.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
+  if (diffDias === 0) return dayLabels.today;
+  if (diffDias === 1) return dayLabels.tomorrow;
+  return `📅 ${dataJogo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })}`;
 }
 
 // Buscar odds da API externa
-async function fetchOddsFromAPI() {
+async function fetchOddsFromAPI(lang: string = 'pt') {
   if (!API_KEY) {
     throw new Error('API key não configurada');
   }
@@ -200,7 +255,7 @@ async function fetchOddsFromAPI() {
   }
   
   // BUSCAR JOGOS DIA POR DIA
-  const resultado = buscarJogosDisponiveis(allOddsData);
+  const resultado = buscarJogosDisponiveis(allOddsData, lang);
   const dayType = getDayType(resultado.diaEncontrado);
   
   // Processar os jogos encontrados (máximo 5)
@@ -232,7 +287,7 @@ async function fetchOddsFromAPI() {
           under: totals?.outcomes.find((o: any) => o.name === 'Under')?.price || 1.9,
         },
         dayType,
-        dayLabel: getDayLabel(startTime)
+        dayLabel: getDayLabel(startTime, lang)
       };
     })
     .filter((game): game is Game => game !== null);
@@ -244,7 +299,7 @@ async function fetchOddsFromAPI() {
   // Adicionar análise de apostas a cada jogo
   const gamesWithAnalysis = games.map(game => ({
     ...game,
-    analysis: analyzeBet(game)
+    analysis: analyzeBet(game, lang)
   }));
   
   console.log(`Total de ${gamesWithAnalysis.length} jogos processados para análise`);
@@ -274,6 +329,17 @@ serve(async (req) => {
       );
     }
 
+    // Obter idioma do body, query param ou header
+    let lang = 'pt';
+    try {
+      const body = await req.json();
+      lang = body?.lang || 'pt';
+    } catch {
+      const url = new URL(req.url);
+      lang = url.searchParams.get('lang') || req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'pt';
+    }
+    const validLang = ['pt', 'en', 'es', 'it'].includes(lang) ? lang : 'pt';
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -291,10 +357,10 @@ serve(async (req) => {
       );
     }
 
-    console.log('Usuário autenticado:', claimsData.claims.sub);
+    console.log('Usuário autenticado:', claimsData.claims.sub, 'Idioma:', validLang);
 
-    // Buscar odds
-    const result = await fetchOddsFromAPI();
+    // Buscar odds com idioma
+    const result = await fetchOddsFromAPI(validLang);
     
     return new Response(
       JSON.stringify(result),
