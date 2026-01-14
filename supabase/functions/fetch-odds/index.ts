@@ -313,6 +313,98 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   };
 }
 
+// Cache duration in minutes
+const CACHE_DURATION_MINUTES = 10;
+
+// Gerar chave de cache baseada na data atual
+function getCacheKey(): string {
+  const hoje = new Date();
+  const dataStr = hoje.toISOString().split('T')[0]; // YYYY-MM-DD
+  return `odds_${dataStr}`;
+}
+
+// Buscar do cache
+async function getFromCache(supabaseAdmin: any): Promise<any | null> {
+  const cacheKey = getCacheKey();
+  
+  const { data, error } = await supabaseAdmin
+    .from('odds_cache')
+    .select('data, expires_at')
+    .eq('cache_key', cacheKey)
+    .single();
+  
+  if (error || !data) {
+    console.log('Cache miss ou erro:', error?.message);
+    return null;
+  }
+  
+  // Verificar se expirou
+  if (new Date(data.expires_at) < new Date()) {
+    console.log('Cache expirado');
+    return null;
+  }
+  
+  console.log('✅ Cache hit! Usando dados em cache');
+  return data.data;
+}
+
+// Salvar no cache
+async function saveToCache(supabaseAdmin: any, data: any): Promise<void> {
+  const cacheKey = getCacheKey();
+  const expiresAt = new Date(Date.now() + CACHE_DURATION_MINUTES * 60 * 1000);
+  
+  // Upsert para atualizar se já existir
+  const { error } = await supabaseAdmin
+    .from('odds_cache')
+    .upsert({
+      cache_key: cacheKey,
+      data: data,
+      expires_at: expiresAt.toISOString(),
+      created_at: new Date().toISOString()
+    }, { onConflict: 'cache_key' });
+  
+  if (error) {
+    console.error('Erro ao salvar cache:', error);
+  } else {
+    console.log('✅ Cache salvo com sucesso, expira em', CACHE_DURATION_MINUTES, 'minutos');
+  }
+}
+
+// Traduzir dados do cache para o idioma correto
+function translateCachedData(cachedData: any, lang: string): any {
+  const games = cachedData.games.map((game: any) => ({
+    ...game,
+    dayLabel: getDayLabel(new Date(game.startTime), lang),
+    analysis: analyzeBet(game as Game, lang)
+  }));
+  
+  const alerts = alertTranslations[lang] || alertTranslations['pt'];
+  const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
+  
+  const foundDate = new Date(cachedData.foundDate);
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const foundDateNorm = new Date(foundDate);
+  foundDateNorm.setHours(0, 0, 0, 0);
+  const diffDias = Math.round((foundDateNorm.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+  
+  let alertMessage: string;
+  if (diffDias === 0) {
+    alertMessage = alerts.today;
+  } else if (diffDias === 1) {
+    alertMessage = alerts.tomorrow;
+  } else {
+    const diaTexto = foundDate.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
+    alertMessage = `${alerts.future} ${diaTexto}`;
+  }
+  
+  return {
+    ...cachedData,
+    games,
+    alertMessage
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -340,14 +432,15 @@ serve(async (req) => {
     }
     const validLang = ['pt', 'en', 'es', 'it'].includes(lang) ? lang : 'pt';
 
-    const supabase = createClient(
+    // Cliente com autenticação do usuário
+    const supabaseUser = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
       { global: { headers: { Authorization: authHeader } } }
     );
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
     
     if (claimsError || !claimsData?.claims) {
       console.error('Erro de autenticação:', claimsError);
@@ -359,11 +452,35 @@ serve(async (req) => {
 
     console.log('Usuário autenticado:', claimsData.claims.sub, 'Idioma:', validLang);
 
-    // Buscar odds com idioma
+    // Cliente admin para operações de cache
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Tentar buscar do cache primeiro
+    const cachedData = await getFromCache(supabaseAdmin);
+    
+    if (cachedData) {
+      // Traduzir para o idioma solicitado
+      const translatedData = translateCachedData(cachedData, validLang);
+      translatedData.fromCache = true;
+      
+      return new Response(
+        JSON.stringify(translatedData),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Cache miss - buscar da API
+    console.log('🔄 Buscando dados frescos da API...');
     const result = await fetchOddsFromAPI(validLang);
     
+    // Salvar no cache (não bloqueia a resposta)
+    saveToCache(supabaseAdmin, result).catch(err => console.error('Erro ao salvar cache:', err));
+    
     return new Response(
-      JSON.stringify(result),
+      JSON.stringify({ ...result, fromCache: false }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
