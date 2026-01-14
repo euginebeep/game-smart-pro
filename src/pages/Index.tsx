@@ -109,15 +109,7 @@ const Index = () => {
         {/* Footer */}
         <footer className="mt-16 text-center">
           <p className="text-muted-foreground text-sm">
-            EUGINE v3.0 • Dados fornecidos por{' '}
-            <a 
-              href="https://the-odds-api.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-accent hover:underline"
-            >
-              The Odds API
-            </a>
+            EUGINE v3.0 • uma Empresa Do Grupo <span className="text-accent font-semibold">GS ITALYINVESTMENTS</span>
           </p>
           <p className="text-muted-foreground/60 text-xs mt-2">
             ⚠️ Aposte com responsabilidade. Este sistema é apenas para fins educacionais.
