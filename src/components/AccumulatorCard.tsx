@@ -1,5 +1,5 @@
 import { TrendingUp, Shield, Scale, Rocket } from 'lucide-react';
-import { Game } from '@/types/game';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export type RiskLevel = 'low' | 'medium' | 'high';
 
@@ -25,21 +25,21 @@ const riskConfig = {
     borderClass: 'border-primary/30',
     textClass: 'text-primary',
     icon: Shield,
-    label: 'SEGURO'
+    labelKey: 'accumulators.riskLow'
   },
   medium: {
     bgClass: 'bg-warning/10',
     borderClass: 'border-warning/30',
     textClass: 'text-warning',
     icon: Scale,
-    label: 'MÉDIO'
+    labelKey: 'accumulators.riskMedium'
   },
   high: {
     bgClass: 'bg-destructive/10',
     borderClass: 'border-destructive/30',
     textClass: 'text-destructive',
     icon: Rocket,
-    label: 'ARRISCADO'
+    labelKey: 'accumulators.riskHigh'
   }
 };
 
@@ -52,6 +52,7 @@ export function AccumulatorCard({
   riskLevel,
   delay = 0 
 }: AccumulatorCardProps) {
+  const { t } = useLanguage();
   const config = riskConfig[riskLevel];
   const Icon = config.icon;
   
@@ -72,7 +73,7 @@ export function AccumulatorCard({
           <h3 className={`text-sm sm:text-base lg:text-lg font-bold ${config.textClass} truncate`}>{title}</h3>
           <div className={`inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold ${config.bgClass} ${config.textClass}`}>
             <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            {config.label}
+            {t(config.labelKey)}
           </div>
         </div>
       </div>
@@ -97,13 +98,13 @@ export function AccumulatorCard({
       {/* Stats */}
       <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
         <div className="bg-secondary/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-border">
-          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">Odd Total</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('accumulators.totalOdd')}</p>
           <p className={`text-xl sm:text-2xl font-black ${config.textClass}`}>
             {totalOdd.toFixed(2)}
           </p>
         </div>
         <div className="bg-secondary/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-border">
-          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">Chance</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('accumulators.chance')}</p>
           <p className={`text-xl sm:text-2xl font-black ${config.textClass}`}>
             {chancePercent}%
           </p>
