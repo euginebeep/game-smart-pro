@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
 export type Language = 'pt' | 'en' | 'es' | 'it';
 
@@ -6,6 +6,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  isTransitioning: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -27,13 +28,27 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     const saved = localStorage.getItem('eugine-language');
     return (saved as Language) || 'pt';
   });
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const setLanguage = (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem('eugine-language', lang);
-  };
+  const setLanguage = useCallback((lang: Language) => {
+    if (lang === language) return;
+    
+    // Start transition
+    setIsTransitioning(true);
+    
+    // After fade out, change language
+    setTimeout(() => {
+      setLanguageState(lang);
+      localStorage.setItem('eugine-language', lang);
+      
+      // After language change, fade back in
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    }, 200);
+  }, [language]);
 
-  const t = (key: string): string => {
+  const t = useCallback((key: string): string => {
     const keys = key.split('.');
     let value: any = translations[language];
     
@@ -42,11 +57,13 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     }
     
     return value || key;
-  };
+  }, [language]);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      {children}
+    <LanguageContext.Provider value={{ language, setLanguage, t, isTransitioning }}>
+      <div className={`transition-all duration-300 ease-out ${isTransitioning ? 'opacity-0 scale-[0.99]' : 'opacity-100 scale-100'}`}>
+        {children}
+      </div>
     </LanguageContext.Provider>
   );
 };

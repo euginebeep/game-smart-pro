@@ -159,6 +159,24 @@
   .animate-shimmer {
     animation: shimmer 2s ease-in-out infinite;
   }
+
+  .animate-language-change {
+    animation: languageChange 0.4s ease-out forwards;
+  }
+
+  .language-transition {
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  }
+
+  .language-fade-out {
+    opacity: 0;
+    transform: scale(0.98) translateY(5px);
+  }
+
+  .language-fade-in {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes fadeInUp {
@@ -169,6 +187,17 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes languageChange {
+  0% {
+    opacity: 0;
+    transform: scale(0.98) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
