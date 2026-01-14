@@ -98,7 +98,7 @@ export function PremiumDoubleSection({ games }: PremiumDoubleSectionProps) {
             </div>
             <div className="bg-primary/20 rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-primary/30">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('premiumDouble.return')}</p>
-              <p className="text-2xl sm:text-3xl font-black text-primary">R$ {(betAmount * totalOdd).toFixed(0)}</p>
+              <p className="text-2xl sm:text-3xl font-black text-primary">$ {(betAmount * totalOdd).toFixed(0)}</p>
             </div>
           </div>
 
@@ -107,8 +107,8 @@ export function PremiumDoubleSection({ games }: PremiumDoubleSectionProps) {
             <div className="flex items-center justify-center gap-1.5 sm:gap-2">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               <p className="text-sm sm:text-base lg:text-lg">
-                <span className="text-muted-foreground">R$ {betAmount} → </span>
-                <span className="font-bold text-primary">R$ {profit.toFixed(2)}</span>
+                <span className="text-muted-foreground">$ {betAmount} → </span>
+                <span className="font-bold text-primary">$ {profit.toFixed(2)}</span>
               </p>
             </div>
           </div>
