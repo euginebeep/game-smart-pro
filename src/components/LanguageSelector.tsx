@@ -52,14 +52,15 @@ const flags: Record<Language, { svg: JSX.Element; label: string }> = {
 const languages: Language[] = ['pt', 'en', 'es', 'it'];
 
 export default function LanguageSelector() {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, isTransitioning } = useLanguage();
 
   return (
     <div className="flex items-center justify-center gap-2 sm:gap-3">
-      {languages.map((lang) => (
+      {languages.map((lang, index) => (
         <button
           key={lang}
           onClick={() => setLanguage(lang)}
+          disabled={isTransitioning}
           className={`
             relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden 
             transition-all duration-300 transform
@@ -67,13 +68,20 @@ export default function LanguageSelector() {
               ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-950 scale-110 shadow-lg shadow-emerald-500/30' 
               : 'opacity-60 hover:opacity-100 hover:scale-105 hover:shadow-md'
             }
+            ${isTransitioning ? 'pointer-events-none' : ''}
           `}
+          style={{
+            animationDelay: `${index * 50}ms`
+          }}
           title={flags[lang].label}
           aria-label={`Select language: ${flags[lang].label}`}
         >
-          <div className="w-full h-full">
+          <div className={`w-full h-full transition-transform duration-200 ${isTransitioning && language === lang ? 'scale-90' : 'scale-100'}`}>
             {flags[lang].svg}
           </div>
+          {language === lang && (
+            <div className="absolute inset-0 bg-emerald-400/20 animate-pulse rounded-full" />
+          )}
         </button>
       ))}
     </div>
