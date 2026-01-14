@@ -154,11 +154,13 @@ export default function Auth() {
         {/* Logo/Brand */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <img 
-              src={eugineLogo} 
-              alt="EUGINE Logo" 
-              className="w-40 h-40 object-contain drop-shadow-2xl"
-            />
+            <div className="p-3 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/30 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+              <img 
+                src={eugineLogo} 
+                alt="EUGINE Logo" 
+                className="w-48 h-48 object-contain drop-shadow-2xl"
+              />
+            </div>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             <span className="text-emerald-400">v3.0</span>
