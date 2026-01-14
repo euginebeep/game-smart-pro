@@ -1,11 +1,14 @@
 import { Sparkles, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Game } from '@/types/game';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ZebraSectionProps {
   games: Game[];
 }
 
 export function ZebraSection({ games }: ZebraSectionProps) {
+  const { t } = useLanguage();
+  
   // Find a game where the away team is the underdog (higher odds)
   const underdogGame = games.find(g => g.odds.away > 4.0) || games.find(g => g.odds.away > 3.0);
   
@@ -14,13 +17,13 @@ export function ZebraSection({ games }: ZebraSectionProps) {
     underdog: underdogGame.awayTeam,
     favorite: underdogGame.homeTeam,
     odd: underdogGame.odds.away,
-    reason: `${underdogGame.awayTeam} vem de bons resultados e pode surpreender jogando fora de casa. O favoritismo de ${underdogGame.homeTeam} está supervalorizado.`
+    reason: `${underdogGame.awayTeam} ${t('zebra.goodResults')} ${underdogGame.homeTeam} ${t('zebra.overvalued')}`
   } : {
     match: 'Athletic Bilbao x Barcelona',
     underdog: 'Athletic Bilbao',
     favorite: 'Barcelona',
     odd: 4.50,
-    reason: 'Athletic Bilbao jogando em casa no San Mamés é muito forte. Histórico recente mostra que podem vencer o Barcelona!'
+    reason: `Athletic Bilbao ${t('zebra.defaultReason')}`
   };
 
   const betAmount = 20;
@@ -46,11 +49,11 @@ export function ZebraSection({ games }: ZebraSectionProps) {
           <div className="text-center mb-5 sm:mb-6 lg:mb-8">
             <span className="text-4xl sm:text-5xl lg:text-6xl mb-2 sm:mb-3 lg:mb-4 block">🦓</span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white mb-1 sm:mb-2">
-              ZEBRA DO DIA
+              {t('zebra.title')}
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-white/80">
               <Sparkles className="inline w-4 h-4 sm:w-5 sm:h-5 mr-1" />
-              APOSTA SURPRESA!
+              {t('zebra.surpriseBet')}
             </p>
           </div>
 
@@ -62,18 +65,18 @@ export function ZebraSection({ games }: ZebraSectionProps) {
             
             <div className="flex items-center justify-center gap-2 sm:gap-3 lg:gap-4 mb-3 sm:mb-4">
               <div className="text-center min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs lg:text-sm text-white/60 uppercase">Zebra</p>
+                <p className="text-[10px] sm:text-xs lg:text-sm text-white/60 uppercase">{t('zebra.zebra')}</p>
                 <p className="text-sm sm:text-base lg:text-xl font-bold text-yellow-300 truncate">{zebraData.underdog}</p>
               </div>
               <div className="text-2xl sm:text-3xl lg:text-4xl flex-shrink-0">⚡</div>
               <div className="text-center min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs lg:text-sm text-white/60 uppercase">Favorito</p>
+                <p className="text-[10px] sm:text-xs lg:text-sm text-white/60 uppercase">{t('zebra.favorite')}</p>
                 <p className="text-sm sm:text-base lg:text-xl font-bold text-white/80 truncate">{zebraData.favorite}</p>
               </div>
             </div>
 
             <div className="text-center">
-              <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-0.5 sm:mb-1">Odd da Zebra</p>
+              <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-0.5 sm:mb-1">{t('zebra.zebraOdd')}</p>
               <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-yellow-300">
                 @{zebraData.odd.toFixed(2)}
               </p>
@@ -85,11 +88,11 @@ export function ZebraSection({ games }: ZebraSectionProps) {
             <div className="flex items-start gap-2 sm:gap-3">
               <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-300 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs sm:text-sm font-bold text-yellow-300 mb-0.5 sm:mb-1">O que é uma Zebra?</p>
+                <p className="text-xs sm:text-sm font-bold text-yellow-300 mb-0.5 sm:mb-1">{t('zebra.whatIsZebra')}</p>
                 <p className="text-white/80 text-xs sm:text-sm mb-2 sm:mb-3">
-                  Zebra = time mais fraco (azarão) vence o favorito!
+                  {t('zebra.zebraExplanation')}
                 </p>
-                <p className="text-xs sm:text-sm font-bold text-white mb-0.5 sm:mb-1">Por que apostar?</p>
+                <p className="text-xs sm:text-sm font-bold text-white mb-0.5 sm:mb-1">{t('zebra.whyBet')}</p>
                 <p className="text-white/80 text-xs sm:text-sm">
                   {zebraData.reason}
                 </p>
@@ -100,11 +103,11 @@ export function ZebraSection({ games }: ZebraSectionProps) {
           {/* Stats */}
           <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-5 lg:mb-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-white/20">
-              <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-0.5 sm:mb-1">Chance de Acerto</p>
+              <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-0.5 sm:mb-1">{t('zebra.chanceOfSuccess')}</p>
               <p className="text-2xl sm:text-3xl font-black text-yellow-300">{chancePercent}%</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-white/20">
-              <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-0.5 sm:mb-1">Retorno</p>
+              <p className="text-[10px] sm:text-xs text-white/60 uppercase mb-0.5 sm:mb-1">{t('zebra.return')}</p>
               <p className="text-2xl sm:text-3xl font-black text-yellow-300">R$ {(betAmount * zebraData.odd).toFixed(0)}</p>
             </div>
           </div>
