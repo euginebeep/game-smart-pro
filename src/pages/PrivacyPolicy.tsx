@@ -1,168 +1,192 @@
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 
 export default function PrivacyPolicy() {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 py-8 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link 
-            to="/auth" 
-            className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            <Link 
+              to="/auth" 
+              className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t('common.back')}
+            </Link>
+            <LanguageSelector />
+          </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            Política de Privacidade
+            {t('privacy.title')}
           </h1>
-          <p className="text-slate-400">Última atualização: 14 de Janeiro de 2026</p>
+          <p className="text-slate-400">{t('common.lastUpdate')}: 14 January 2026</p>
         </div>
 
         {/* Content */}
         <div className="glass-card p-6 sm:p-8 rounded-2xl space-y-6 text-slate-300">
+          
+          {/* Section 1 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">1. Introdução</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section1.title')}</h2>
             <p className="leading-relaxed">
-              O EUGINE Analytics, uma empresa do Grupo GS ITALYINVESTMENTS, está comprometido em proteger sua privacidade. 
-              Esta Política de Privacidade explica como coletamos, usamos, armazenamos e protegemos suas informações pessoais.
+              {t('privacy.section1.text')}
             </p>
           </section>
 
+          {/* Section 2 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">2. Informações que Coletamos</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section2.title')}</h2>
             <p className="leading-relaxed mb-3">
-              Coletamos as seguintes informações quando você usa nosso serviço:
+              {t('privacy.section2.intro')}
             </p>
             <div className="space-y-3">
               <div>
-                <h3 className="font-semibold text-emerald-400">Informações de Cadastro:</h3>
+                <h3 className="font-semibold text-emerald-400">{t('privacy.section2.registration')}</h3>
                 <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-                  <li>Endereço de e-mail</li>
-                  <li>Número de telefone</li>
-                  <li>Senha (armazenada de forma criptografada)</li>
+                  {(t('privacy.section2.registrationList') as unknown as string[]).map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-emerald-400">Informações de Uso:</h3>
+                <h3 className="font-semibold text-emerald-400">{t('privacy.section2.usage')}</h3>
                 <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-                  <li>Data e hora de acesso</li>
-                  <li>Páginas visitadas</li>
-                  <li>Interações com o sistema</li>
-                  <li>Dispositivo e navegador utilizados</li>
+                  {(t('privacy.section2.usageList') as unknown as string[]).map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </div>
             </div>
           </section>
 
+          {/* Section 3 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">3. Como Usamos suas Informações</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section3.title')}</h2>
             <p className="leading-relaxed">
-              Utilizamos suas informações para:
+              {t('privacy.section3.intro')}
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 ml-4">
-              <li>Fornecer e manter nossos serviços</li>
-              <li>Personalizar sua experiência</li>
-              <li>Enviar comunicações importantes sobre o serviço</li>
-              <li>Processar transações e gerenciar sua conta</li>
-              <li>Melhorar nossos algoritmos e análises</li>
-              <li>Prevenir fraudes e garantir a segurança</li>
+              {(t('privacy.section3.list') as unknown as string[]).map((item: string, index: number) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
+          {/* Section 4 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">4. Proteção de Dados</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section4.title')}</h2>
             <p className="leading-relaxed">
-              Implementamos medidas de segurança técnicas e organizacionais para proteger suas informações, incluindo:
+              {t('privacy.section4.intro')}
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 ml-4">
-              <li>Criptografia de dados em trânsito e em repouso</li>
-              <li>Autenticação segura com tokens JWT</li>
-              <li>Acesso restrito a dados pessoais</li>
-              <li>Monitoramento contínuo de segurança</li>
-              <li>Backups regulares e recuperação de desastres</li>
+              {(t('privacy.section4.list') as unknown as string[]).map((item: string, index: number) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
+          {/* Section 5 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">5. Compartilhamento de Dados</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section5.title')}</h2>
             <p className="leading-relaxed">
-              Não vendemos, alugamos ou compartilhamos suas informações pessoais com terceiros, exceto:
+              {t('privacy.section5.intro')}
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 ml-4">
-              <li>Quando exigido por lei ou ordem judicial</li>
-              <li>Para proteger nossos direitos legais</li>
-              <li>Com prestadores de serviços essenciais (processamento de pagamentos, hospedagem)</li>
-              <li>Em caso de fusão ou aquisição da empresa</li>
+              {(t('privacy.section5.list') as unknown as string[]).map((item: string, index: number) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
+          {/* Section 6 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">6. Seus Direitos</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section6.title')}</h2>
             <p className="leading-relaxed">
-              Você tem os seguintes direitos em relação aos seus dados pessoais:
+              {t('privacy.section6.intro')}
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 ml-4">
-              <li><strong>Acesso:</strong> Solicitar uma cópia dos dados que mantemos sobre você</li>
-              <li><strong>Correção:</strong> Corrigir informações imprecisas ou incompletas</li>
-              <li><strong>Exclusão:</strong> Solicitar a exclusão de seus dados pessoais</li>
-              <li><strong>Portabilidade:</strong> Receber seus dados em formato estruturado</li>
-              <li><strong>Oposição:</strong> Opor-se ao processamento de seus dados</li>
+              <li><strong>{t('privacy.section6.access').split(':')[0]}:</strong> {t('privacy.section6.access').includes(':') ? t('privacy.section6.access').split(':').slice(1).join(':').trim() : t('privacy.section6.access')}</li>
+              <li><strong>{t('privacy.section6.correction').split(':')[0]}:</strong> {t('privacy.section6.correction').includes(':') ? t('privacy.section6.correction').split(':').slice(1).join(':').trim() : t('privacy.section6.correction')}</li>
+              <li><strong>{t('privacy.section6.deletion').split(':')[0]}:</strong> {t('privacy.section6.deletion').includes(':') ? t('privacy.section6.deletion').split(':').slice(1).join(':').trim() : t('privacy.section6.deletion')}</li>
+              <li><strong>{t('privacy.section6.portability').split(':')[0]}:</strong> {t('privacy.section6.portability').includes(':') ? t('privacy.section6.portability').split(':').slice(1).join(':').trim() : t('privacy.section6.portability')}</li>
+              <li><strong>{t('privacy.section6.opposition').split(':')[0]}:</strong> {t('privacy.section6.opposition').includes(':') ? t('privacy.section6.opposition').split(':').slice(1).join(':').trim() : t('privacy.section6.opposition')}</li>
             </ul>
           </section>
 
+          {/* Section 7 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">7. Cookies e Tecnologias Similares</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section7.title')}</h2>
             <p className="leading-relaxed">
-              Utilizamos cookies e tecnologias similares para:
+              {t('privacy.section7.intro')}
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 ml-4">
-              <li>Manter você conectado à sua conta</li>
-              <li>Lembrar suas preferências</li>
-              <li>Analisar o uso do serviço</li>
-              <li>Melhorar a performance do sistema</li>
+              {(t('privacy.section7.list') as unknown as string[]).map((item: string, index: number) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
+          {/* Section 8 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">8. Retenção de Dados</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section8.title')}</h2>
             <p className="leading-relaxed">
-              Mantemos suas informações pessoais pelo tempo necessário para fornecer nossos serviços 
-              ou conforme exigido por lei. Após o encerramento da conta, seus dados serão excluídos 
-              dentro de 90 dias, exceto quando houver obrigação legal de retenção.
+              {t('privacy.section8.text')}
             </p>
           </section>
 
+          {/* Section 9 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">9. Menores de Idade</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section9.title')}</h2>
             <p className="leading-relaxed">
-              Nossos serviços são destinados apenas a pessoas maiores de 18 anos. Não coletamos 
-              intencionalmente informações de menores de idade. Se tomarmos conhecimento de que 
-              coletamos dados de um menor, excluiremos essas informações imediatamente.
+              {t('privacy.section9.text')}
             </p>
           </section>
 
+          {/* Section 10 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">10. Alterações nesta Política</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section10.title')}</h2>
             <p className="leading-relaxed">
-              Podemos atualizar esta Política de Privacidade periodicamente. Notificaremos você sobre 
-              alterações significativas por e-mail ou através de um aviso em nosso serviço. 
-              Recomendamos revisar esta política regularmente.
+              {t('privacy.section10.text')}
             </p>
           </section>
 
+          {/* Section 11 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">11. Contato</h2>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section11.title')}</h2>
+            <div className="space-y-3">
+              <p className="leading-relaxed">
+                {t('privacy.section11.p1')}
+              </p>
+              <p className="leading-relaxed">
+                {t('privacy.section11.p2')}
+              </p>
+            </div>
+          </section>
+
+          {/* Section 12 */}
+          <section>
+            <h2 className="text-xl font-bold text-white mb-3">{t('privacy.section12.title')}</h2>
             <p className="leading-relaxed">
-              Para exercer seus direitos ou esclarecer dúvidas sobre esta Política de Privacidade, 
-              entre em contato conosco através dos canais oficiais do Grupo GS ITALYINVESTMENTS.
+              {t('privacy.section12.text')}
+            </p>
+          </section>
+
+          {/* Declaration */}
+          <section className="bg-slate-800/50 p-6 rounded-xl border border-emerald-500/20">
+            <h2 className="text-xl font-bold text-emerald-400 mb-4">{t('privacy.declaration.title')}</h2>
+            <p className="leading-relaxed text-slate-200">
+              {t('privacy.declaration.text')}
             </p>
           </section>
 
           <div className="pt-6 border-t border-slate-700">
             <p className="text-sm text-slate-500 text-center">
-              EUGINE v3.0 • uma Empresa do Grupo GS ITALYINVESTMENTS
+              {t('privacy.footer')}
             </p>
           </div>
         </div>
