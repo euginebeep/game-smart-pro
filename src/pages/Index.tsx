@@ -43,7 +43,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen py-8 px-4 lg:px-8">
+    <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <Header 
@@ -122,11 +122,11 @@ const Index = () => {
         </main>
 
         {/* Footer */}
-        <footer className="mt-16 text-center">
-          <p className="text-muted-foreground text-sm">
+        <footer className="mt-8 sm:mt-12 lg:mt-16 text-center px-2">
+          <p className="text-muted-foreground text-xs sm:text-sm">
             EUGINE v3.0 • uma Empresa Do Grupo <span className="text-accent font-semibold">GS ITALYINVESTMENTS</span>
           </p>
-          <p className="text-muted-foreground/60 text-xs mt-2">
+          <p className="text-muted-foreground/60 text-[10px] sm:text-xs mt-1 sm:mt-2">
             ⚠️ Aposte com responsabilidade. Este sistema é apenas para fins educacionais.
           </p>
         </footer>

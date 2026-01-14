@@ -10,19 +10,19 @@ export function AccumulatorsSection({ games }: AccumulatorsSectionProps) {
   const accumulators = generateAccumulators(games);
 
   return (
-    <section className="mt-12">
+    <section className="mt-8 sm:mt-10 lg:mt-12">
       {/* Section Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
+      <div className="text-center mb-5 sm:mb-6 lg:mb-8">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-1 sm:mb-2">
           🎯 Apostas Acumuladas
         </h2>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-sm sm:text-base lg:text-lg px-2">
           Múltiplos jogos em uma aposta. <span className="text-warning font-semibold">TODOS precisam acertar!</span>
         </p>
       </div>
 
       {/* Accumulators Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-5 lg:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {accumulators.map((acc, idx) => (
           <AccumulatorCard
             key={idx}
