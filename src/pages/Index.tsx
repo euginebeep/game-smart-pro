@@ -15,7 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +29,7 @@ const Index = () => {
     setError(null);
 
     try {
-      const { games: fetchedGames, remaining, isToday: today, alertMessage: msg } = await fetchOdds();
+      const { games: fetchedGames, remaining, isToday: today, alertMessage: msg } = await fetchOdds(language);
       setGames(fetchedGames);
       setApiRemaining(remaining);
       setIsToday(today);
@@ -42,7 +42,7 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, language]);
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
