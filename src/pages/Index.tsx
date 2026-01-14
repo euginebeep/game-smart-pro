@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { GameCard } from '@/components/GameCard';
 import { Loading } from '@/components/Loading';
@@ -23,6 +23,7 @@ const Index = () => {
   const [hasFetched, setHasFetched] = useState(false);
   const [isToday, setIsToday] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
+  const previousLanguage = useRef(language);
 
   const handleFetchGames = useCallback(async () => {
     setLoading(true);
@@ -43,6 +44,14 @@ const Index = () => {
       setLoading(false);
     }
   }, [t, language]);
+
+  // Rebuscar quando o idioma mudar (se já tiver buscado antes)
+  useEffect(() => {
+    if (hasFetched && previousLanguage.current !== language) {
+      previousLanguage.current = language;
+      handleFetchGames();
+    }
+  }, [language, hasFetched, handleFetchGames]);
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8">
