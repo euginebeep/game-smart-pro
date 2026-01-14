@@ -8,19 +8,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Phone, Lock, Loader2 } from 'lucide-react';
 import eugineLogo from '@/assets/eugine-logo-new.png';
 import { z } from 'zod';
-
-const signUpSchema = z.object({
-  email: z.string().trim().email({ message: "Email inválido" }),
-  phone: z.string().trim().min(10, { message: "Telefone deve ter pelo menos 10 dígitos" }).max(15),
-  password: z.string().min(6, { message: "Senha deve ter pelo menos 6 caracteres" }),
-});
-
-const signInSchema = z.object({
-  email: z.string().trim().email({ message: "Email inválido" }),
-  password: z.string().min(1, { message: "Senha é obrigatória" }),
-});
+import LanguageSelector from '@/components/LanguageSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Auth() {
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -30,6 +22,17 @@ export default function Auth() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const signUpSchema = z.object({
+    email: z.string().trim().email({ message: t('auth.errors.invalidEmail') }),
+    phone: z.string().trim().min(10, { message: t('auth.errors.phoneMin') }).max(15),
+    password: z.string().min(6, { message: t('auth.errors.passwordMin') }),
+  });
+
+  const signInSchema = z.object({
+    email: z.string().trim().email({ message: t('auth.errors.invalidEmail') }),
+    password: z.string().min(1, { message: t('auth.errors.passwordRequired') }),
+  });
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -77,13 +80,13 @@ export default function Auth() {
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast({
-              title: "Erro no login",
-              description: "Email ou senha incorretos",
+              title: t('auth.errors.loginError'),
+              description: t('auth.errors.invalidCredentials'),
               variant: "destructive",
             });
           } else {
             toast({
-              title: "Erro no login",
+              title: t('auth.errors.loginError'),
               description: error.message,
               variant: "destructive",
             });
@@ -119,28 +122,28 @@ export default function Auth() {
         if (error) {
           if (error.message.includes('already registered')) {
             toast({
-              title: "Erro no cadastro",
-              description: "Este email já está cadastrado. Tente fazer login.",
+              title: t('auth.errors.registerError'),
+              description: t('auth.errors.emailExists'),
               variant: "destructive",
             });
           } else {
             toast({
-              title: "Erro no cadastro",
+              title: t('auth.errors.registerError'),
               description: error.message,
               variant: "destructive",
             });
           }
         } else {
           toast({
-            title: "Conta criada!",
-            description: "Você já pode acessar o sistema.",
+            title: t('auth.success.accountCreated'),
+            description: t('auth.success.accountCreatedDesc'),
           });
         }
       }
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Ocorreu um erro inesperado. Tente novamente.",
+        title: t('common.error'),
+        description: t('auth.errors.genericError'),
         variant: "destructive",
       });
     } finally {
@@ -151,6 +154,11 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
+        {/* Language Selector */}
+        <div className="mb-4">
+          <LanguageSelector />
+        </div>
+
         {/* Logo/Brand */}
         <div className="text-center mb-2 sm:mb-3">
           <div className="inline-flex items-center justify-center">
@@ -162,7 +170,7 @@ export default function Auth() {
               className="w-72 h-72 sm:w-96 md:w-[480px] sm:h-96 md:h-[480px] object-contain drop-shadow-2xl"
             />
           </div>
-          <p className="text-slate-400 text-sm sm:text-base -mt-4 sm:-mt-6">Sistema Inteligente Eugine Analytics</p>
+          <p className="text-slate-400 text-sm sm:text-base -mt-4 sm:-mt-6">{t('auth.systemName')}</p>
         </div>
 
         {/* Auth Card */}
@@ -177,7 +185,7 @@ export default function Auth() {
                   : 'bg-slate-800/50 text-slate-400 hover:text-white'
               }`}
             >
-              Login
+              {t('auth.login')}
             </button>
             <button
               type="button"
@@ -188,13 +196,13 @@ export default function Auth() {
                   : 'bg-slate-800/50 text-slate-400 hover:text-white'
               }`}
             >
-              Cadastrar
+              {t('auth.register')}
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">Email</Label>
+              <Label htmlFor="email" className="text-slate-300">{t('auth.email')}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <Input
@@ -202,7 +210,7 @@ export default function Auth() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
                 />
               </div>
@@ -211,7 +219,7 @@ export default function Auth() {
 
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-slate-300">Telefone</Label>
+                <Label htmlFor="phone" className="text-slate-300">{t('auth.phone')}</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                   <Input
@@ -219,7 +227,7 @@ export default function Auth() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="(11) 99999-9999"
+                    placeholder={t('auth.phonePlaceholder')}
                     className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
                   />
                 </div>
@@ -228,7 +236,7 @@ export default function Auth() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">Senha</Label>
+              <Label htmlFor="password" className="text-slate-300">{t('auth.password')}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <Input
@@ -236,7 +244,7 @@ export default function Auth() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t('auth.passwordPlaceholder')}
                   className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
                 />
                 <button
@@ -258,31 +266,31 @@ export default function Auth() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Aguarde...
+                  {t('auth.loading')}
                 </>
               ) : isLogin ? (
-                'Entrar'
+                t('auth.enter')
               ) : (
-                'Criar Conta'
+                t('auth.createAccount')
               )}
             </Button>
           </form>
 
           {!isLogin && (
             <p className="text-center text-slate-400 text-sm mt-4">
-              ✨ Ganhe <span className="text-emerald-400 font-semibold">10 dias grátis</span> de acesso ao criar sua conta!
+              ✨ {t('auth.trialMessage')} <span className="text-emerald-400 font-semibold">{t('auth.trialDays')}</span> {t('auth.trialSuffix')}
             </p>
           )}
         </div>
 
         <p className="text-center text-slate-500 text-xs mt-4 sm:mt-6">
-          Ao continuar, você concorda com nossos{' '}
+          {t('auth.termsPrefix')}{' '}
           <Link to="/termos-de-uso" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
-            Termos de Uso
+            {t('auth.termsOfUse')}
           </Link>{' '}
-          e{' '}
+          {t('auth.and')}{' '}
           <Link to="/politica-de-privacidade" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
-            Política de Privacidade
+            {t('auth.privacyPolicy')}
           </Link>
         </p>
       </div>
