@@ -1,6 +1,9 @@
 import { Globe } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Loading() {
+  const { t } = useLanguage();
+
   return (
     <div className="glass-card p-12 lg:p-16 text-center animate-fade-in-up">
       <div className="flex flex-col items-center gap-6">
@@ -13,10 +16,10 @@ export function Loading() {
         {/* Text */}
         <div>
           <p className="text-xl font-semibold text-foreground mb-2">
-            🧠 Eugine Calculando as Melhores Odds...
+            {t('loading.calculating')}
           </p>
           <p className="text-muted-foreground">
-            Analisando jogos em tempo real
+            {t('loading.analyzing')}
           </p>
         </div>
 

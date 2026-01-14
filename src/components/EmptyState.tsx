@@ -1,21 +1,24 @@
 import { Zap, TrendingUp, Shield, Clock } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function EmptyState() {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: TrendingUp,
-      title: 'Odds em Tempo Real',
-      description: 'Dados atualizados das principais casas de apostas'
+      title: t('empty.feature1Title'),
+      description: t('empty.feature1Desc')
     },
     {
       icon: Shield,
-      title: 'Análise Automatizada',
-      description: 'Algoritmo identifica as melhores oportunidades'
+      title: t('empty.feature2Title'),
+      description: t('empty.feature2Desc')
     },
     {
       icon: Clock,
-      title: 'Cache Inteligente',
-      description: 'Otimização de requisições com cache de 5 minutos'
+      title: t('empty.feature3Title'),
+      description: t('empty.feature3Desc')
     }
   ];
 
@@ -34,11 +37,10 @@ export function EmptyState() {
       </div>
 
       <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-3">
-        Pronto para Analisar
+        {t('empty.title')}
       </h2>
       <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
-        Clique em <span className="text-primary font-semibold">"Buscar Jogos REAIS"</span> para 
-        buscar as melhores odds de futebol em tempo real.
+        {t('empty.description')} <span className="text-primary font-semibold">"{t('empty.buttonText')}"</span> {t('empty.descriptionEnd')}
       </p>
 
       <div className="grid sm:grid-cols-3 gap-6">
