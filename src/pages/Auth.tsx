@@ -152,20 +152,17 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center mb-3 sm:mb-4">
+        <div className="text-center mb-4 sm:mb-6">
+          <div className="inline-flex items-center justify-center mb-2 sm:mb-3">
             <img 
               src={eugineLogo} 
               alt="EUGINE Logo" 
               loading="eager"
               decoding="async"
-              className="w-44 h-44 sm:w-56 md:w-[270px] sm:h-56 md:h-[270px] object-contain drop-shadow-2xl"
+              className="w-72 h-72 sm:w-96 md:w-[480px] sm:h-96 md:h-[480px] object-contain drop-shadow-2xl"
             />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            <span className="text-emerald-400">v3.0</span>
-          </h1>
-          <p className="text-slate-400 text-sm sm:text-base">Sistema Inteligente de Análise de Odds</p>
+          <p className="text-slate-400 text-sm sm:text-base">Sistema Inteligente Eugine Analytics</p>
         </div>
 
         {/* Auth Card */}
