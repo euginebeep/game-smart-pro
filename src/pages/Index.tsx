@@ -7,10 +7,13 @@ import { EmptyState } from '@/components/EmptyState';
 import { AccumulatorsSection } from '@/components/AccumulatorsSection';
 import { PremiumDoubleSection } from '@/components/PremiumDoubleSection';
 import { ZebraSection } from '@/components/ZebraSection';
+import { TrialBanner } from '@/components/TrialBanner';
 import { fetchOdds } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const { trialDaysRemaining, isTrialExpired, signOut } = useAuth();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +50,11 @@ const Index = () => {
           onFetch={handleFetchGames} 
           loading={loading} 
           apiRemaining={apiRemaining}
+          onSignOut={signOut}
         />
+
+        {/* Trial Banner */}
+        <TrialBanner daysRemaining={trialDaysRemaining} isExpired={isTrialExpired} />
 
         {/* Content */}
         <main>
