@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -277,13 +277,13 @@ export default function Auth() {
 
         <p className="text-center text-slate-500 text-xs mt-4 sm:mt-6">
           Ao continuar, você concorda com nossos{' '}
-          <button type="button" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
+          <Link to="/termos-de-uso" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
             Termos de Uso
-          </button>{' '}
+          </Link>{' '}
           e{' '}
-          <button type="button" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
+          <Link to="/politica-de-privacidade" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
             Política de Privacidade
-          </button>
+          </Link>
         </p>
       </div>
     </div>
