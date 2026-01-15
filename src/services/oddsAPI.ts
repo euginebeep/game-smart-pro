@@ -39,23 +39,27 @@ export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> 
       body: { lang: language }
     });
 
+    // Tratar erros - pode vir do error ou do data
+    const responseData = data || {};
+    
+    // Verificar se é erro de limite diário (pode vir em data mesmo com error)
+    if (responseData.dailyLimitReached || (error && responseData.dailyLimitReached)) {
+      const fetchError: FetchOddsError = {
+        message: responseData.error || 'Limite diário de buscas atingido',
+        dailyLimitReached: true,
+        remaining: 0,
+        isTrial: responseData.isTrial ?? true
+      };
+      throw fetchError;
+    }
+
     if (error) {
       console.error('Erro ao chamar edge function:', error);
       throw new Error(error.message || 'Erro ao buscar odds');
     }
 
-    if (data.error) {
-      // Verificar se é erro de limite diário
-      if (data.dailyLimitReached) {
-        const fetchError: FetchOddsError = {
-          message: data.error,
-          dailyLimitReached: true,
-          remaining: 0,
-          isTrial: true
-        };
-        throw fetchError;
-      }
-      throw new Error(data.error);
+    if (responseData.error) {
+      throw new Error(responseData.error);
     }
 
     // Converter datas de string para Date
