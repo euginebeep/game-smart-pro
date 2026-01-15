@@ -1,4 +1,4 @@
-import { Zap, TrendingUp, LogOut } from 'lucide-react';
+import { Zap, TrendingUp, LogOut, Search } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 
@@ -7,9 +7,11 @@ interface HeaderProps {
   loading: boolean;
   apiRemaining: number | null;
   onSignOut?: () => void;
+  dailySearchesRemaining?: number | null;
+  isTrial?: boolean;
 }
 
-export function Header({ onFetch, loading, apiRemaining, onSignOut }: HeaderProps) {
+export function Header({ onFetch, loading, apiRemaining, onSignOut, dailySearchesRemaining, isTrial }: HeaderProps) {
   const { t, language } = useLanguage();
   
   const today = new Date().toLocaleDateString(
@@ -64,6 +66,16 @@ export function Header({ onFetch, loading, apiRemaining, onSignOut }: HeaderProp
             </span>
           </div>
 
+          {/* Daily Searches Remaining Badge (Trial Users) */}
+          {isTrial && dailySearchesRemaining !== null && dailySearchesRemaining !== undefined && dailySearchesRemaining >= 0 && (
+            <div className={`badge flex items-center gap-1.5 ${dailySearchesRemaining === 0 ? 'bg-red-500/20 border-red-500/30 text-red-400' : 'bg-amber-500/20 border-amber-500/30 text-amber-400'}`}>
+              <Search className="w-3 h-3" />
+              <span className="text-xs">
+                {dailySearchesRemaining}/3 {t('main.searchesToday')}
+              </span>
+            </div>
+          )}
+
           {/* API Remaining - hidden on mobile */}
           {apiRemaining !== null && (
             <div className="badge badge-info hidden sm:flex">
@@ -76,8 +88,8 @@ export function Header({ onFetch, loading, apiRemaining, onSignOut }: HeaderProp
           {/* Fetch Button */}
           <button
             onClick={onFetch}
-            disabled={loading}
-            className="btn-primary flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg w-full sm:w-auto justify-center"
+            disabled={loading || (isTrial && dailySearchesRemaining === 0)}
+            className="btn-primary flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>

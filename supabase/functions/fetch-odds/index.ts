@@ -616,17 +616,46 @@ serve(async (req) => {
       );
     }
 
-    secureLog('info', 'Requisição autenticada', { 
-      userId: userId.substring(0, 8) + '...', 
-      lang: validLang,
-      rateLimitRemaining: rateLimit.remaining 
-    });
-
-    // Cliente admin para operações de cache
+    // Cliente admin para operações de cache e verificação de limite diário
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
+
+    // ============= VERIFICAR LIMITE DIÁRIO DE BUSCAS (USUÁRIOS TRIAL) =============
+    const { data: searchLimitData, error: searchLimitError } = await supabaseAdmin
+      .rpc('increment_search_count', { p_user_id: userId });
+    
+    if (searchLimitError) {
+      secureLog('error', 'Erro ao verificar limite de buscas', { error: searchLimitError.message });
+    } else if (searchLimitData && !searchLimitData.allowed) {
+      secureLog('warn', 'Limite diário de buscas atingido', { userId: userId.substring(0, 8) + '...' });
+      return new Response(
+        JSON.stringify({ 
+          error: 'Limite diário de buscas atingido. Usuários gratuitos podem fazer 3 buscas por dia.',
+          dailyLimitReached: true,
+          remaining: 0,
+          isTrial: true
+        }), 
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            ...rateLimitHeaders,
+            'Content-Type': 'application/json'
+          } 
+        }
+      );
+    }
+
+    const dailySearchInfo = searchLimitData || { remaining: -1, is_trial: false };
+
+    secureLog('info', 'Requisição autenticada', { 
+      userId: userId.substring(0, 8) + '...', 
+      lang: validLang,
+      rateLimitRemaining: rateLimit.remaining,
+      dailySearchesRemaining: dailySearchInfo.remaining
+    });
 
     // Tentar buscar do cache primeiro
     const cachedData = await getFromCache(supabaseAdmin);
@@ -635,6 +664,8 @@ serve(async (req) => {
       // Traduzir para o idioma solicitado
       const translatedData = translateCachedData(cachedData, validLang);
       translatedData.fromCache = true;
+      translatedData.dailySearchesRemaining = dailySearchInfo.remaining;
+      translatedData.isTrial = dailySearchInfo.is_trial;
       
       return new Response(
         JSON.stringify(translatedData),
@@ -655,7 +686,12 @@ serve(async (req) => {
     const translatedResult = translateCachedData(result, validLang);
     
     return new Response(
-      JSON.stringify({ ...translatedResult, fromCache: false }),
+      JSON.stringify({ 
+        ...translatedResult, 
+        fromCache: false,
+        dailySearchesRemaining: dailySearchInfo.remaining,
+        isTrial: dailySearchInfo.is_trial
+      }),
       { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
     );
 

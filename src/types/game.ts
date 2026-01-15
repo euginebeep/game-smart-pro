@@ -23,6 +23,8 @@ export interface OddsResponse {
   isToday: boolean;
   alertMessage: string;
   foundDate: Date;
+  dailySearchesRemaining?: number;
+  isTrial?: boolean;
 }
 
 export interface BettingAnalysis {

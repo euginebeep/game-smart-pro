@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_searches: {
+        Row: {
+          created_at: string
+          id: string
+          search_count: number
+          search_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          search_count?: number
+          search_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          search_count?: number
+          search_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       odds_cache: {
         Row: {
           cache_key: string
@@ -80,6 +107,8 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_cache: { Args: never; Returns: undefined }
+      get_remaining_searches: { Args: { p_user_id: string }; Returns: Json }
+      increment_search_count: { Args: { p_user_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
