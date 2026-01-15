@@ -18,12 +18,18 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.find(allowed => 
-    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
-  ) || '';
-  
+
+  // IMPORTANT: quando a origem é permitida por sufixo (ex: *.lovableproject.com),
+  // precisamos "ecoar" exatamente a origem recebida, senão o browser bloqueia por CORS.
+  const isAllowed = !!origin && (
+    ALLOWED_ORIGINS.includes(origin) ||
+    origin.endsWith('.lovable.app') ||
+    origin.endsWith('.lovableproject.com')
+  );
+
   return {
-    'Access-Control-Allow-Origin': allowedOrigin || ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
+    'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Max-Age': '86400',
