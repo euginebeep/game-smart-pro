@@ -1078,19 +1078,30 @@ serve(async (req) => {
     // Buscar o tier do usuário
     const { data: profileData } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, subscription_status')
+      .select('subscription_tier, subscription_status, trial_end_date')
       .eq('user_id', userId)
       .single();
     
-    const userTier = profileData?.subscription_tier || 'free';
     const isSubscribed = profileData?.subscription_status === 'active';
     
-    secureLog('info', 'User tier', { tier: userTier, isSubscribed });
+    // Verificar se está em período de trial (trial_end_date >= now)
+    const trialEndDate = profileData?.trial_end_date ? new Date(profileData.trial_end_date) : null;
+    const isInTrial = trialEndDate ? trialEndDate >= new Date() : false;
+    
+    // Trial = Premium com limite de 3 buscas/dia
+    // Assinante = tier do plano sem limite
+    // Fora do trial e sem assinatura = free
+    let userTier = profileData?.subscription_tier || 'free';
+    if (isInTrial && !isSubscribed) {
+      userTier = 'premium'; // Trial sempre é premium
+    }
+    
+    secureLog('info', 'User tier', { tier: userTier, isSubscribed, isInTrial });
 
-    // Verificar limite de buscas apenas para free/trial
+    // Verificar limite de buscas apenas para trial (não assinante)
     let dailySearchInfo = { remaining: -1, is_trial: false };
     
-    if (!isSubscribed || userTier === 'free') {
+    if (isInTrial && !isSubscribed) {
       const { data: searchLimitData, error: searchLimitError } = await supabaseAdmin
         .rpc('increment_search_count', { p_user_id: userId });
       
@@ -1103,7 +1114,8 @@ serve(async (req) => {
             error: 'Limite diário de buscas atingido. Assine um plano para buscas ilimitadas.',
             dailyLimitReached: true,
             remaining: 0,
-            isTrial: true
+            isTrial: true,
+            userTier: 'premium' // Trial é premium mas com limite
           }), 
           { 
             // Business-rule response: do not return non-2xx to avoid treating it as a runtime failure on clients.
@@ -1116,7 +1128,25 @@ serve(async (req) => {
           }
         );
       }
-      dailySearchInfo = searchLimitData || { remaining: -1, is_trial: false };
+      dailySearchInfo = searchLimitData || { remaining: -1, is_trial: true };
+    } else if (!isSubscribed && !isInTrial) {
+      // Usuário sem trial e sem assinatura - bloquear acesso
+      return new Response(
+        JSON.stringify({ 
+          error: 'Período de trial expirado. Assine um plano para continuar.',
+          trialExpired: true,
+          isTrial: false,
+          userTier: 'free'
+        }), 
+        { 
+          status: 200, 
+          headers: { 
+            ...corsHeaders, 
+            ...rateLimitHeaders,
+            'Content-Type': 'application/json'
+          } 
+        }
+      );
     }
 
     secureLog('info', 'Requisição autenticada', { 
