@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -10,6 +10,16 @@ interface Profile {
   trial_start_date: string;
   trial_end_date: string;
   is_active: boolean;
+  subscription_tier: 'free' | 'basic' | 'advanced' | 'premium';
+  subscription_status: 'inactive' | 'active' | 'canceled' | 'past_due' | null;
+  subscription_end_date: string | null;
+}
+
+interface SubscriptionState {
+  tier: 'free' | 'basic' | 'advanced' | 'premium';
+  isSubscribed: boolean;
+  subscriptionEnd: string | null;
+  isLoading: boolean;
 }
 
 interface AuthState {
@@ -19,6 +29,7 @@ interface AuthState {
   loading: boolean;
   trialDaysRemaining: number;
   isTrialExpired: boolean;
+  subscription: SubscriptionState;
 }
 
 export function useAuth() {
@@ -29,6 +40,12 @@ export function useAuth() {
     loading: true,
     trialDaysRemaining: 0,
     isTrialExpired: false,
+    subscription: {
+      tier: 'free',
+      isSubscribed: false,
+      subscriptionEnd: null,
+      isLoading: false,
+    },
   });
 
   const fetchProfile = async (userId: string) => {
@@ -49,6 +66,11 @@ export function useAuth() {
   const calculateTrialStatus = (profile: Profile | null) => {
     if (!profile) return { trialDaysRemaining: 0, isTrialExpired: true };
 
+    // Se tem assinatura ativa, não precisa de trial
+    if (profile.subscription_status === 'active') {
+      return { trialDaysRemaining: 0, isTrialExpired: false };
+    }
+
     const now = new Date();
     const trialEnd = new Date(profile.trial_end_date);
     const diffTime = trialEnd.getTime() - now.getTime();
@@ -58,6 +80,83 @@ export function useAuth() {
       trialDaysRemaining: Math.max(0, diffDays),
       isTrialExpired: diffDays <= 0,
     };
+  };
+
+  const checkSubscription = useCallback(async () => {
+    if (!authState.session) return;
+
+    setAuthState(prev => ({
+      ...prev,
+      subscription: { ...prev.subscription, isLoading: true },
+    }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) {
+        console.error('Error checking subscription:', error);
+        return;
+      }
+
+      setAuthState(prev => ({
+        ...prev,
+        subscription: {
+          tier: data.tier || 'free',
+          isSubscribed: data.subscribed || false,
+          subscriptionEnd: data.subscription_end || null,
+          isLoading: false,
+        },
+      }));
+
+      // Atualizar profile local
+      if (authState.user) {
+        const profile = await fetchProfile(authState.user.id);
+        if (profile) {
+          const trialStatus = calculateTrialStatus(profile);
+          setAuthState(prev => ({
+            ...prev,
+            profile,
+            ...trialStatus,
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error in checkSubscription:', err);
+      setAuthState(prev => ({
+        ...prev,
+        subscription: { ...prev.subscription, isLoading: false },
+      }));
+    }
+  }, [authState.session, authState.user]);
+
+  const createCheckout = async (tier: 'basic' | 'advanced' | 'premium') => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { tier },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err) {
+      console.error('Error creating checkout:', err);
+      throw err;
+    }
+  };
+
+  const openCustomerPortal = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err) {
+      console.error('Error opening customer portal:', err);
+      throw err;
+    }
   };
 
   useEffect(() => {
@@ -78,6 +177,12 @@ export function useAuth() {
                 profile,
                 ...trialStatus,
                 loading: false,
+                subscription: {
+                  tier: profile?.subscription_tier || 'free',
+                  isSubscribed: profile?.subscription_status === 'active',
+                  subscriptionEnd: profile?.subscription_end_date || null,
+                  isLoading: false,
+                },
               }));
             });
           }, 0);
@@ -88,6 +193,12 @@ export function useAuth() {
             trialDaysRemaining: 0,
             isTrialExpired: false,
             loading: false,
+            subscription: {
+              tier: 'free',
+              isSubscribed: false,
+              subscriptionEnd: null,
+              isLoading: false,
+            },
           }));
         }
       }
@@ -108,6 +219,12 @@ export function useAuth() {
             profile,
             ...trialStatus,
             loading: false,
+            subscription: {
+              tier: profile?.subscription_tier || 'free',
+              isSubscribed: profile?.subscription_status === 'active',
+              subscriptionEnd: profile?.subscription_end_date || null,
+              isLoading: false,
+            },
           }));
         });
       } else {
@@ -118,6 +235,29 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Auto-check subscription on page load and periodically
+  useEffect(() => {
+    if (authState.session && !authState.loading) {
+      // Check on initial load
+      checkSubscription();
+      
+      // Check every 60 seconds
+      const interval = setInterval(checkSubscription, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [authState.session, authState.loading, checkSubscription]);
+
+  // Check URL for subscription success
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subscription') === 'success') {
+      // Limpar URL
+      window.history.replaceState({}, '', window.location.pathname);
+      // Re-check subscription após sucesso
+      setTimeout(checkSubscription, 2000);
+    }
+  }, [checkSubscription]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -125,5 +265,8 @@ export function useAuth() {
   return {
     ...authState,
     signOut,
+    checkSubscription,
+    createCheckout,
+    openCustomerPortal,
   };
 }

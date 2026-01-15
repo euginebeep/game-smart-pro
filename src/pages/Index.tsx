@@ -8,6 +8,7 @@ import { AccumulatorsSection } from '@/components/AccumulatorsSection';
 import { PremiumDoubleSection } from '@/components/PremiumDoubleSection';
 import { ZebraSection } from '@/components/ZebraSection';
 import { TrialBanner } from '@/components/TrialBanner';
+import { PricingSection } from '@/components/PricingSection';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,7 +16,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Search } from 'lucide-react';
 
 const Index = () => {
-  const { trialDaysRemaining, isTrialExpired, signOut } = useAuth();
+  const { trialDaysRemaining, isTrialExpired, signOut, subscription } = useAuth();
   const { t, language, isTransitioning } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,7 @@ const Index = () => {
   const [isToday, setIsToday] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
   const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
+  const [userTier, setUserTier] = useState<'free' | 'basic' | 'advanced' | 'premium'>('free');
   const previousLanguage = useRef(language);
 
   const handleFetchGames = useCallback(async () => {
@@ -36,17 +38,20 @@ const Index = () => {
     setDailyLimitReached(false);
 
     try {
-      const { games: fetchedGames, remaining, isToday: today, alertMessage: msg, dailySearchesRemaining: searchesRemaining, isTrial: trialStatus } = await fetchOdds(language);
-      setGames(fetchedGames);
-      setApiRemaining(remaining);
-      setIsToday(today);
-      setAlertMessage(msg);
+      const result = await fetchOdds(language);
+      setGames(result.games);
+      setApiRemaining(result.remaining);
+      setIsToday(result.isToday);
+      setAlertMessage(result.alertMessage);
       setHasFetched(true);
-      if (searchesRemaining !== undefined) {
-        setDailySearchesRemaining(searchesRemaining);
+      if (result.dailySearchesRemaining !== undefined) {
+        setDailySearchesRemaining(result.dailySearchesRemaining);
       }
-      if (trialStatus !== undefined) {
-        setIsTrial(trialStatus);
+      if (result.isTrial !== undefined) {
+        setIsTrial(result.isTrial);
+      }
+      if (result.userTier) {
+        setUserTier(result.userTier as 'free' | 'basic' | 'advanced' | 'premium');
       }
     } catch (err) {
       // Verificar se é erro de limite diário
@@ -162,7 +167,8 @@ const Index = () => {
                 <GameCard 
                   key={game.id} 
                   game={game} 
-                  delay={index} 
+                  delay={index}
+                  userTier={userTier}
                 />
               ))}
 
@@ -176,6 +182,9 @@ const Index = () => {
 
               {/* Section 3: Zebra of the Day */}
               <ZebraSection games={games} />
+
+              {/* Pricing Section */}
+              <PricingSection />
             </div>
           )}
         </main>
