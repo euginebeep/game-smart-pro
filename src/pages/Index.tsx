@@ -13,7 +13,7 @@ import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Search } from 'lucide-react';
+import { Search, Crown } from 'lucide-react';
 
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut, subscription } = useAuth();
@@ -122,8 +122,19 @@ const Index = () => {
                 <div>
                   <h3 className="text-white font-semibold text-lg">{t('main.dailyLimitTitle')}</h3>
                   <p className="text-slate-400 text-sm mt-1">{t('main.dailyLimitDesc')}</p>
-                  <p className="text-amber-400 text-xs mt-3">{t('main.dailyLimitUpgrade')}</p>
                 </div>
+                <button
+                  onClick={() => {
+                    const pricingSection = document.getElementById('pricing-section');
+                    if (pricingSection) {
+                      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className="mt-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2 shadow-lg shadow-amber-500/25"
+                >
+                  <Crown className="w-5 h-5" />
+                  {t('main.dailyLimitUpgrade')}
+                </button>
               </div>
             </div>
           )}
