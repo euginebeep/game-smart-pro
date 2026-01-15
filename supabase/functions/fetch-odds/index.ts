@@ -5,8 +5,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 // ============= CONFIGURAÇÕES DE SEGURANÇA =============
 
 const ALLOWED_ORIGINS = [
-  'https://game-smart-pro.lovable.app',
-  'https://id-preview--aab53d6d-d532-46c9-ba03-774d15718c4d.lovable.app',
+  'https://game-smart-pro.eugine.app',
+  'https://eugine-analytics.com',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
@@ -19,13 +19,13 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
   const isAllowed = !!origin && (
-    ALLOWED_ORIGINS.includes(origin) ||
-    origin.endsWith('.lovable.app') ||
-    origin.endsWith('.lovableproject.com')
+    ALLOWED_ORIGINS.some(allowed => origin.includes(allowed.replace('https://', '').replace('http://', ''))) ||
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1')
   );
 
   return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Origin': isAllowed ? origin : '*',
     'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
