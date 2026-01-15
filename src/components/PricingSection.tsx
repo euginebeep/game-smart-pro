@@ -104,7 +104,7 @@ export function PricingSection() {
           return (
             <div
               key={planConfig.id}
-              className={`relative rounded-2xl p-6 transition-all duration-300 ${
+              className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col ${
                 planConfig.popular
                   ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/50 scale-[1.02]'
                   : 'glass-card'
@@ -137,7 +137,7 @@ export function PricingSection() {
                 </div>
               </div>
 
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-3 mb-6 flex-grow">
                 {features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm text-foreground/80">
                     <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
@@ -146,38 +146,40 @@ export function PricingSection() {
                 ))}
               </ul>
 
-              {isCurrentPlan ? (
-                <button
-                  onClick={handleManage}
-                  disabled={loadingTier === 'manage'}
-                  className="w-full py-3 rounded-xl font-semibold transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center gap-2"
-                >
-                  {loadingTier === 'manage' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <CreditCard className="w-4 h-4" />
-                  )}
-                  {t('pricing.manageSubscription')}
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleSubscribe(planConfig.tier)}
-                  disabled={loadingTier === planConfig.tier}
-                  className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                    planConfig.popular
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90'
-                      : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                  }`}
-                >
-                  {loadingTier === planConfig.tier ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : isDowngrade ? (
-                    t('pricing.downgrade')
-                  ) : (
-                    t('pricing.subscribeNow')
-                  )}
-                </button>
-              )}
+              <div className="mt-auto">
+                {isCurrentPlan ? (
+                  <button
+                    onClick={handleManage}
+                    disabled={loadingTier === 'manage'}
+                    className="w-full py-3 rounded-xl font-semibold transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center gap-2"
+                  >
+                    {loadingTier === 'manage' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CreditCard className="w-4 h-4" />
+                    )}
+                    {t('pricing.manageSubscription')}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleSubscribe(planConfig.tier)}
+                    disabled={loadingTier === planConfig.tier}
+                    className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      planConfig.popular
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90'
+                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    }`}
+                  >
+                    {loadingTier === planConfig.tier ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isDowngrade ? (
+                      t('pricing.downgrade')
+                    ) : (
+                      t('pricing.subscribeNow')
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
