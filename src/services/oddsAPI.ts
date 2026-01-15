@@ -39,11 +39,31 @@ export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> 
       body: { lang: language }
     });
 
-    // Tratar erros - pode vir do error ou do data
+    // Quando a edge function retorna 4xx/5xx, o response body pode estar em error.context ou data
+    // Verificar múltiplas fontes para o dailyLimitReached flag
     const responseData = data || {};
+    const errorContext = error?.context;
     
-    // Verificar se é erro de limite diário (pode vir em data mesmo com error)
-    if (responseData.dailyLimitReached || (error && responseData.dailyLimitReached)) {
+    // Tentar extrair dados do erro (para status 429)
+    let errorBody: any = null;
+    if (error && !data) {
+      // Tentar parsear o body do erro se disponível
+      try {
+        if (typeof error === 'object' && 'message' in error) {
+          // Verificar se a mensagem contém indicação de limite
+          if (error.message?.includes('429') || error.message?.includes('Limite')) {
+            errorBody = { dailyLimitReached: true };
+          }
+        }
+      } catch {
+        // Ignorar erros de parsing
+      }
+    }
+    
+    // Verificar se é erro de limite diário
+    const isDailyLimitReached = responseData.dailyLimitReached || errorBody?.dailyLimitReached;
+    
+    if (isDailyLimitReached) {
       const fetchError: FetchOddsError = {
         message: responseData.error || 'Limite diário de buscas atingido',
         dailyLimitReached: true,
@@ -54,8 +74,23 @@ export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> 
     }
 
     if (error) {
+      // Verificar se o erro menciona limite diário no texto
+      const errorMessage = typeof error === 'object' && 'message' in error 
+        ? (error as any).message 
+        : String(error);
+      
+      if (errorMessage.includes('Limite') || errorMessage.includes('limit') || errorMessage.includes('429')) {
+        const fetchError: FetchOddsError = {
+          message: 'Limite diário de buscas atingido. Assine um plano para buscas ilimitadas.',
+          dailyLimitReached: true,
+          remaining: 0,
+          isTrial: true
+        };
+        throw fetchError;
+      }
+      
       console.error('Erro ao chamar edge function:', error);
-      throw new Error(error.message || 'Erro ao buscar odds');
+      throw new Error(errorMessage || 'Erro ao buscar odds');
     }
 
     if (responseData.error) {
