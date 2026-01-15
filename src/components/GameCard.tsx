@@ -78,7 +78,11 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
               userTier === 'advanced' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
               'bg-blue-500/20 text-blue-400 border-blue-500/30'
             }`}>
-              <span className="font-semibold uppercase">{userTier}</span>
+              <span className="font-semibold uppercase">
+                {userTier === 'premium' ? t('gameCardTiers.premiumBadge') :
+                 userTier === 'advanced' ? t('gameCardTiers.advancedBadge') :
+                 t('gameCardTiers.basicBadge')}
+              </span>
             </div>
           </div>
         </div>
@@ -255,8 +259,8 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
           <div className="absolute inset-0 backdrop-blur-sm bg-background/60 flex items-center justify-center z-10">
             <div className="text-center">
               <Lock className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-foreground">Dados Advanced</p>
-              <p className="text-xs text-muted-foreground">H2H, Forma, Classificação</p>
+              <p className="text-sm font-medium text-foreground">{t('gameCardTiers.advancedBadge')}</p>
+              <p className="text-xs text-muted-foreground">{t('gameCardTiers.advancedLocked')}</p>
             </div>
           </div>
           <div className="opacity-30 grid grid-cols-3 gap-3">
@@ -338,8 +342,8 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
           <div className="absolute inset-0 backdrop-blur-sm bg-background/60 flex items-center justify-center z-10">
             <div className="text-center">
               <Lock className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-foreground">Dados Premium</p>
-              <p className="text-xs text-muted-foreground">Lesões, Estatísticas, Previsões</p>
+              <p className="text-sm font-medium text-foreground">{t('gameCardTiers.premiumBadge')}</p>
+              <p className="text-xs text-muted-foreground">{t('gameCardTiers.premiumLocked')}</p>
             </div>
           </div>
           <div className="opacity-30 grid grid-cols-3 gap-3">
