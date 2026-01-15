@@ -1075,50 +1075,101 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: searchLimitData, error: searchLimitError } = await supabaseAdmin
-      .rpc('increment_search_count', { p_user_id: userId });
+    // Buscar o tier do usuário
+    const { data: profileData } = await supabaseAdmin
+      .from('profiles')
+      .select('subscription_tier, subscription_status')
+      .eq('user_id', userId)
+      .single();
     
-    if (searchLimitError) {
-      secureLog('error', 'Erro ao verificar limite de buscas', { error: searchLimitError.message });
-    } else if (searchLimitData && !searchLimitData.allowed) {
-      secureLog('warn', 'Limite diário de buscas atingido', { userId: userId.substring(0, 8) + '...' });
-      return new Response(
-        JSON.stringify({ 
-          error: 'Limite diário de buscas atingido. Usuários gratuitos podem fazer 3 buscas por dia.',
-          dailyLimitReached: true,
-          remaining: 0,
-          isTrial: true
-        }), 
-        { 
-          status: 429, 
-          headers: { 
-            ...corsHeaders, 
-            ...rateLimitHeaders,
-            'Content-Type': 'application/json'
-          } 
-        }
-      );
-    }
+    const userTier = profileData?.subscription_tier || 'free';
+    const isSubscribed = profileData?.subscription_status === 'active';
+    
+    secureLog('info', 'User tier', { tier: userTier, isSubscribed });
 
-    const dailySearchInfo = searchLimitData || { remaining: -1, is_trial: false };
+    // Verificar limite de buscas apenas para free/trial
+    let dailySearchInfo = { remaining: -1, is_trial: false };
+    
+    if (!isSubscribed || userTier === 'free') {
+      const { data: searchLimitData, error: searchLimitError } = await supabaseAdmin
+        .rpc('increment_search_count', { p_user_id: userId });
+      
+      if (searchLimitError) {
+        secureLog('error', 'Erro ao verificar limite de buscas', { error: searchLimitError.message });
+      } else if (searchLimitData && !searchLimitData.allowed) {
+        secureLog('warn', 'Limite diário de buscas atingido', { userId: userId.substring(0, 8) + '...' });
+        return new Response(
+          JSON.stringify({ 
+            error: 'Limite diário de buscas atingido. Assine um plano para buscas ilimitadas.',
+            dailyLimitReached: true,
+            remaining: 0,
+            isTrial: true
+          }), 
+          { 
+            status: 429, 
+            headers: { 
+              ...corsHeaders, 
+              ...rateLimitHeaders,
+              'Content-Type': 'application/json'
+            } 
+          }
+        );
+      }
+      dailySearchInfo = searchLimitData || { remaining: -1, is_trial: false };
+    }
 
     secureLog('info', 'Requisição autenticada', { 
       userId: userId.substring(0, 8) + '...', 
       lang: validLang,
+      tier: userTier,
       rateLimitRemaining: rateLimit.remaining,
       dailySearchesRemaining: dailySearchInfo.remaining
     });
 
     const cachedData = await getFromCache(supabaseAdmin);
     
+    // Função para filtrar dados baseado no tier
+    const filterDataByTier = (data: any, tier: string) => {
+      if (!data?.games) return data;
+      
+      const filteredGames = data.games.map((game: any) => {
+        const filteredGame = { ...game };
+        
+        if (tier === 'free' || tier === 'basic') {
+          // Basic: apenas odds e recomendação simples (sem dados avançados)
+          delete filteredGame.advancedData;
+          if (filteredGame.analysis) {
+            filteredGame.analysis.factors = [];
+            filteredGame.analysis.confidence = undefined;
+          }
+        } else if (tier === 'advanced') {
+          // Advanced: H2H, Form, Standings (sem lesões e predictions)
+          if (filteredGame.advancedData) {
+            delete filteredGame.advancedData.homeInjuries;
+            delete filteredGame.advancedData.awayInjuries;
+            delete filteredGame.advancedData.apiPrediction;
+            delete filteredGame.advancedData.homeStats;
+            delete filteredGame.advancedData.awayStats;
+          }
+        }
+        // Premium: tudo disponível
+        
+        return filteredGame;
+      });
+      
+      return { ...data, games: filteredGames, userTier: tier };
+    };
+    
     if (cachedData) {
       const translatedData = translateCachedData(cachedData, validLang);
-      translatedData.fromCache = true;
-      translatedData.dailySearchesRemaining = dailySearchInfo.remaining;
-      translatedData.isTrial = dailySearchInfo.is_trial;
+      const filteredData = filterDataByTier(translatedData, userTier);
+      filteredData.fromCache = true;
+      filteredData.dailySearchesRemaining = dailySearchInfo.remaining;
+      filteredData.isTrial = dailySearchInfo.is_trial;
+      filteredData.userTier = userTier;
       
       return new Response(
-        JSON.stringify(translatedData),
+        JSON.stringify(filteredData),
         { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -1131,13 +1182,15 @@ serve(async (req) => {
     );
     
     const translatedResult = translateCachedData(result, validLang);
+    const filteredResult = filterDataByTier(translatedResult, userTier);
     
     return new Response(
       JSON.stringify({ 
-        ...translatedResult, 
+        ...filteredResult, 
         fromCache: false,
         dailySearchesRemaining: dailySearchInfo.remaining,
-        isTrial: dailySearchInfo.is_trial
+        isTrial: dailySearchInfo.is_trial,
+        userTier: userTier
       }),
       { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
     );
