@@ -1,18 +1,75 @@
+import { useState } from 'react';
 import { AccumulatorCard, RiskLevel } from './AccumulatorCard';
 import { Game } from '@/types/game';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Filter, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface AccumulatorsSectionProps {
   games: Game[];
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
 }
 
+type AccumulatorType = 'goalsLow' | 'goalsMedium' | 'goalsHigh' | 'winsLow' | 'winsMedium' | 'exactScores';
+
+const ACCUMULATOR_TYPES: { id: AccumulatorType; labelKey: string; emoji: string; risk: RiskLevel }[] = [
+  { id: 'goalsLow', labelKey: 'accumulators.goalsLowRisk', emoji: '🛡️', risk: 'low' },
+  { id: 'goalsMedium', labelKey: 'accumulators.goalsMediumRisk', emoji: '⚖️', risk: 'medium' },
+  { id: 'goalsHigh', labelKey: 'accumulators.goalsHighRisk', emoji: '🚀', risk: 'high' },
+  { id: 'winsLow', labelKey: 'accumulators.winsDoubleChance', emoji: '🛡️', risk: 'low' },
+  { id: 'winsMedium', labelKey: 'accumulators.winsMediumRisk', emoji: '⚖️', risk: 'medium' },
+  { id: 'exactScores', labelKey: 'accumulators.exactScores', emoji: '🚀', risk: 'high' },
+];
+
 export function AccumulatorsSection({ games, userTier = 'free' }: AccumulatorsSectionProps) {
   const { t } = useLanguage();
-  
-  // Premium users get 3 cards of each type (9 total), others get 6 cards (2 of each)
   const isPremium = userTier === 'premium';
-  const accumulators = generateAccumulators(games, t, isPremium);
+  
+  // All types enabled by default
+  const [enabledTypes, setEnabledTypes] = useState<Set<AccumulatorType>>(
+    new Set(ACCUMULATOR_TYPES.map(type => type.id))
+  );
+  
+  // Generate all accumulators
+  const allAccumulators = generateAccumulators(games, t, isPremium);
+  
+  // Filter based on user selection (only for Premium)
+  const filteredAccumulators = isPremium 
+    ? allAccumulators.filter(acc => enabledTypes.has(acc.typeId))
+    : allAccumulators;
+
+  const toggleType = (typeId: AccumulatorType) => {
+    setEnabledTypes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(typeId)) {
+        // Don't allow disabling all types
+        if (newSet.size > 1) {
+          newSet.delete(typeId);
+        }
+      } else {
+        newSet.add(typeId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAll = () => {
+    setEnabledTypes(new Set(ACCUMULATOR_TYPES.map(type => type.id)));
+  };
+
+  const selectByRisk = (risk: RiskLevel) => {
+    setEnabledTypes(new Set(
+      ACCUMULATOR_TYPES.filter(type => type.risk === risk).map(type => type.id)
+    ));
+  };
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
@@ -24,18 +81,91 @@ export function AccumulatorsSection({ games, userTier = 'free' }: AccumulatorsSe
         <p className="text-muted-foreground text-sm sm:text-base lg:text-lg px-2">
           {t('accumulators.subtitle')} <span className="text-warning font-semibold">{t('accumulators.warning')}</span>
         </p>
+        
+        {/* Premium Filter Controls */}
         {isPremium && (
-          <p className="text-primary text-sm font-medium mt-2">
-            ⭐ Premium: 3x {t('accumulators.moreCards')}
-          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-primary text-sm font-medium flex items-center gap-1">
+              ⭐ Premium: 3x {t('accumulators.moreCards')}
+            </span>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  {t('accumulators.filter') || 'Filtrar'} ({enabledTypes.size}/{ACCUMULATOR_TYPES.length})
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-64">
+                <DropdownMenuLabel className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  {t('accumulators.filterTypes') || 'Filtrar Tipos'}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                
+                {/* Quick Filters */}
+                <div className="flex gap-1 p-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex-1 text-xs h-7"
+                    onClick={selectAll}
+                  >
+                    {t('accumulators.all') || 'Todos'}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex-1 text-xs h-7 text-green-500"
+                    onClick={() => selectByRisk('low')}
+                  >
+                    🛡️ {t('accumulators.riskLow')}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex-1 text-xs h-7 text-yellow-500"
+                    onClick={() => selectByRisk('medium')}
+                  >
+                    ⚖️ {t('accumulators.riskMedium')}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex-1 text-xs h-7 text-red-500"
+                    onClick={() => selectByRisk('high')}
+                  >
+                    🚀 {t('accumulators.riskHigh')}
+                  </Button>
+                </div>
+                
+                <DropdownMenuSeparator />
+                
+                {/* Individual Type Toggles */}
+                {ACCUMULATOR_TYPES.map(type => (
+                  <DropdownMenuCheckboxItem
+                    key={type.id}
+                    checked={enabledTypes.has(type.id)}
+                    onCheckedChange={() => toggleType(type.id)}
+                    className="cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>{type.emoji}</span>
+                      <span className="text-sm truncate">{t(type.labelKey).split(' - ')[0]}</span>
+                    </span>
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 
       {/* Accumulators Grid */}
       <div className="grid gap-4 sm:gap-5 lg:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {accumulators.map((acc, idx) => (
+        {filteredAccumulators.map((acc, idx) => (
           <AccumulatorCard
-            key={idx}
+            key={`${acc.typeId}-${idx}`}
             emoji={acc.emoji}
             title={acc.title}
             bets={acc.bets}
@@ -46,6 +176,16 @@ export function AccumulatorsSection({ games, userTier = 'free' }: AccumulatorsSe
           />
         ))}
       </div>
+      
+      {/* Empty State */}
+      {filteredAccumulators.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>{t('accumulators.noResults') || 'Nenhum acumulador selecionado'}</p>
+          <Button variant="link" onClick={selectAll} className="mt-2">
+            {t('accumulators.showAll') || 'Mostrar todos'}
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
@@ -57,10 +197,10 @@ interface AccumulatorData {
   betAmount: number;
   chancePercent: number;
   riskLevel: RiskLevel;
+  typeId: AccumulatorType;
 }
 
 function generateAccumulators(games: Game[], t: (key: string) => string, isPremium: boolean): AccumulatorData[] {
-  // Get games for accumulators
   const getGame = (index: number) => games[index];
   
   const baseAccumulators: AccumulatorData[] = [];
@@ -87,7 +227,8 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       ],
       betAmount: 60,
       chancePercent: 85 - (i * 3),
-      riskLevel: 'low'
+      riskLevel: 'low',
+      typeId: 'goalsLow'
     });
   }
 
@@ -119,7 +260,8 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       ],
       betAmount: 40,
       chancePercent: 65 - (i * 5),
-      riskLevel: 'medium'
+      riskLevel: 'medium',
+      typeId: 'goalsMedium'
     });
   }
 
@@ -157,7 +299,8 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       ],
       betAmount: 10,
       chancePercent: 30 - (i * 5),
-      riskLevel: 'high'
+      riskLevel: 'high',
+      typeId: 'goalsHigh'
     });
   }
 
@@ -183,7 +326,8 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       ],
       betAmount: 80,
       chancePercent: 90 - (i * 3),
-      riskLevel: 'low'
+      riskLevel: 'low',
+      typeId: 'winsLow'
     });
   }
 
@@ -215,7 +359,8 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       ],
       betAmount: 40,
       chancePercent: 70 - (i * 5),
-      riskLevel: 'medium'
+      riskLevel: 'medium',
+      typeId: 'winsMedium'
     });
   }
 
@@ -252,7 +397,8 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       ],
       betAmount: 5,
       chancePercent: Math.max(2, 5 - i),
-      riskLevel: 'high'
+      riskLevel: 'high',
+      typeId: 'exactScores'
     });
   }
 
