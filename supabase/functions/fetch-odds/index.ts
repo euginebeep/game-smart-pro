@@ -4,7 +4,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ============= CONFIGURAÇÕES DE SEGURANÇA =============
 
-// Lista de origens permitidas (CORS restrito)
 const ALLOWED_ORIGINS = [
   'https://game-smart-pro.lovable.app',
   'https://id-preview--aab53d6d-d532-46c9-ba03-774d15718c4d.lovable.app',
@@ -13,16 +12,12 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:5173',
 ];
 
-// Rate limiting por usuário (em memória - para produção usar Redis/KV)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_MAX = 30; // Máximo de requisições
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // Janela de 1 minuto
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
-// Função para validar e obter origem CORS
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
-  
-  // Verificar se a origem está na lista permitida (includes .lovable.app AND .lovableproject.com)
   const allowedOrigin = ALLOWED_ORIGINS.find(allowed => 
     origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
   ) || '';
@@ -35,12 +30,10 @@ function getCorsHeaders(req: Request): Record<string, string> {
   };
 }
 
-// Rate limiter
 function checkRateLimit(userId: string): { allowed: boolean; remaining: number; resetIn: number } {
   const now = Date.now();
   const userLimit = rateLimitMap.get(userId);
   
-  // Limpar entradas antigas periodicamente
   if (rateLimitMap.size > 1000) {
     for (const [key, value] of rateLimitMap.entries()) {
       if (value.resetTime < now) {
@@ -50,7 +43,6 @@ function checkRateLimit(userId: string): { allowed: boolean; remaining: number; 
   }
   
   if (!userLimit || userLimit.resetTime < now) {
-    // Primeira requisição ou janela expirada
     rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
     return { allowed: true, remaining: RATE_LIMIT_MAX - 1, resetIn: RATE_LIMIT_WINDOW_MS };
   }
@@ -68,7 +60,6 @@ function checkRateLimit(userId: string): { allowed: boolean; remaining: number; 
   };
 }
 
-// Logger seguro - nunca expõe secrets
 function secureLog(level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>) {
   const timestamp = new Date().toISOString();
   const sanitizedData = data ? sanitizeLogData(data) : undefined;
@@ -92,7 +83,6 @@ function secureLog(level: 'info' | 'warn' | 'error', message: string, data?: Rec
   }
 }
 
-// Sanitiza dados para log - remove campos sensíveis
 function sanitizeLogData(data: Record<string, unknown>): Record<string, unknown> {
   const sensitiveKeys = ['apiKey', 'api_key', 'token', 'secret', 'password', 'authorization', 'key'];
   const sanitized: Record<string, unknown> = {};
@@ -112,10 +102,10 @@ function sanitizeLogData(data: Record<string, unknown>): Record<string, unknown>
   return sanitized;
 }
 
-// ============= LÓGICA PROTEGIDA DO EUGINE =============
+// ============= API-FOOTBALL CONFIGURATION =============
 
-const API_KEY = Deno.env.get('ODDS_API_KEY');
-const API_BASE = 'https://api.the-odds-api.com/v4';
+const API_KEY = Deno.env.get('API_FOOTBALL_KEY');
+const API_BASE = 'https://v3.football.api-sports.io';
 
 interface Game {
   id: string;
@@ -177,7 +167,6 @@ const analysisTranslations: Record<string, Record<string, any>> = {
   },
 };
 
-// Day labels translations
 const dayLabelsTranslations: Record<string, Record<string, string>> = {
   pt: { today: '🔴 HOJE', tomorrow: '📅 AMANHÃ' },
   en: { today: '🔴 TODAY', tomorrow: '📅 TOMORROW' },
@@ -185,7 +174,6 @@ const dayLabelsTranslations: Record<string, Record<string, string>> = {
   it: { today: '🔴 OGGI', tomorrow: '📅 DOMANI' },
 };
 
-// Alert messages translations
 const alertTranslations: Record<string, Record<string, string>> = {
   pt: { today: '🔴 JOGOS DE HOJE', tomorrow: '📅 JOGOS DE AMANHÃ', future: '📅 JOGOS DE' },
   en: { today: '🔴 TODAY\'S GAMES', tomorrow: '📅 TOMORROW\'S GAMES', future: '📅 GAMES ON' },
@@ -193,7 +181,6 @@ const alertTranslations: Record<string, Record<string, string>> = {
   it: { today: '🔴 PARTITE DI OGGI', tomorrow: '📅 PARTITE DI DOMANI', future: '📅 PARTITE DEL' },
 };
 
-// Análise de apostas - LÓGICA SECRETA
 function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
   const betAmount = 40;
   const t = analysisTranslations[lang] || analysisTranslations['pt'];
@@ -212,58 +199,6 @@ function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
     reason: t.bttsReason(game.odds.home.toFixed(2), game.odds.away.toFixed(2)),
     profit: parseFloat((betAmount * avgOdd - betAmount).toFixed(2))
   };
-}
-
-// Filtrar jogos válidos de um dia específico
-function filtrarJogosValidos(jogos: any[], dataReferencia: Date): any[] {
-  const agora = new Date();
-  const limiteMinimo = new Date(agora.getTime() + 10 * 60 * 1000);
-  
-  const inicioDia = new Date(dataReferencia);
-  inicioDia.setHours(0, 0, 0, 0);
-  
-  const fimDia = new Date(dataReferencia);
-  fimDia.setHours(23, 59, 59, 999);
-  
-  return jogos.filter((game: any) => {
-    const dataJogo = new Date(game.commence_time);
-    const noDiaCerto = dataJogo >= inicioDia && dataJogo <= fimDia;
-    const temTempo = dataJogo > limiteMinimo;
-    return noDiaCerto && temTempo;
-  });
-}
-
-// Buscar jogos dia por dia até encontrar
-function buscarJogosDisponiveis(oddsData: any[], lang: string = 'pt'): { jogos: any[]; diaEncontrado: number; dataAlvo: Date; mensagem: string } {
-  const hoje = new Date();
-  const alerts = alertTranslations[lang] || alertTranslations['pt'];
-  const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
-  
-  for (let diasNoFuturo = 0; diasNoFuturo <= 7; diasNoFuturo++) {
-    const dataAlvo = new Date(hoje);
-    dataAlvo.setDate(dataAlvo.getDate() + diasNoFuturo);
-    
-    const jogosValidos = filtrarJogosValidos(oddsData, dataAlvo);
-    
-    if (jogosValidos.length > 0) {
-      const diaTexto = dataAlvo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
-      
-      secureLog('info', `Jogos encontrados para dia +${diasNoFuturo}`, { count: jogosValidos.length });
-      
-      return {
-        jogos: jogosValidos,
-        diaEncontrado: diasNoFuturo,
-        dataAlvo: dataAlvo,
-        mensagem: diasNoFuturo === 0 ? alerts.today :
-                  diasNoFuturo === 1 ? alerts.tomorrow :
-                  `${alerts.future} ${diaTexto}`
-      };
-    }
-    
-    secureLog('warn', `Nenhum jogo válido para dia +${diasNoFuturo}`);
-  }
-  
-  throw new Error('Nenhum jogo encontrado nos próximos 7 dias');
 }
 
 function getDayType(diaEncontrado: number): 'today' | 'tomorrow' | 'future' {
@@ -288,152 +223,226 @@ function getDayLabel(dataJogo: Date, lang: string = 'pt'): string {
   return `📅 ${dataJogo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })}`;
 }
 
-// Buscar odds da API externa
+// Helper function to make API-Football requests
+async function apiFootballRequest(endpoint: string, params: Record<string, string> = {}): Promise<any> {
+  const url = new URL(`${API_BASE}${endpoint}`);
+  Object.entries(params).forEach(([key, value]) => url.searchParams.append(key, value));
+  
+  secureLog('info', 'API-Football request', { endpoint, params });
+  
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      'x-apisports-key': API_KEY!,
+    },
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    secureLog('error', 'API-Football error', { status: response.status, error: errorText.substring(0, 200) });
+    throw new Error(`API-Football error: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    secureLog('error', 'API-Football returned errors', { errors: data.errors });
+    throw new Error(`API-Football errors: ${JSON.stringify(data.errors)}`);
+  }
+  
+  return data;
+}
+
+// Buscar fixtures e odds da API-Football
 async function fetchOddsFromAPI(lang: string = 'pt') {
   if (!API_KEY) {
-    secureLog('error', 'API key não configurada no backend');
+    secureLog('error', 'API_FOOTBALL_KEY não configurada no backend');
     throw new Error('Configuração do servidor incompleta');
   }
 
-  // Buscar esportes disponíveis - não loga a URL com apiKey
-  const sportsUrl = `${API_BASE}/sports`;
-  secureLog('info', 'Buscando esportes disponíveis', { endpoint: sportsUrl });
+  const alerts = alertTranslations[lang] || alertTranslations['pt'];
+  const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
   
-  const sportsResponse = await fetch(`${sportsUrl}?apiKey=${API_KEY}`);
+  // Tentar buscar jogos para os próximos 7 dias
+  const hoje = new Date();
+  let jogosEncontrados: any[] = [];
+  let diaEncontrado = 0;
+  let dataAlvo = hoje;
   
-  if (!sportsResponse.ok) {
-    secureLog('error', 'Erro ao buscar esportes', { status: sportsResponse.status });
-    throw new Error(`Erro ao buscar esportes: ${sportsResponse.status}`);
-  }
-  
-  const sports = await sportsResponse.json();
-  const remaining = sportsResponse.headers.get('x-requests-remaining');
-  
-  secureLog('info', 'Esportes carregados', { total: sports.length, apiRemaining: remaining });
-  
-  // Filtrar futebol
-  const soccerSports = sports.filter((s: any) => 
-    s.group === 'Soccer' || s.key.includes('soccer')
-  );
-  
-  if (soccerSports.length === 0) {
-    throw new Error('Nenhum campeonato de futebol disponível');
-  }
-  
-  const activeSports = soccerSports.filter((s: any) => s.active);
-  
-  secureLog('info', 'Campeonatos de futebol ativos', { count: activeSports.length });
-  
-  // Buscar jogos de múltiplos campeonatos
-  let allOddsData: any[] = [];
-  let apiRemaining = parseInt(remaining || '0');
-  
-  for (const sport of activeSports) {
-    secureLog('info', 'Buscando odds', { league: sport.title });
+  for (let diasNoFuturo = 0; diasNoFuturo <= 7; diasNoFuturo++) {
+    const targetDate = new Date(hoje);
+    targetDate.setDate(targetDate.getDate() + diasNoFuturo);
+    const dateStr = targetDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    secureLog('info', `Buscando fixtures para ${dateStr}`);
     
     try {
-      const oddsResponse = await fetch(
-        `${API_BASE}/sports/${sport.key}/odds?apiKey=${API_KEY}&regions=us&markets=h2h,totals&oddsFormat=decimal`
-      );
-      
-      if (!oddsResponse.ok) {
-        secureLog('warn', 'Erro ao buscar liga', { league: sport.title, status: oddsResponse.status });
-        continue;
-      }
-      
-      apiRemaining = parseInt(oddsResponse.headers.get('x-requests-remaining') || '0');
-      const oddsData = await oddsResponse.json();
-      
-      if (oddsData && oddsData.length > 0) {
-        const jogosComLiga = oddsData.map((game: any) => ({
-          ...game,
-          leagueTitle: sport.title
-        }));
-        allOddsData = [...allOddsData, ...jogosComLiga];
-      }
-      
-      secureLog('info', 'Odds carregadas', { 
-        league: sport.title, 
-        games: oddsData?.length || 0, 
-        totalAccumulated: allOddsData.length 
+      // Buscar fixtures do dia
+      const fixturesData = await apiFootballRequest('/fixtures', {
+        date: dateStr,
+        status: 'NS', // Not Started
+        timezone: 'America/Sao_Paulo'
       });
       
+      if (fixturesData.response && fixturesData.response.length > 0) {
+        // Filtrar jogos que começam em mais de 10 minutos
+        const agora = new Date();
+        const limiteMinimo = new Date(agora.getTime() + 10 * 60 * 1000);
+        
+        const jogosValidos = fixturesData.response.filter((fixture: any) => {
+          const dataJogo = new Date(fixture.fixture.date);
+          return dataJogo > limiteMinimo;
+        });
+        
+        if (jogosValidos.length > 0) {
+          jogosEncontrados = jogosValidos;
+          diaEncontrado = diasNoFuturo;
+          dataAlvo = targetDate;
+          secureLog('info', `Encontrados ${jogosValidos.length} jogos para dia +${diasNoFuturo}`);
+          break;
+        }
+      }
+      
+      secureLog('warn', `Nenhum jogo válido para ${dateStr}`);
     } catch (err) {
-      secureLog('warn', 'Erro ao processar liga', { league: sport.title });
-      continue;
+      secureLog('warn', `Erro ao buscar fixtures para ${dateStr}`, { error: String(err) });
     }
   }
   
-  if (allOddsData.length === 0) {
-    throw new Error('Não foi possível encontrar jogos disponíveis');
+  if (jogosEncontrados.length === 0) {
+    throw new Error('Não foi possível encontrar jogos disponíveis nos próximos 7 dias');
   }
   
-  // BUSCAR JOGOS DIA POR DIA
-  const resultado = buscarJogosDisponiveis(allOddsData, lang);
-  const dayType = getDayType(resultado.diaEncontrado);
+  // Buscar odds para os fixtures encontrados (máximo 5)
+  const fixturesParaOdds = jogosEncontrados.slice(0, 10); // Buscar odds de até 10 para ter margem
+  const gamesWithOdds: Game[] = [];
   
-  // Processar os jogos encontrados (máximo 5)
-  const games: Game[] = resultado.jogos
-    .slice(0, 5)
-    .map((game: any): Game | null => {
-      const bookmaker = game.bookmakers?.[0];
-      if (!bookmaker) return null;
+  for (const fixture of fixturesParaOdds) {
+    if (gamesWithOdds.length >= 5) break;
+    
+    try {
+      const fixtureId = fixture.fixture.id;
       
-      const h2h = bookmaker.markets?.find((m: any) => m.key === 'h2h');
-      const totals = bookmaker.markets?.find((m: any) => m.key === 'totals');
+      // Buscar odds do fixture
+      const oddsData = await apiFootballRequest('/odds', {
+        fixture: fixtureId.toString(),
+        bookmaker: '8', // Bet365
+      });
       
-      if (!h2h) return null;
+      let homeOdd = 2.0;
+      let drawOdd = 3.2;
+      let awayOdd = 3.5;
+      let overOdd = 1.85;
+      let underOdd = 1.9;
+      let bookmakerName = 'Bet365';
       
-      const startTime = new Date(game.commence_time);
+      if (oddsData.response && oddsData.response.length > 0) {
+        const bookmaker = oddsData.response[0]?.bookmakers?.[0];
+        if (bookmaker) {
+          bookmakerName = bookmaker.name;
+          
+          // Match Winner (1X2)
+          const matchWinner = bookmaker.bets?.find((b: any) => b.name === 'Match Winner');
+          if (matchWinner) {
+            homeOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Home')?.odd) || homeOdd;
+            drawOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Draw')?.odd) || drawOdd;
+            awayOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Away')?.odd) || awayOdd;
+          }
+          
+          // Goals Over/Under 2.5
+          const goalsOU = bookmaker.bets?.find((b: any) => b.name === 'Goals Over/Under' && b.values?.some((v: any) => v.value === 'Over 2.5'));
+          if (goalsOU) {
+            overOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Over 2.5')?.odd) || overOdd;
+            underOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Under 2.5')?.odd) || underOdd;
+          }
+        }
+      }
       
-      return {
-        id: game.id || `${game.home_team}-${game.away_team}`,
-        homeTeam: game.home_team,
-        awayTeam: game.away_team,
-        league: game.leagueTitle || 'Futebol',
+      const startTime = new Date(fixture.fixture.date);
+      const dayType = getDayType(diaEncontrado);
+      
+      gamesWithOdds.push({
+        id: fixture.fixture.id.toString(),
+        homeTeam: fixture.teams.home.name,
+        awayTeam: fixture.teams.away.name,
+        league: fixture.league.name,
         startTime: startTime.toISOString(),
-        bookmaker: bookmaker.title,
+        bookmaker: bookmakerName,
         odds: {
-          home: h2h.outcomes.find((o: any) => o.name === game.home_team)?.price || 2.0,
-          draw: h2h.outcomes.find((o: any) => o.name === 'Draw')?.price || 3.2,
-          away: h2h.outcomes.find((o: any) => o.name === game.away_team)?.price || 3.5,
-          over: totals?.outcomes.find((o: any) => o.name === 'Over')?.price || 1.85,
-          under: totals?.outcomes.find((o: any) => o.name === 'Under')?.price || 1.9,
+          home: homeOdd,
+          draw: drawOdd,
+          away: awayOdd,
+          over: overOdd,
+          under: underOdd,
         },
         dayType,
-        dayLabel: '' // Será preenchido por translateCachedData
-      };
-    })
-    .filter((game): game is Game => game !== null);
+        dayLabel: '', // Será preenchido por translateCachedData
+      });
+      
+      secureLog('info', 'Jogo processado', { 
+        fixture: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+        league: fixture.league.name 
+      });
+      
+    } catch (err) {
+      secureLog('warn', 'Erro ao buscar odds do fixture', { 
+        fixtureId: fixture.fixture.id,
+        error: String(err)
+      });
+      // Continua sem odds, usando valores padrão
+      const startTime = new Date(fixture.fixture.date);
+      const dayType = getDayType(diaEncontrado);
+      
+      gamesWithOdds.push({
+        id: fixture.fixture.id.toString(),
+        homeTeam: fixture.teams.home.name,
+        awayTeam: fixture.teams.away.name,
+        league: fixture.league.name,
+        startTime: startTime.toISOString(),
+        bookmaker: 'N/A',
+        odds: {
+          home: 2.0,
+          draw: 3.2,
+          away: 3.5,
+          over: 1.85,
+          under: 1.9,
+        },
+        dayType,
+        dayLabel: '',
+      });
+    }
+  }
   
-  if (games.length === 0) {
+  if (gamesWithOdds.length === 0) {
     throw new Error('Não foi possível processar os jogos encontrados');
   }
   
-  secureLog('info', 'Jogos processados com sucesso', { count: games.length });
+  const diaTexto = dataAlvo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
+  const mensagem = diaEncontrado === 0 ? alerts.today :
+                   diaEncontrado === 1 ? alerts.tomorrow :
+                   `${alerts.future} ${diaTexto}`;
   
-  // Retornar jogos SEM análise para o cache (análise é traduzida dinamicamente)
+  secureLog('info', 'Jogos processados com sucesso', { count: gamesWithOdds.length });
+  
   return { 
-    games: games,
-    remaining: apiRemaining,
-    isToday: resultado.diaEncontrado === 0,
-    alertMessage: resultado.mensagem,
-    foundDate: resultado.dataAlvo.toISOString(),
+    games: gamesWithOdds,
+    remaining: 100, // API-Football não retorna remaining da mesma forma
+    isToday: diaEncontrado === 0,
+    alertMessage: mensagem,
+    foundDate: dataAlvo.toISOString(),
     _lang: lang
   };
 }
 
-// Cache duration in minutes
+// Cache
 const CACHE_DURATION_MINUTES = 10;
 
-// Gerar chave de cache baseada na data atual
 function getCacheKey(): string {
   const hoje = new Date();
-  const dataStr = hoje.toISOString().split('T')[0]; // YYYY-MM-DD
+  const dataStr = hoje.toISOString().split('T')[0];
   return `odds_${dataStr}`;
 }
 
-// Buscar do cache
 async function getFromCache(supabaseAdmin: any): Promise<any | null> {
   const cacheKey = getCacheKey();
   
@@ -448,7 +457,6 @@ async function getFromCache(supabaseAdmin: any): Promise<any | null> {
     return null;
   }
   
-  // Verificar se expirou
   if (new Date(data.expires_at) < new Date()) {
     secureLog('info', 'Cache expirado', { cacheKey });
     return null;
@@ -458,12 +466,10 @@ async function getFromCache(supabaseAdmin: any): Promise<any | null> {
   return data.data;
 }
 
-// Salvar no cache
 async function saveToCache(supabaseAdmin: any, data: any): Promise<void> {
   const cacheKey = getCacheKey();
   const expiresAt = new Date(Date.now() + CACHE_DURATION_MINUTES * 60 * 1000);
   
-  // Upsert para atualizar se já existir
   const { error } = await supabaseAdmin
     .from('odds_cache')
     .upsert({
@@ -480,7 +486,6 @@ async function saveToCache(supabaseAdmin: any, data: any): Promise<void> {
   }
 }
 
-// Traduzir dados do cache para o idioma correto
 function translateCachedData(cachedData: any, lang: string): any {
   const games = cachedData.games.map((game: any) => ({
     ...game,
@@ -518,12 +523,10 @@ function translateCachedData(cachedData: any, lang: string): any {
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Validar método HTTP
   if (req.method !== 'POST' && req.method !== 'GET') {
     return new Response(
       JSON.stringify({ error: 'Método não permitido' }), 
@@ -531,7 +534,6 @@ serve(async (req) => {
     );
   }
 
-  // Validar origem (além do CORS header)
   const origin = req.headers.get('Origin') || '';
   const isAllowedOrigin = ALLOWED_ORIGINS.some(allowed => 
     origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
@@ -546,7 +548,6 @@ serve(async (req) => {
   }
 
   try {
-    // Verificar autenticação
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       secureLog('warn', 'Requisição sem autenticação');
@@ -556,7 +557,6 @@ serve(async (req) => {
       );
     }
 
-    // Obter idioma do body, query param ou header
     let lang = 'pt';
     try {
       const body = await req.json();
@@ -567,7 +567,6 @@ serve(async (req) => {
     }
     const validLang = ['pt', 'en', 'es', 'it'].includes(lang) ? lang : 'pt';
 
-    // Cliente com autenticação do usuário
     const supabaseUser = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -587,10 +586,8 @@ serve(async (req) => {
 
     const userId = claimsData.claims.sub as string;
     
-    // ============= RATE LIMITING =============
     const rateLimit = checkRateLimit(userId);
     
-    // Adicionar headers de rate limit na resposta
     const rateLimitHeaders = {
       'X-RateLimit-Limit': RATE_LIMIT_MAX.toString(),
       'X-RateLimit-Remaining': rateLimit.remaining.toString(),
@@ -616,13 +613,11 @@ serve(async (req) => {
       );
     }
 
-    // Cliente admin para operações de cache e verificação de limite diário
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // ============= VERIFICAR LIMITE DIÁRIO DE BUSCAS (USUÁRIOS TRIAL) =============
     const { data: searchLimitData, error: searchLimitError } = await supabaseAdmin
       .rpc('increment_search_count', { p_user_id: userId });
     
@@ -657,11 +652,9 @@ serve(async (req) => {
       dailySearchesRemaining: dailySearchInfo.remaining
     });
 
-    // Tentar buscar do cache primeiro
     const cachedData = await getFromCache(supabaseAdmin);
     
     if (cachedData) {
-      // Traduzir para o idioma solicitado
       const translatedData = translateCachedData(cachedData, validLang);
       translatedData.fromCache = true;
       translatedData.dailySearchesRemaining = dailySearchInfo.remaining;
@@ -673,16 +666,13 @@ serve(async (req) => {
       );
     }
 
-    // Cache miss - buscar da API
-    secureLog('info', 'Buscando dados frescos da API');
+    secureLog('info', 'Buscando dados frescos da API-Football');
     const result = await fetchOddsFromAPI(validLang);
     
-    // Salvar no cache (não bloqueia a resposta)
     saveToCache(supabaseAdmin, result).catch(err => 
       secureLog('error', 'Erro ao salvar cache em background')
     );
     
-    // Adicionar análise e dayLabel traduzidos para a resposta direta
     const translatedResult = translateCachedData(result, validLang);
     
     return new Response(
