@@ -17,6 +17,13 @@ export function analyzeBet(game: Game & { analysis?: BettingAnalysis }): Betting
   };
 }
 
+export interface FetchOddsError {
+  message: string;
+  dailyLimitReached?: boolean;
+  remaining?: number;
+  isTrial?: boolean;
+}
+
 export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -38,6 +45,16 @@ export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> 
     }
 
     if (data.error) {
+      // Verificar se é erro de limite diário
+      if (data.dailyLimitReached) {
+        const fetchError: FetchOddsError = {
+          message: data.error,
+          dailyLimitReached: true,
+          remaining: 0,
+          isTrial: true
+        };
+        throw fetchError;
+      }
       throw new Error(data.error);
     }
 
@@ -53,7 +70,9 @@ export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> 
       remaining: data.remaining,
       isToday: data.isToday,
       alertMessage: data.alertMessage,
-      foundDate: new Date(data.foundDate)
+      foundDate: new Date(data.foundDate),
+      dailySearchesRemaining: data.dailySearchesRemaining,
+      isTrial: data.isTrial
     };
 
   } catch (error) {

@@ -8,10 +8,11 @@ import { AccumulatorsSection } from '@/components/AccumulatorsSection';
 import { PremiumDoubleSection } from '@/components/PremiumDoubleSection';
 import { ZebraSection } from '@/components/ZebraSection';
 import { TrialBanner } from '@/components/TrialBanner';
-import { fetchOdds } from '@/services/oddsAPI';
+import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Search } from 'lucide-react';
 
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut } = useAuth();
@@ -19,7 +20,10 @@ const Index = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dailyLimitReached, setDailyLimitReached] = useState(false);
   const [apiRemaining, setApiRemaining] = useState<number | null>(null);
+  const [dailySearchesRemaining, setDailySearchesRemaining] = useState<number | null>(null);
+  const [isTrial, setIsTrial] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
   const [isToday, setIsToday] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
@@ -29,17 +33,32 @@ const Index = () => {
   const handleFetchGames = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setDailyLimitReached(false);
 
     try {
-      const { games: fetchedGames, remaining, isToday: today, alertMessage: msg } = await fetchOdds(language);
+      const { games: fetchedGames, remaining, isToday: today, alertMessage: msg, dailySearchesRemaining: searchesRemaining, isTrial: trialStatus } = await fetchOdds(language);
       setGames(fetchedGames);
       setApiRemaining(remaining);
       setIsToday(today);
       setAlertMessage(msg);
       setHasFetched(true);
+      if (searchesRemaining !== undefined) {
+        setDailySearchesRemaining(searchesRemaining);
+      }
+      if (trialStatus !== undefined) {
+        setIsTrial(trialStatus);
+      }
     } catch (err) {
-      const message = err instanceof Error ? err.message : t('main.unknownError');
-      setError(message);
+      // Verificar se é erro de limite diário
+      if (typeof err === 'object' && err !== null && 'dailyLimitReached' in err) {
+        const fetchError = err as FetchOddsError;
+        setDailyLimitReached(true);
+        setDailySearchesRemaining(0);
+        setError(fetchError.message);
+      } else {
+        const message = err instanceof Error ? err.message : t('main.unknownError');
+        setError(message);
+      }
       console.error('Error fetching games:', err);
     } finally {
       setLoading(false);
@@ -77,6 +96,8 @@ const Index = () => {
           loading={loading} 
           apiRemaining={apiRemaining}
           onSignOut={signOut}
+          dailySearchesRemaining={dailySearchesRemaining}
+          isTrial={isTrial}
         />
 
         {/* Trial Banner */}
@@ -84,8 +105,24 @@ const Index = () => {
 
         {/* Content */}
         <main>
-          {/* Error State */}
-          {error && (
+          {/* Daily Limit Reached Error */}
+          {dailyLimitReached && error && (
+            <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-6 mb-6">
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center">
+                  <Search className="w-8 h-8 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-lg">{t('main.dailyLimitTitle')}</h3>
+                  <p className="text-slate-400 text-sm mt-1">{t('main.dailyLimitDesc')}</p>
+                  <p className="text-amber-400 text-xs mt-3">{t('main.dailyLimitUpgrade')}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Regular Error State */}
+          {error && !dailyLimitReached && (
             <Alert 
               type="error" 
               title={t('main.errorFetching')} 
