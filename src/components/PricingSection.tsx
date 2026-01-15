@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 const planConfigs = [
   {
     id: 'basic',
-    price: 'R$ 29,90',
+    price: '$ 29.90',
     priceValue: 29.90,
     icon: Zap,
     color: 'from-blue-500 to-cyan-500',
@@ -15,7 +15,7 @@ const planConfigs = [
   },
   {
     id: 'advanced',
-    price: 'R$ 49,90',
+    price: '$ 49.90',
     priceValue: 49.90,
     icon: Star,
     color: 'from-purple-500 to-pink-500',
@@ -24,7 +24,7 @@ const planConfigs = [
   },
   {
     id: 'premium',
-    price: 'R$ 79,90',
+    price: '$ 79.90',
     priceValue: 79.90,
     icon: Crown,
     color: 'from-amber-500 to-orange-500',
