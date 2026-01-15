@@ -72,7 +72,8 @@ export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> 
       alertMessage: data.alertMessage,
       foundDate: new Date(data.foundDate),
       dailySearchesRemaining: data.dailySearchesRemaining,
-      isTrial: data.isTrial
+      isTrial: data.isTrial,
+      userTier: data.userTier
     };
 
   } catch (error) {

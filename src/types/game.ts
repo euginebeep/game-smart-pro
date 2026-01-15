@@ -73,6 +73,7 @@ export interface OddsResponse {
   foundDate: Date;
   dailySearchesRemaining?: number;
   isTrial?: boolean;
+  userTier?: 'free' | 'basic' | 'advanced' | 'premium';
 }
 
 export interface BettingAnalysis {
