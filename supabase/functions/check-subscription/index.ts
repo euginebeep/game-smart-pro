@@ -46,6 +46,44 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // If an admin manually granted access (via admin panel), do NOT downgrade the user here.
+    // This prevents the periodic subscription check from overriding manual entitlement.
+    const { data: profileData, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('subscription_tier, subscription_status, subscription_end_date, stripe_subscription_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      logStep("Warning: could not load profile", { message: profileError.message });
+    }
+
+    const manualEndDate = profileData?.subscription_end_date ? new Date(profileData.subscription_end_date) : null;
+    const hasManualAccess =
+      profileData?.subscription_status === 'active' &&
+      profileData?.subscription_tier &&
+      profileData.subscription_tier !== 'free' &&
+      // If an end date exists, require it to be in the future
+      (!manualEndDate || manualEndDate >= new Date()) &&
+      // If Stripe subscription exists, allow Stripe to be source-of-truth
+      !profileData?.stripe_subscription_id;
+
+    if (hasManualAccess) {
+      logStep("Manual access detected - skipping Stripe sync", {
+        tier: profileData?.subscription_tier,
+        end: profileData?.subscription_end_date,
+      });
+
+      return new Response(JSON.stringify({
+        subscribed: true,
+        tier: profileData!.subscription_tier,
+        subscription_end: profileData!.subscription_end_date,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
