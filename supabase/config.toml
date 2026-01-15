@@ -2,3 +2,6 @@ project_id = "awofiznvrjljmtvvshao"
 
 [functions.fetch-odds]
 verify_jwt = false
+
+[functions.send-trial-reminder]
+verify_jwt = false

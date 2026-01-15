@@ -22,9 +22,9 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000; // Janela de 1 minuto
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
   
-  // Verificar se a origem está na lista permitida
+  // Verificar se a origem está na lista permitida (includes .lovable.app AND .lovableproject.com)
   const allowedOrigin = ALLOWED_ORIGINS.find(allowed => 
-    origin === allowed || origin.endsWith('.lovable.app')
+    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
   ) || '';
   
   return {
@@ -534,7 +534,7 @@ serve(async (req) => {
   // Validar origem (além do CORS header)
   const origin = req.headers.get('Origin') || '';
   const isAllowedOrigin = ALLOWED_ORIGINS.some(allowed => 
-    origin === allowed || origin.endsWith('.lovable.app')
+    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
   );
   
   if (origin && !isAllowedOrigin) {
