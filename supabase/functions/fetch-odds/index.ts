@@ -1106,7 +1106,8 @@ serve(async (req) => {
             isTrial: true
           }), 
           { 
-            status: 429, 
+            // Business-rule response: do not return non-2xx to avoid treating it as a runtime failure on clients.
+            status: 200, 
             headers: { 
               ...corsHeaders, 
               ...rateLimitHeaders,
