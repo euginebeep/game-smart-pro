@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-
+import { toast } from '@/hooks/use-toast';
 interface Profile {
   id: string;
   user_id: string;
@@ -32,6 +32,13 @@ interface AuthState {
   subscription: SubscriptionState;
 }
 
+const tierLabels: Record<string, string> = {
+  free: 'Gratuito',
+  basic: 'Basic',
+  advanced: 'Advanced',
+  premium: 'Premium',
+};
+
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -47,6 +54,8 @@ export function useAuth() {
       isLoading: false,
     },
   });
+
+  const previousTierRef = useRef<string | null>(null);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -234,6 +243,93 @@ export function useAuth() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Real-time subscription status listener
+  useEffect(() => {
+    if (!authState.user) return;
+
+    const channel = supabase
+      .channel('profile-subscription-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${authState.user.id}`,
+        },
+        (payload) => {
+          const newProfile = payload.new as Profile;
+          const oldProfile = payload.old as Partial<Profile>;
+          
+          console.log('[REALTIME] Profile updated:', newProfile);
+
+          // Check for subscription tier change
+          if (oldProfile.subscription_tier !== newProfile.subscription_tier) {
+            const newTierLabel = tierLabels[newProfile.subscription_tier] || newProfile.subscription_tier;
+            const oldTierLabel = tierLabels[oldProfile.subscription_tier || 'free'] || oldProfile.subscription_tier;
+            
+            if (newProfile.subscription_status === 'active') {
+              toast({
+                title: '🎉 Assinatura Atualizada!',
+                description: `Seu plano foi alterado de ${oldTierLabel} para ${newTierLabel}. Aproveite os novos recursos!`,
+                duration: 6000,
+              });
+            } else if (newProfile.subscription_tier === 'free' && oldProfile.subscription_tier !== 'free') {
+              toast({
+                title: 'Assinatura Cancelada',
+                description: `Seu plano ${oldTierLabel} foi cancelado. Você pode reativar a qualquer momento.`,
+                variant: 'destructive',
+                duration: 6000,
+              });
+            }
+          }
+
+          // Check for subscription status change
+          if (oldProfile.subscription_status !== newProfile.subscription_status) {
+            if (newProfile.subscription_status === 'active' && oldProfile.subscription_status !== 'active') {
+              toast({
+                title: '✅ Pagamento Confirmado!',
+                description: 'Sua assinatura está ativa. Obrigado por assinar!',
+                duration: 5000,
+              });
+            } else if (newProfile.subscription_status === 'past_due') {
+              toast({
+                title: '⚠️ Pagamento Pendente',
+                description: 'Houve um problema com seu pagamento. Por favor, atualize seus dados de cobrança.',
+                variant: 'destructive',
+                duration: 8000,
+              });
+            } else if (newProfile.subscription_status === 'canceled') {
+              toast({
+                title: 'Assinatura Cancelada',
+                description: 'Sua assinatura foi cancelada e permanecerá ativa até o fim do período atual.',
+                duration: 6000,
+              });
+            }
+          }
+
+          // Update local state
+          const trialStatus = calculateTrialStatus(newProfile);
+          setAuthState(prev => ({
+            ...prev,
+            profile: newProfile,
+            ...trialStatus,
+            subscription: {
+              tier: newProfile.subscription_tier || 'free',
+              isSubscribed: newProfile.subscription_status === 'active',
+              subscriptionEnd: newProfile.subscription_end_date || null,
+              isLoading: false,
+            },
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [authState.user]);
 
   // Auto-check subscription on page load and periodically
   useEffect(() => {
