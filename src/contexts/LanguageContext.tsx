@@ -150,6 +150,8 @@ const translations: Record<Language, any> = {
       dailyLimitTitle: "Limite diário atingido",
       dailyLimitDesc: "Você utilizou suas 3 buscas gratuitas de hoje. Volte amanhã ou assine um plano para buscas ilimitadas.",
       dailyLimitUpgrade: "💎 Assine agora e tenha buscas ilimitadas!",
+      dayLeft: "dia restante",
+      daysLeft: "dias restantes",
     },
     trial: {
       expired: "Período de teste expirado",
@@ -636,6 +638,8 @@ const translations: Record<Language, any> = {
       dailyLimitTitle: "Daily limit reached",
       dailyLimitDesc: "You've used your 3 free searches for today. Come back tomorrow or subscribe for unlimited searches.",
       dailyLimitUpgrade: "💎 Subscribe now for unlimited searches!",
+      dayLeft: "day left",
+      daysLeft: "days left",
     },
     trial: {
       expired: "Trial period expired",
@@ -1122,6 +1126,8 @@ const translations: Record<Language, any> = {
       dailyLimitTitle: "Límite diario alcanzado",
       dailyLimitDesc: "Has usado tus 3 búsquedas gratuitas de hoy. Vuelve mañana o suscríbete para búsquedas ilimitadas.",
       dailyLimitUpgrade: "💎 ¡Suscríbete ahora para búsquedas ilimitadas!",
+      dayLeft: "día restante",
+      daysLeft: "días restantes",
     },
     trial: {
       expired: "Período de prueba expirado",
@@ -1608,6 +1614,8 @@ const translations: Record<Language, any> = {
       dailyLimitTitle: "Limite giornaliero raggiunto",
       dailyLimitDesc: "Hai usato le tue 3 ricerche gratuite di oggi. Torna domani o abbonati per ricerche illimitate.",
       dailyLimitUpgrade: "💎 Abbonati ora per ricerche illimitate!",
+      dayLeft: "giorno rimanente",
+      daysLeft: "giorni rimanenti",
     },
     trial: {
       expired: "Periodo di prova scaduto",
