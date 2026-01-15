@@ -1,5 +1,6 @@
-import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2 } from 'lucide-react';
+import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
 
 interface HeaderProps {
@@ -11,6 +12,7 @@ interface HeaderProps {
   isTrial?: boolean;
   subscriptionTier?: 'free' | 'basic' | 'advanced' | 'premium';
   subscriptionLoading?: boolean;
+  isAdmin?: boolean;
 }
 
 const tierConfig = {
@@ -49,8 +51,10 @@ export function Header({
   isTrial,
   subscriptionTier = 'free',
   subscriptionLoading = false,
+  isAdmin = false,
 }: HeaderProps) {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   
   const currentTier = tierConfig[subscriptionTier] || tierConfig.free;
   const TierIcon = currentTier.icon;
@@ -149,6 +153,17 @@ export function Header({
             <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>
           </button>
+
+          {/* Admin Button */}
+          {isAdmin && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="p-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 hover:text-purple-300 transition-colors border border-purple-500/30"
+              title="Painel Admin"
+            >
+              <Shield className="w-5 h-5" />
+            </button>
+          )}
 
           {/* Sign Out Button */}
           {onSignOut && (

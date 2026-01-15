@@ -13,11 +13,13 @@ import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Search } from 'lucide-react';
 
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut, subscription } = useAuth();
+  const { isAdmin } = useAdmin();
   const { t, language, isTransitioning } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
@@ -106,6 +108,7 @@ const Index = () => {
           isTrial={isTrial}
           subscriptionTier={subscription.tier}
           subscriptionLoading={subscription.isLoading}
+          isAdmin={isAdmin}
         />
 
         {/* Trial Banner */}
