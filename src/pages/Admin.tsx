@@ -216,6 +216,7 @@ export default function Admin() {
                       <TableHead>Telefone</TableHead>
                       <TableHead>Plano</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Origem</TableHead>
                       <TableHead>Buscas Hoje</TableHead>
                       <TableHead>Trial Até</TableHead>
                       <TableHead>Ações</TableHead>
@@ -239,6 +240,17 @@ export default function Admin() {
                           <TableCell>
                             <Badge variant="outline" className={getStatusBadgeColor(user.subscription_status)}>
                               {user.subscription_status || 'inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={user.stripe_subscription_id 
+                                ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' 
+                                : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                              }
+                            >
+                              {user.stripe_subscription_id ? 'Stripe' : 'Manual'}
                             </Badge>
                           </TableCell>
                           <TableCell>
