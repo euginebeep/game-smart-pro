@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Loader2, Rocket, Gem, ShieldCheck, Activity, Infinity, TrendingUp, Brain, Target, Gauge } from 'lucide-react';
+import { Check, Loader2, Rocket, Gem, ShieldCheck, Activity, TrendingUp, Brain, Target, Gauge } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -69,6 +69,7 @@ export function DailyLimitPricingCards() {
           t(`pricing.plans.${planConfig.id}.features.1`),
           t(`pricing.plans.${planConfig.id}.features.2`),
           t(`pricing.plans.${planConfig.id}.features.3`),
+          t(`pricing.plans.${planConfig.id}.features.4`),
         ].filter(f => !f.includes('pricing.plans'));
 
         return (
@@ -125,14 +126,6 @@ export function DailyLimitPricingCards() {
                     <span className="text-xs leading-relaxed">{feature}</span>
                   </li>
                 ))}
-                {planConfig.tier !== 'basic' && (
-                  <li className="flex items-start gap-2.5 text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
-                    <div className={`w-4 h-4 rounded-full bg-gradient-to-br ${planConfig.gradientFrom} ${planConfig.gradientTo} flex items-center justify-center mt-0.5 shrink-0`}>
-                      <Infinity className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                    </div>
-                    <span className="text-xs leading-relaxed">{t('pricing.unlimited')}</span>
-                  </li>
-                )}
               </ul>
 
               {/* Subscribe Button */}

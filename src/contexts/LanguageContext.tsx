@@ -264,24 +264,25 @@ const translations: Record<Language, any> = {
         basic: {
           name: "Basic",
           features: [
+            "1 busca por dia",
+            "Resultado pronto para apostar",
             "Odds em tempo real",
-            "Recomendação simples",
-            "5 buscas por dia",
           ],
         },
         advanced: {
           name: "Advanced",
           features: [
+            "3 buscas por dia",
             "Tudo do Basic",
             "Histórico H2H",
             "Forma recente",
             "Posição na tabela",
-            "Buscas ilimitadas",
           ],
         },
         premium: {
           name: "Premium",
           features: [
+            "6 buscas por dia",
             "Tudo do Advanced",
             "Lesões e desfalques",
             "Estatísticas completas",
@@ -481,7 +482,7 @@ const translations: Record<Language, any> = {
         intro: "Implementamos medidas de segurança técnicas e organizacionais para proteger suas informações, incluindo:",
         list: [
           "Criptografia de dados em trânsito e em repouso",
-          "Autenticação segura com tokens JWT",
+          "Autenticação segura com múltiplas camadas",
           "Acesso restrito a dados pessoais",
           "Monitoramento contínuo de segurança",
           "Backups regulares e recuperação de desastres",
@@ -738,24 +739,25 @@ const translations: Record<Language, any> = {
         basic: {
           name: "Basic",
           features: [
+            "1 search per day",
+            "Ready-to-bet results",
             "Real-time odds",
-            "Simple recommendation",
-            "5 searches per day",
           ],
         },
         advanced: {
           name: "Advanced",
           features: [
+            "3 searches per day",
             "Everything from Basic",
             "H2H History",
             "Recent form",
             "League position",
-            "Unlimited searches",
           ],
         },
         premium: {
           name: "Premium",
           features: [
+            "6 searches per day",
             "Everything from Advanced",
             "Injuries and absences",
             "Complete statistics",
@@ -955,7 +957,7 @@ const translations: Record<Language, any> = {
         intro: "We implement technical and organizational security measures to protect your information, including:",
         list: [
           "Encryption of data in transit and at rest",
-          "Secure authentication with JWT tokens",
+          "Secure multi-layer authentication",
           "Restricted access to personal data",
           "Continuous security monitoring",
           "Regular backups and disaster recovery",
@@ -1212,24 +1214,25 @@ const translations: Record<Language, any> = {
         basic: {
           name: "Basic",
           features: [
+            "1 búsqueda por día",
+            "Resultados listos para apostar",
             "Cuotas en tiempo real",
-            "Recomendación simple",
-            "5 búsquedas por día",
           ],
         },
         advanced: {
           name: "Advanced",
           features: [
+            "3 búsquedas por día",
             "Todo del Basic",
             "Historial H2H",
             "Forma reciente",
             "Posición en la tabla",
-            "Búsquedas ilimitadas",
           ],
         },
         premium: {
           name: "Premium",
           features: [
+            "6 búsquedas por día",
             "Todo del Advanced",
             "Lesiones y ausencias",
             "Estadísticas completas",
@@ -1429,7 +1432,7 @@ const translations: Record<Language, any> = {
         intro: "Implementamos medidas de seguridad técnicas y organizativas para proteger su información, incluyendo:",
         list: [
           "Cifrado de datos en tránsito y en reposo",
-          "Autenticación segura con tokens JWT",
+          "Autenticación segura multicapa",
           "Acceso restringido a datos personales",
           "Monitoreo continuo de seguridad",
           "Copias de seguridad regulares y recuperación ante desastres",
@@ -1686,24 +1689,25 @@ const translations: Record<Language, any> = {
         basic: {
           name: "Basic",
           features: [
+            "1 ricerca al giorno",
+            "Risultati pronti per scommettere",
             "Quote in tempo reale",
-            "Raccomandazione semplice",
-            "5 ricerche al giorno",
           ],
         },
         advanced: {
           name: "Advanced",
           features: [
+            "3 ricerche al giorno",
             "Tutto dal Basic",
             "Storico H2H",
             "Forma recente",
             "Posizione in classifica",
-            "Ricerche illimitate",
           ],
         },
         premium: {
           name: "Premium",
           features: [
+            "6 ricerche al giorno",
             "Tutto dall'Advanced",
             "Infortuni e assenze",
             "Statistiche complete",
@@ -1903,7 +1907,7 @@ const translations: Record<Language, any> = {
         intro: "Implementiamo misure di sicurezza tecniche e organizzative per proteggere le tue informazioni, tra cui:",
         list: [
           "Crittografia dei dati in transito e a riposo",
-          "Autenticazione sicura con token JWT",
+          "Autenticazione sicura multilivello",
           "Accesso limitato ai dati personali",
           "Monitoraggio continuo della sicurezza",
           "Backup regolari e disaster recovery",
