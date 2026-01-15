@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,15 @@ const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[VALIDATE-SESSION] ${step}${detailsStr}`);
 };
+
+// Hash session token before storing - prevents token theft if DB is compromised
+async function hashToken(token: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -52,14 +62,17 @@ serve(async (req) => {
         throw new Error("Session token is required for registration");
       }
 
+      // Hash the token before storing for security
+      const hashedToken = await hashToken(sessionToken);
+
       // Usar upsert para atualizar ou inserir sessão
       const { error: upsertError } = await supabaseAdmin
         .from('active_sessions')
         .upsert({
           user_id: userId,
-          session_token: sessionToken,
+          session_token: hashedToken, // Store hashed token
           device_info: deviceInfo,
-          ip_address: ipAddress,
+          ip_address: null, // Don't store IP addresses for privacy
           last_active_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
@@ -86,6 +99,9 @@ serve(async (req) => {
         throw new Error("Session token is required for validation");
       }
 
+      // Hash the incoming token to compare with stored hash
+      const hashedToken = await hashToken(sessionToken);
+
       const { data: sessionData, error: sessionError } = await supabaseAdmin
         .from('active_sessions')
         .select('session_token, device_info, last_active_at')
@@ -103,7 +119,8 @@ serve(async (req) => {
         });
       }
 
-      const isValid = sessionData.session_token === sessionToken;
+      // Compare hashed tokens
+      const isValid = sessionData.session_token === hashedToken;
 
       if (isValid) {
         // Atualizar last_active_at
