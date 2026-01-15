@@ -12,11 +12,34 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Mapeamento de tiers para price IDs
-const TIER_PRICES: Record<string, string> = {
-  basic: 'price_1SprZDBQSLreveKU8QmxRF80',
-  advanced: 'price_1Spry1BQSLreveKU7NcHTNVx',
-  premium: 'price_1SpryWBQSLreveKU7x6v5S9f',
+// Mapeamento de tiers e moedas para price IDs
+type Currency = 'brl' | 'usd' | 'eur';
+type Tier = 'basic' | 'advanced' | 'premium';
+
+const TIER_PRICES: Record<Currency, Record<Tier, string>> = {
+  brl: {
+    basic: 'price_1SprZDBQSLreveKU8QmxRF80',
+    advanced: 'price_1Spry1BQSLreveKU7NcHTNVx',
+    premium: 'price_1SpryWBQSLreveKU7x6v5S9f',
+  },
+  usd: {
+    basic: 'price_1SptWYBQSLreveKUetIBcgIW',
+    advanced: 'price_1SpttwBQSLreveKUGOKhunsn',
+    premium: 'price_1SptvkBQSLreveKUNeLpNdBJ',
+  },
+  eur: {
+    basic: 'price_1SptvxBQSLreveKUCrsr9k8q',
+    advanced: 'price_1SpuHlBQSLreveKUJvXZgTEv',
+    premium: 'price_1SpuaxBQSLreveKUKskrtfH8',
+  },
+};
+
+// Mapear idioma para moeda
+const LANGUAGE_TO_CURRENCY: Record<string, Currency> = {
+  pt: 'brl',
+  en: 'usd',
+  es: 'eur',
+  it: 'eur',
 };
 
 serve(async (req) => {
@@ -32,16 +55,22 @@ serve(async (req) => {
   try {
     logStep("Function started");
     
-    // Pegar o tier do body
+    // Pegar o tier e idioma do body
     const body = await req.json();
-    const tier = body.tier as string;
+    const tier = body.tier as Tier;
+    const language = (body.language as string) || 'pt';
     
-    if (!tier || !TIER_PRICES[tier]) {
+    // Determinar moeda baseada no idioma
+    const currency: Currency = LANGUAGE_TO_CURRENCY[language] || 'brl';
+    
+    // Validar tier
+    const validTiers: Tier[] = ['basic', 'advanced', 'premium'];
+    if (!tier || !validTiers.includes(tier)) {
       throw new Error(`Invalid tier: ${tier}. Valid options: basic, advanced, premium`);
     }
     
-    const priceId = TIER_PRICES[tier];
-    logStep("Tier selected", { tier, priceId });
+    const priceId = TIER_PRICES[currency][tier];
+    logStep("Tier and currency selected", { tier, currency, language, priceId });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
