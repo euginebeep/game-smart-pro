@@ -9,6 +9,7 @@ interface AdminUser {
   subscription_tier: string;
   subscription_status: string | null;
   subscription_end_date: string | null;
+  stripe_subscription_id: string | null;
   trial_start_date: string;
   trial_end_date: string;
   is_active: boolean;
