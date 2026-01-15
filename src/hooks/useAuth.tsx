@@ -138,10 +138,10 @@ export function useAuth() {
     }
   }, [authState.session, authState.user]);
 
-  const createCheckout = async (tier: 'basic' | 'advanced' | 'premium') => {
+  const createCheckout = async (tier: 'basic' | 'advanced' | 'premium', language?: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { tier },
+        body: { tier, language: language || 'pt' },
       });
 
       if (error) throw error;

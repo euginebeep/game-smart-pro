@@ -40,7 +40,7 @@ export function PricingSection() {
   const handleSubscribe = async (tier: 'basic' | 'advanced' | 'premium') => {
     setLoadingTier(tier);
     try {
-      await createCheckout(tier);
+      await createCheckout(tier, language);
     } catch (err) {
       toast.error(t('pricing.checkoutError'));
       console.error(err);
