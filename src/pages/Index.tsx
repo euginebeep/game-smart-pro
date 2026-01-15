@@ -9,11 +9,12 @@ import { PremiumDoubleSection } from '@/components/PremiumDoubleSection';
 import { ZebraSection } from '@/components/ZebraSection';
 import { TrialBanner } from '@/components/TrialBanner';
 import { PricingSection } from '@/components/PricingSection';
+import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Search, Crown } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut, subscription } = useAuth();
@@ -112,29 +113,23 @@ const Index = () => {
 
         {/* Content */}
         <main>
-          {/* Daily Limit Reached Error */}
+          {/* Daily Limit Reached Error with Pricing Cards */}
           {dailyLimitReached && error && (
-            <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-6 mb-6">
+            <div className="bg-gradient-to-br from-slate-900/95 via-slate-800/90 to-slate-900/95 border border-amber-500/30 rounded-2xl p-6 sm:p-8 mb-6 backdrop-blur-xl shadow-2xl">
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center">
-                  <Search className="w-8 h-8 text-amber-400" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/30 to-orange-500/30 flex items-center justify-center animate-pulse">
+                  <Search className="w-10 h-10 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold text-lg">{t('main.dailyLimitTitle')}</h3>
-                  <p className="text-slate-400 text-sm mt-1">{t('main.dailyLimitDesc')}</p>
+                  <h3 className="text-white font-bold text-xl sm:text-2xl">{t('main.dailyLimitTitle')}</h3>
+                  <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-md">{t('main.dailyLimitDesc')}</p>
                 </div>
-                <button
-                  onClick={() => {
-                    const pricingSection = document.getElementById('pricing-section');
-                    if (pricingSection) {
-                      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                  }}
-                  className="mt-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2 shadow-lg shadow-amber-500/25"
-                >
-                  <Crown className="w-5 h-5" />
+                <p className="text-amber-400 font-semibold text-lg mt-2">
                   {t('main.dailyLimitUpgrade')}
-                </button>
+                </p>
+                
+                {/* Inline Pricing Cards */}
+                <DailyLimitPricingCards />
               </div>
             </div>
           )}
