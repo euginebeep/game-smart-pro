@@ -112,8 +112,10 @@ const Index = () => {
           isAdmin={isAdmin}
         />
 
-        {/* Trial Banner */}
-        <TrialBanner daysRemaining={trialDaysRemaining} isExpired={isTrialExpired} />
+        {/* Trial Banner - only show for non-subscribers */}
+        {!subscription.isSubscribed && (
+          <TrialBanner daysRemaining={trialDaysRemaining} isExpired={isTrialExpired} />
+        )}
 
         {/* Content */}
         <main>
