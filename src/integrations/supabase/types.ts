@@ -72,6 +72,11 @@ export type Database = {
           id: string
           is_active: boolean
           phone: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_end_date: string | null
+          subscription_status: string | null
+          subscription_tier: string
           trial_end_date: string
           trial_start_date: string
           updated_at: string
@@ -83,6 +88,11 @@ export type Database = {
           id?: string
           is_active?: boolean
           phone?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string
           trial_end_date?: string
           trial_start_date?: string
           updated_at?: string
@@ -94,10 +104,48 @@ export type Database = {
           id?: string
           is_active?: boolean
           phone?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string
           trial_end_date?: string
           trial_start_date?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          currency: string
+          features: Json
+          id: string
+          name: string
+          price_cents: number
+          stripe_price_id: string | null
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          features?: Json
+          id?: string
+          name: string
+          price_cents: number
+          stripe_price_id?: string | null
+          tier: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          features?: Json
+          id?: string
+          name?: string
+          price_cents?: number
+          stripe_price_id?: string | null
+          tier?: string
         }
         Relationships: []
       }
