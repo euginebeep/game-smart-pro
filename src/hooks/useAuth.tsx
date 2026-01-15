@@ -2,6 +2,23 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+
+// Gerar ID único para esta sessão do navegador
+const getSessionToken = () => {
+  let token = sessionStorage.getItem('eugine_session_token');
+  if (!token) {
+    token = crypto.randomUUID();
+    sessionStorage.setItem('eugine_session_token', token);
+  }
+  return token;
+};
+
+const getDeviceInfo = () => {
+  const ua = navigator.userAgent;
+  const isMobile = /Mobile|Android|iPhone|iPad/.test(ua);
+  const browser = ua.match(/(Chrome|Firefox|Safari|Edge|Opera)/)?.[0] || 'Unknown';
+  return `${isMobile ? 'Mobile' : 'Desktop'} - ${browser}`;
+};
 interface Profile {
   id: string;
   user_id: string;
@@ -30,6 +47,7 @@ interface AuthState {
   trialDaysRemaining: number;
   isTrialExpired: boolean;
   subscription: SubscriptionState;
+  sessionInvalid: boolean;
 }
 
 const tierLabels: Record<string, string> = {
@@ -53,6 +71,7 @@ export function useAuth() {
       subscriptionEnd: null,
       isLoading: false,
     },
+    sessionInvalid: false,
   });
 
   const previousTierRef = useRef<string | null>(null);
@@ -167,6 +186,70 @@ export function useAuth() {
       throw err;
     }
   };
+
+  // Registrar sessão no servidor para controle anti-multilogin
+  const registerSession = useCallback(async () => {
+    try {
+      const sessionToken = getSessionToken();
+      const deviceInfo = getDeviceInfo();
+      
+      const { data, error } = await supabase.functions.invoke('validate-session', {
+        body: { 
+          action: 'register', 
+          sessionToken, 
+          deviceInfo 
+        },
+      });
+
+      if (error) {
+        console.error('Error registering session:', error);
+      } else {
+        console.log('Session registered:', data);
+      }
+    } catch (err) {
+      console.error('Error in registerSession:', err);
+    }
+  }, []);
+
+  // Validar se a sessão atual ainda é válida
+  const validateSession = useCallback(async () => {
+    if (!authState.session) return;
+
+    try {
+      const sessionToken = getSessionToken();
+      
+      const { data, error } = await supabase.functions.invoke('validate-session', {
+        body: { 
+          action: 'validate', 
+          sessionToken 
+        },
+      });
+
+      if (error) {
+        console.error('Error validating session:', error);
+        return;
+      }
+
+      if (data && !data.valid) {
+        // Sessão invalidada - outro dispositivo logou
+        setAuthState(prev => ({ ...prev, sessionInvalid: true }));
+        
+        toast({
+          title: '⚠️ Sessão Encerrada',
+          description: `Sua conta foi acessada em outro dispositivo (${data.activeDevice || 'desconhecido'}). Você será desconectado.`,
+          variant: 'destructive',
+          duration: 8000,
+        });
+
+        // Fazer logout após mostrar a mensagem
+        setTimeout(() => {
+          supabase.auth.signOut();
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('Error in validateSession:', err);
+    }
+  }, [authState.session]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -343,6 +426,22 @@ export function useAuth() {
     }
   }, [authState.session, authState.loading, checkSubscription]);
 
+  // Registrar sessão ao fazer login
+  useEffect(() => {
+    if (authState.session && !authState.loading) {
+      registerSession();
+    }
+  }, [authState.session, authState.loading, registerSession]);
+
+  // Validar sessão periodicamente (anti-multilogin)
+  useEffect(() => {
+    if (authState.session && !authState.loading && !authState.sessionInvalid) {
+      // Validar a cada 30 segundos
+      const interval = setInterval(validateSession, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [authState.session, authState.loading, authState.sessionInvalid, validateSession]);
+
   // Check URL for subscription success
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -355,6 +454,18 @@ export function useAuth() {
   }, [checkSubscription]);
 
   const signOut = async () => {
+    // Limpar sessão no servidor
+    try {
+      await supabase.functions.invoke('validate-session', {
+        body: { action: 'logout' },
+      });
+    } catch (err) {
+      console.error('Error logging out session:', err);
+    }
+    
+    // Limpar token local
+    sessionStorage.removeItem('eugine_session_token');
+    
     await supabase.auth.signOut();
   };
 
