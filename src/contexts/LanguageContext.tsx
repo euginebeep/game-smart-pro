@@ -259,6 +259,7 @@ const translations: Record<Language, any> = {
       renewsOn: "Sua assinatura renova em",
       checkoutError: "Erro ao iniciar checkout. Tente novamente.",
       portalError: "Erro ao abrir portal. Tente novamente.",
+      unlimited: "Buscas ilimitadas",
       plans: {
         basic: {
           name: "Basic",
@@ -732,6 +733,7 @@ const translations: Record<Language, any> = {
       renewsOn: "Your subscription renews on",
       checkoutError: "Error starting checkout. Please try again.",
       portalError: "Error opening portal. Please try again.",
+      unlimited: "Unlimited searches",
       plans: {
         basic: {
           name: "Basic",
@@ -1205,6 +1207,7 @@ const translations: Record<Language, any> = {
       renewsOn: "Tu suscripción se renueva el",
       checkoutError: "Error al iniciar el pago. Inténtalo de nuevo.",
       portalError: "Error al abrir el portal. Inténtalo de nuevo.",
+      unlimited: "Búsquedas ilimitadas",
       plans: {
         basic: {
           name: "Basic",
@@ -1678,6 +1681,7 @@ const translations: Record<Language, any> = {
       renewsOn: "Il tuo abbonamento si rinnova il",
       checkoutError: "Errore nell'avvio del checkout. Riprova.",
       portalError: "Errore nell'apertura del portale. Riprova.",
+      unlimited: "Ricerche illimitate",
       plans: {
         basic: {
           name: "Basic",
