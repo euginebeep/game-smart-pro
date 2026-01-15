@@ -47,29 +47,26 @@ serve(async (req) => {
     logStep("Request info", { action, userId: userId.substring(0, 8) + '...' });
 
     if (action === 'register') {
-      // Registrar nova sessão (remove sessão anterior)
+      // Registrar nova sessão usando upsert para evitar race conditions
       if (!sessionToken) {
         throw new Error("Session token is required for registration");
       }
 
-      // Deletar sessão anterior
-      await supabaseAdmin
+      // Usar upsert para atualizar ou inserir sessão
+      const { error: upsertError } = await supabaseAdmin
         .from('active_sessions')
-        .delete()
-        .eq('user_id', userId);
-
-      // Inserir nova sessão
-      const { error: insertError } = await supabaseAdmin
-        .from('active_sessions')
-        .insert({
+        .upsert({
           user_id: userId,
           session_token: sessionToken,
           device_info: deviceInfo,
           ip_address: ipAddress,
+          last_active_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
         });
 
-      if (insertError) {
-        logStep("Error inserting session", { error: insertError.message });
+      if (upsertError) {
+        logStep("Error upserting session", { error: upsertError.message });
         throw new Error("Failed to register session");
       }
 
