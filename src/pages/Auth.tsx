@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Phone, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Phone, Lock, Loader2, ArrowLeft, Crown } from 'lucide-react';
 import eugineLogo from '@/assets/eugine-logo-new.png';
 import { z } from 'zod';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+type AuthMode = 'login' | 'register' | 'reset';
+
 export default function Auth() {
   const { t } = useLanguage();
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +34,10 @@ export default function Auth() {
   const signInSchema = z.object({
     email: z.string().trim().email({ message: t('auth.errors.invalidEmail') }),
     password: z.string().min(1, { message: t('auth.errors.passwordRequired') }),
+  });
+
+  const resetSchema = z.object({
+    email: z.string().trim().email({ message: t('auth.errors.invalidEmail') }),
   });
 
   useEffect(() => {
@@ -58,7 +64,39 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === 'reset') {
+        const result = resetSchema.safeParse({ email });
+        if (!result.success) {
+          const fieldErrors: Record<string, string> = {};
+          result.error.errors.forEach((err) => {
+            if (err.path[0]) {
+              fieldErrors[err.path[0] as string] = err.message;
+            }
+          });
+          setErrors(fieldErrors);
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/`,
+        });
+
+        if (error) {
+          toast({
+            title: t('auth.errors.resetError'),
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: t('auth.success.resetSent'),
+            description: t('auth.success.resetSentDesc'),
+          });
+          setMode('login');
+          setEmail('');
+        }
+      } else if (mode === 'login') {
         const result = signInSchema.safeParse({ email, password });
         if (!result.success) {
           const fieldErrors: Record<string, string> = {};
@@ -120,7 +158,7 @@ export default function Auth() {
         });
 
         if (error) {
-          if (error.message.includes('already registered')) {
+          if (error.message.includes('already registered') || error.message.includes('User already registered')) {
             toast({
               title: t('auth.errors.registerError'),
               description: t('auth.errors.emailExists'),
@@ -175,30 +213,44 @@ export default function Auth() {
 
         {/* Auth Card */}
         <div className="glass-card p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl">
-          <div className="flex gap-2 mb-6">
-            <button
-              type="button"
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                isLogin
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:text-white'
-              }`}
-            >
-              {t('auth.login')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                !isLogin
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:text-white'
-              }`}
-            >
-              {t('auth.register')}
-            </button>
-          </div>
+          {mode === 'reset' ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setMode('login')}
+                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                {t('auth.backToLogin')}
+              </button>
+              <h2 className="text-xl font-bold text-white mb-2">{t('auth.resetPassword')}</h2>
+            </>
+          ) : (
+            <div className="flex gap-2 mb-6">
+              <button
+                type="button"
+                onClick={() => setMode('login')}
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                  mode === 'login'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-slate-800/50 text-slate-400 hover:text-white'
+                }`}
+              >
+                {t('auth.login')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('register')}
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                  mode === 'register'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-slate-800/50 text-slate-400 hover:text-white'
+                }`}
+              >
+                {t('auth.register')}
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -217,7 +269,7 @@ export default function Auth() {
               {errors.email && <p className="text-red-400 text-sm">{errors.email}</p>}
             </div>
 
-            {!isLogin && (
+            {mode === 'register' && (
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-slate-300">{t('auth.phone')}</Label>
                 <div className="relative">
@@ -235,28 +287,40 @@ export default function Auth() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">{t('auth.password')}</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('auth.passwordPlaceholder')}
-                  className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+            {mode !== 'reset' && (
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-slate-300">{t('auth.password')}</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('auth.passwordPlaceholder')}
+                    className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-red-400 text-sm">{errors.password}</p>}
               </div>
-              {errors.password && <p className="text-red-400 text-sm">{errors.password}</p>}
-            </div>
+            )}
+
+            {mode === 'login' && (
+              <button
+                type="button"
+                onClick={() => setMode('reset')}
+                className="text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+              >
+                {t('auth.forgotPassword')}
+              </button>
+            )}
 
             <Button
               type="submit"
@@ -268,7 +332,9 @@ export default function Auth() {
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {t('auth.loading')}
                 </>
-              ) : isLogin ? (
+              ) : mode === 'reset' ? (
+                t('auth.sendResetLink')
+              ) : mode === 'login' ? (
                 t('auth.enter')
               ) : (
                 t('auth.createAccount')
@@ -276,10 +342,16 @@ export default function Auth() {
             </Button>
           </form>
 
-          {!isLogin && (
-            <p className="text-center text-slate-400 text-sm mt-4">
-              ✨ {t('auth.trialMessage')} <span className="text-emerald-400 font-semibold">{t('auth.trialDays')}</span> {t('auth.trialSuffix')}
-            </p>
+          {mode === 'register' && (
+            <div className="text-center mt-4 p-3 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Crown className="w-4 h-4 text-amber-400" />
+                <span className="text-amber-400 font-semibold text-sm">PREMIUM</span>
+              </div>
+              <p className="text-slate-300 text-sm">
+                ✨ {t('auth.trialMessage')} <span className="text-emerald-400 font-semibold">{t('auth.trialDays')}</span> {t('auth.trialSuffix')}
+              </p>
+            </div>
           )}
         </div>
 
