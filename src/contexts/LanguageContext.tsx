@@ -221,6 +221,7 @@ const translations: Record<Language, any> = {
       riskHigh: "ARRISCADO",
       totalOdd: "Odd Total",
       chance: "Chance",
+      moreCards: "mais cards de análise",
     },
     premiumDouble: {
       title: "💎 Dupla dos Favoritos",
@@ -246,6 +247,11 @@ const translations: Record<Language, any> = {
       goodResults: "vem de bons resultados e pode surpreender jogando fora de casa. O favoritismo de",
       overvalued: "está supervalorizado.",
       defaultReason: "jogando em casa é muito forte. Histórico recente mostra que podem vencer!",
+      highChance: "Alta Chance",
+      mediumChance: "Média Chance",
+      lowChance: "Mínima Chance",
+      levels: "Níveis",
+      threeLevels: "Alta, Média e Mínima Chance",
     },
     pricing: {
       title: "Escolha seu Plano",
@@ -696,6 +702,7 @@ const translations: Record<Language, any> = {
       riskHigh: "RISKY",
       totalOdd: "Total Odd",
       chance: "Chance",
+      moreCards: "more analysis cards",
     },
     premiumDouble: {
       title: "💎 Premium Double",
@@ -721,6 +728,11 @@ const translations: Record<Language, any> = {
       goodResults: "has good recent results and can surprise away from home. The favoritism of",
       overvalued: "is overvalued.",
       defaultReason: "playing at home is very strong. Recent history shows they can win!",
+      highChance: "High Chance",
+      mediumChance: "Medium Chance",
+      lowChance: "Low Chance",
+      levels: "Levels",
+      threeLevels: "High, Medium and Low Chance",
     },
     pricing: {
       title: "Choose your Plan",
@@ -1171,6 +1183,7 @@ const translations: Record<Language, any> = {
       riskHigh: "ARRIESGADO",
       totalOdd: "Cuota Total",
       chance: "Probabilidad",
+      moreCards: "más tarjetas de análisis",
     },
     premiumDouble: {
       title: "💎 Doble Premium",
@@ -1196,6 +1209,11 @@ const translations: Record<Language, any> = {
       goodResults: "viene con buenos resultados y puede sorprender jugando fuera. El favoritismo de",
       overvalued: "está sobrevalorado.",
       defaultReason: "jugando en casa es muy fuerte. ¡El historial reciente muestra que pueden ganar!",
+      highChance: "Alta Probabilidad",
+      mediumChance: "Media Probabilidad",
+      lowChance: "Mínima Probabilidad",
+      levels: "Niveles",
+      threeLevels: "Alta, Media y Mínima Probabilidad",
     },
     pricing: {
       title: "Elige tu Plan",
@@ -1646,6 +1664,7 @@ const translations: Record<Language, any> = {
       riskHigh: "RISCHIOSO",
       totalOdd: "Quota Totale",
       chance: "Probabilità",
+      moreCards: "più schede di analisi",
     },
     premiumDouble: {
       title: "💎 Doppia Premium",
@@ -1671,6 +1690,11 @@ const translations: Record<Language, any> = {
       goodResults: "ha buoni risultati recenti e può sorprendere in trasferta. Il favoritismo di",
       overvalued: "è sopravvalutato.",
       defaultReason: "giocando in casa è molto forte. La storia recente mostra che possono vincere!",
+      highChance: "Alta Probabilità",
+      mediumChance: "Media Probabilità",
+      lowChance: "Minima Probabilità",
+      levels: "Livelli",
+      threeLevels: "Alta, Media e Minima Probabilità",
     },
     pricing: {
       title: "Scegli il tuo Piano",

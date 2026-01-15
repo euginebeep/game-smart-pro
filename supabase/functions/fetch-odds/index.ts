@@ -801,8 +801,8 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível encontrar jogos disponíveis nos próximos 7 dias');
   }
   
-  // Processar até 5 jogos com dados completos
-  const fixturesParaProcessar = jogosEncontrados.slice(0, 5);
+  // Processar até 15 jogos com dados completos (Premium terá acesso a todos, outros tiers serão filtrados depois)
+  const fixturesParaProcessar = jogosEncontrados.slice(0, 15);
   const gamesWithOdds: Game[] = [];
   
   for (const fixture of fixturesParaProcessar) {
@@ -1163,7 +1163,11 @@ serve(async (req) => {
     const filterDataByTier = (data: any, tier: string) => {
       if (!data?.games) return data;
       
-      const filteredGames = data.games.map((game: any) => {
+      // Premium: 15 jogos, outros tiers: 5 jogos
+      const maxGames = tier === 'premium' ? 15 : 5;
+      const limitedGames = data.games.slice(0, maxGames);
+      
+      const filteredGames = limitedGames.map((game: any) => {
         const filteredGame = { ...game };
         
         if (tier === 'free' || tier === 'basic') {
@@ -1183,7 +1187,7 @@ serve(async (req) => {
             delete filteredGame.advancedData.awayStats;
           }
         }
-        // Premium: tudo disponível
+        // Premium: tudo disponível (15 jogos com todos os dados)
         
         return filteredGame;
       });

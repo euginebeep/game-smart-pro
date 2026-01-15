@@ -186,13 +186,13 @@ const Index = () => {
               {/* NEW SECTIONS */}
               
               {/* Section 1: Accumulators */}
-              <AccumulatorsSection games={games} />
+              <AccumulatorsSection games={games} userTier={userTier} />
 
               {/* Section 2: Premium Double */}
               <PremiumDoubleSection games={games} />
 
               {/* Section 3: Zebra of the Day */}
-              <ZebraSection games={games} />
+              <ZebraSection games={games} userTier={userTier} />
 
               {/* Pricing Section */}
               <PricingSection />
