@@ -108,6 +108,7 @@ const Index = () => {
           isTrial={isTrial}
           subscriptionTier={subscription.tier}
           subscriptionLoading={subscription.isLoading}
+          subscriptionEnd={subscription.subscriptionEnd}
           isAdmin={isAdmin}
         />
 

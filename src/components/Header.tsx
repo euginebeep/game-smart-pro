@@ -1,4 +1,4 @@
-import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield } from 'lucide-react';
+import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield, Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
@@ -12,6 +12,7 @@ interface HeaderProps {
   isTrial?: boolean;
   subscriptionTier?: 'free' | 'basic' | 'advanced' | 'premium';
   subscriptionLoading?: boolean;
+  subscriptionEnd?: string | null;
   isAdmin?: boolean;
 }
 
@@ -51,6 +52,7 @@ export function Header({
   isTrial,
   subscriptionTier = 'free',
   subscriptionLoading = false,
+  subscriptionEnd,
   isAdmin = false,
 }: HeaderProps) {
   const { t, language } = useLanguage();
@@ -58,6 +60,19 @@ export function Header({
   
   const currentTier = tierConfig[subscriptionTier] || tierConfig.free;
   const TierIcon = currentTier.icon;
+  
+  // Calculate days until subscription expires
+  const getDaysUntilExpiry = () => {
+    if (!subscriptionEnd) return null;
+    const endDate = new Date(subscriptionEnd);
+    const now = new Date();
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+  
+  const daysRemaining = getDaysUntilExpiry();
+  
   const today = new Date().toLocaleDateString(
     language === 'pt' ? 'pt-BR' : 
     language === 'es' ? 'es-ES' : 
@@ -116,6 +131,22 @@ export function Header({
               </>
             )}
           </div>
+
+          {/* Subscription Expiry Badge (for active subscribers) */}
+          {!subscriptionLoading && subscriptionTier !== 'free' && daysRemaining !== null && (
+            <div className={`badge flex items-center gap-1.5 ${
+              daysRemaining <= 3 
+                ? 'bg-red-500/20 border-red-500/30 text-red-400' 
+                : daysRemaining <= 7 
+                  ? 'bg-amber-500/20 border-amber-500/30 text-amber-400' 
+                  : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+            }`}>
+              <Clock className="w-3 h-3" />
+              <span className="text-xs">
+                {daysRemaining} {daysRemaining === 1 ? t('main.dayLeft') : t('main.daysLeft')}
+              </span>
+            </div>
+          )}
 
           {/* Live Badge */}
           <div className="badge badge-live text-[10px] sm:text-xs">
