@@ -103,6 +103,8 @@ const Index = () => {
           onSignOut={signOut}
           dailySearchesRemaining={dailySearchesRemaining}
           isTrial={isTrial}
+          subscriptionTier={subscription.tier}
+          subscriptionLoading={subscription.isLoading}
         />
 
         {/* Trial Banner */}

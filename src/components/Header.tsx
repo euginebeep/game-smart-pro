@@ -1,4 +1,4 @@
-import { Zap, TrendingUp, LogOut, Search } from 'lucide-react';
+import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 
@@ -9,11 +9,51 @@ interface HeaderProps {
   onSignOut?: () => void;
   dailySearchesRemaining?: number | null;
   isTrial?: boolean;
+  subscriptionTier?: 'free' | 'basic' | 'advanced' | 'premium';
+  subscriptionLoading?: boolean;
 }
 
-export function Header({ onFetch, loading, apiRemaining, onSignOut, dailySearchesRemaining, isTrial }: HeaderProps) {
+const tierConfig = {
+  free: {
+    label: 'Trial',
+    icon: Sparkles,
+    className: 'bg-slate-500/20 border-slate-500/30 text-slate-300',
+    iconClassName: 'text-slate-400',
+  },
+  basic: {
+    label: 'Basic',
+    icon: Zap,
+    className: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
+    iconClassName: 'text-blue-400',
+  },
+  advanced: {
+    label: 'Advanced',
+    icon: TrendingUp,
+    className: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400',
+    iconClassName: 'text-emerald-400',
+  },
+  premium: {
+    label: 'Premium',
+    icon: Crown,
+    className: 'bg-amber-500/20 border-amber-500/30 text-amber-400',
+    iconClassName: 'text-amber-400',
+  },
+};
+
+export function Header({ 
+  onFetch, 
+  loading, 
+  apiRemaining, 
+  onSignOut, 
+  dailySearchesRemaining, 
+  isTrial,
+  subscriptionTier = 'free',
+  subscriptionLoading = false,
+}: HeaderProps) {
   const { t, language } = useLanguage();
   
+  const currentTier = tierConfig[subscriptionTier] || tierConfig.free;
+  const TierIcon = currentTier.icon;
   const today = new Date().toLocaleDateString(
     language === 'pt' ? 'pt-BR' : 
     language === 'es' ? 'es-ES' : 
@@ -56,6 +96,21 @@ export function Header({ onFetch, loading, apiRemaining, onSignOut, dailySearche
           {/* Language Selector */}
           <div className="hidden sm:block">
             <LanguageSelector />
+          </div>
+
+          {/* Subscription Tier Badge */}
+          <div className={`badge flex items-center gap-1.5 transition-all duration-300 ${currentTier.className}`}>
+            {subscriptionLoading ? (
+              <>
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span className="text-xs">...</span>
+              </>
+            ) : (
+              <>
+                <TierIcon className={`w-3 h-3 ${currentTier.iconClassName}`} />
+                <span className="text-xs font-medium">{currentTier.label}</span>
+              </>
+            )}
           </div>
 
           {/* Live Badge */}
