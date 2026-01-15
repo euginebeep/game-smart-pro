@@ -18,9 +18,6 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
-
-  // IMPORTANT: quando a origem é permitida por sufixo (ex: *.lovableproject.com),
-  // precisamos "ecoar" exatamente a origem recebida, senão o browser bloqueia por CORS.
   const isAllowed = !!origin && (
     ALLOWED_ORIGINS.includes(origin) ||
     origin.endsWith('.lovable.app') ||
@@ -117,7 +114,11 @@ interface Game {
   id: string;
   homeTeam: string;
   awayTeam: string;
+  homeTeamId?: number;
+  awayTeamId?: number;
   league: string;
+  leagueId?: number;
+  season?: number;
   startTime: string;
   bookmaker: string;
   odds: {
@@ -129,47 +130,127 @@ interface Game {
   };
   dayType: 'today' | 'tomorrow' | 'future';
   dayLabel: string;
+  advancedData?: AdvancedGameData;
+}
+
+interface AdvancedGameData {
+  h2h?: {
+    totalGames: number;
+    homeWins: number;
+    awayWins: number;
+    draws: number;
+    avgGoals: number;
+    lastGames: { home: number; away: number; date: string }[];
+  };
+  homeStats?: TeamStats;
+  awayStats?: TeamStats;
+  homePosition?: number;
+  awayPosition?: number;
+  homeForm?: string;
+  awayForm?: string;
+  homeInjuries?: number;
+  awayInjuries?: number;
+  apiPrediction?: {
+    winner?: string;
+    winnerConfidence?: number;
+    homeGoals?: string;
+    awayGoals?: string;
+    advice?: string;
+    under_over?: string;
+  };
+}
+
+interface TeamStats {
+  goalsScored: number;
+  goalsConceded: number;
+  avgGoalsScored: number;
+  avgGoalsConceded: number;
+  cleanSheets: number;
+  failedToScore: number;
+  bttsPercentage: number;
+  over25Percentage: number;
 }
 
 interface BettingAnalysis {
   type: string;
   reason: string;
   profit: number;
+  confidence?: number;
+  factors?: AnalysisFactor[];
+}
+
+interface AnalysisFactor {
+  name: string;
+  impact: 'positive' | 'negative' | 'neutral';
+  weight: number;
+  description: string;
 }
 
 // Traduções das análises
 const analysisTranslations: Record<string, Record<string, any>> = {
   pt: {
     over25: 'MAIS DE 2.5 GOLS',
-    over25Reason: (odd: string, home: string, away: string) => 
-      `Odd de ${odd} indica alta expectativa de gols. Mercado aposta em jogo movimentado entre ${home} e ${away}.`,
-    btts: 'AMBAS EQUIPES MARCAM',
-    bttsReason: (homeOdd: string, awayOdd: string) => 
-      `Jogo equilibrado com odds similares (Casa: ${homeOdd} / Fora: ${awayOdd}). Times tendem a ter boa performance ofensiva.`,
+    under25: 'MENOS DE 2.5 GOLS',
+    btts: 'AMBAS MARCAM',
+    bttsNo: 'AMBAS NÃO MARCAM',
+    homeWin: 'VITÓRIA CASA',
+    awayWin: 'VITÓRIA FORA',
+    draw: 'EMPATE',
+    highConfidence: 'Alta confiança baseada em análise completa',
+    h2hFactor: 'Histórico de confrontos',
+    formFactor: 'Forma recente',
+    statsFactor: 'Estatísticas da temporada',
+    predictionFactor: 'Previsão da API',
+    injuriesFactor: 'Lesões e desfalques',
+    standingsFactor: 'Posição na tabela',
   },
   en: {
     over25: 'OVER 2.5 GOALS',
-    over25Reason: (odd: string, home: string, away: string) => 
-      `Odd of ${odd} indicates high goal expectation. Market betting on an eventful game between ${home} and ${away}.`,
+    under25: 'UNDER 2.5 GOALS',
     btts: 'BOTH TEAMS TO SCORE',
-    bttsReason: (homeOdd: string, awayOdd: string) => 
-      `Balanced game with similar odds (Home: ${homeOdd} / Away: ${awayOdd}). Teams tend to have good offensive performance.`,
+    bttsNo: 'NO BTTS',
+    homeWin: 'HOME WIN',
+    awayWin: 'AWAY WIN',
+    draw: 'DRAW',
+    highConfidence: 'High confidence based on complete analysis',
+    h2hFactor: 'Head to head history',
+    formFactor: 'Recent form',
+    statsFactor: 'Season statistics',
+    predictionFactor: 'API prediction',
+    injuriesFactor: 'Injuries and absences',
+    standingsFactor: 'League position',
   },
   es: {
     over25: 'MÁS DE 2.5 GOLES',
-    over25Reason: (odd: string, home: string, away: string) => 
-      `Cuota de ${odd} indica alta expectativa de goles. El mercado apuesta por un partido con muchos goles entre ${home} y ${away}.`,
-    btts: 'AMBOS EQUIPOS MARCAN',
-    bttsReason: (homeOdd: string, awayOdd: string) => 
-      `Partido equilibrado con cuotas similares (Local: ${homeOdd} / Visitante: ${awayOdd}). Los equipos tienden a tener buen rendimiento ofensivo.`,
+    under25: 'MENOS DE 2.5 GOLES',
+    btts: 'AMBOS MARCAN',
+    bttsNo: 'AMBOS NO MARCAN',
+    homeWin: 'VICTORIA LOCAL',
+    awayWin: 'VICTORIA VISITANTE',
+    draw: 'EMPATE',
+    highConfidence: 'Alta confianza basada en análisis completo',
+    h2hFactor: 'Historial de enfrentamientos',
+    formFactor: 'Forma reciente',
+    statsFactor: 'Estadísticas de temporada',
+    predictionFactor: 'Predicción de la API',
+    injuriesFactor: 'Lesiones y ausencias',
+    standingsFactor: 'Posición en la tabla',
   },
   it: {
     over25: 'PIÙ DI 2.5 GOL',
-    over25Reason: (odd: string, home: string, away: string) => 
-      `Quota di ${odd} indica alta aspettativa di gol. Il mercato scommette su una partita movimentata tra ${home} e ${away}.`,
+    under25: 'MENO DI 2.5 GOL',
     btts: 'ENTRAMBE SEGNANO',
-    bttsReason: (homeOdd: string, awayOdd: string) => 
-      `Partita equilibrata con quote simili (Casa: ${homeOdd} / Trasferta: ${awayOdd}). Le squadre tendono ad avere buone prestazioni offensive.`,
+    bttsNo: 'ENTRAMBE NON SEGNANO',
+    homeWin: 'VITTORIA CASA',
+    awayWin: 'VITTORIA TRASFERTA',
+    draw: 'PAREGGIO',
+    highConfidence: 'Alta fiducia basata su analisi completa',
+    h2hFactor: 'Storico scontri diretti',
+    formFactor: 'Forma recente',
+    statsFactor: 'Statistiche stagionali',
+    predictionFactor: 'Previsione API',
+    injuriesFactor: 'Infortuni e assenze',
+    standingsFactor: 'Posizione in classifica',
   },
 };
 
@@ -187,24 +268,231 @@ const alertTranslations: Record<string, Record<string, string>> = {
   it: { today: '🔴 PARTITE DI OGGI', tomorrow: '📅 PARTITE DI DOMANI', future: '📅 PARTITE DEL' },
 };
 
-function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
+// ============= MOTOR DE ANÁLISE AVANÇADO =============
+
+function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
+  const betAmount = 40;
+  const t = analysisTranslations[lang] || analysisTranslations['pt'];
+  const factors: AnalysisFactor[] = [];
+  
+  // Scores para cada tipo de aposta
+  let over25Score = 50;
+  let under25Score = 50;
+  let bttsScore = 50;
+  let homeWinScore = 50;
+  let awayWinScore = 50;
+  let drawScore = 50;
+  
+  const adv = game.advancedData;
+  
+  // ===== 1. ANÁLISE DO H2H (peso: 20%) =====
+  if (adv?.h2h && adv.h2h.totalGames >= 3) {
+    const h2h = adv.h2h;
+    
+    // Over/Under baseado na média de gols histórica
+    if (h2h.avgGoals >= 3.0) {
+      over25Score += 15;
+      under25Score -= 10;
+      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 15, description: `Média ${h2h.avgGoals.toFixed(1)} gols nos confrontos` });
+    } else if (h2h.avgGoals <= 2.0) {
+      under25Score += 15;
+      over25Score -= 10;
+      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 15, description: `Média baixa: ${h2h.avgGoals.toFixed(1)} gols` });
+    }
+    
+    // Resultado baseado no histórico
+    const homeWinRate = h2h.homeWins / h2h.totalGames;
+    const awayWinRate = h2h.awayWins / h2h.totalGames;
+    if (homeWinRate >= 0.6) {
+      homeWinScore += 12;
+      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 12, description: `Casa venceu ${(homeWinRate * 100).toFixed(0)}% dos jogos` });
+    } else if (awayWinRate >= 0.5) {
+      awayWinScore += 12;
+      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 12, description: `Visitante venceu ${(awayWinRate * 100).toFixed(0)}% dos jogos` });
+    }
+  }
+  
+  // ===== 2. ANÁLISE DE FORMA (peso: 20%) =====
+  if (adv?.homeForm && adv?.awayForm) {
+    const countWins = (form: string) => (form.match(/W/g) || []).length;
+    const countLosses = (form: string) => (form.match(/L/g) || []).length;
+    
+    const homeWins = countWins(adv.homeForm);
+    const awayWins = countWins(adv.awayForm);
+    const homeLosses = countLosses(adv.homeForm);
+    const awayLosses = countLosses(adv.awayForm);
+    
+    if (homeWins >= 4) {
+      homeWinScore += 15;
+      factors.push({ name: t.formFactor, impact: 'positive', weight: 15, description: `Casa: ${homeWins} vitórias nos últimos 5` });
+    }
+    if (awayWins >= 4) {
+      awayWinScore += 15;
+      factors.push({ name: t.formFactor, impact: 'positive', weight: 15, description: `Visitante: ${awayWins} vitórias nos últimos 5` });
+    }
+    if (homeLosses >= 3 && awayLosses >= 3) {
+      drawScore += 10;
+    }
+  }
+  
+  // ===== 3. ANÁLISE DE ESTATÍSTICAS (peso: 25%) =====
+  if (adv?.homeStats && adv?.awayStats) {
+    const homeStats = adv.homeStats;
+    const awayStats = adv.awayStats;
+    
+    // Over 2.5 baseado em média de gols
+    const avgGoalsTotal = homeStats.avgGoalsScored + awayStats.avgGoalsScored;
+    if (avgGoalsTotal >= 3.2) {
+      over25Score += 20;
+      factors.push({ name: t.statsFactor, impact: 'positive', weight: 20, description: `Média combinada: ${avgGoalsTotal.toFixed(1)} gols/jogo` });
+    } else if (avgGoalsTotal <= 2.0) {
+      under25Score += 20;
+      factors.push({ name: t.statsFactor, impact: 'positive', weight: 20, description: `Média baixa: ${avgGoalsTotal.toFixed(1)} gols/jogo` });
+    }
+    
+    // BTTS baseado em percentual histórico
+    const avgBtts = (homeStats.bttsPercentage + awayStats.bttsPercentage) / 2;
+    if (avgBtts >= 60) {
+      bttsScore += 18;
+      factors.push({ name: t.statsFactor, impact: 'positive', weight: 18, description: `BTTS ${avgBtts.toFixed(0)}% das partidas` });
+    } else if (avgBtts <= 35) {
+      bttsScore -= 15;
+    }
+    
+    // Over 2.5 baseado em percentual histórico
+    const avgOver25 = (homeStats.over25Percentage + awayStats.over25Percentage) / 2;
+    if (avgOver25 >= 65) {
+      over25Score += 18;
+      factors.push({ name: t.statsFactor, impact: 'positive', weight: 18, description: `Over 2.5 em ${avgOver25.toFixed(0)}% dos jogos` });
+    }
+    
+    // Clean sheets vs Failed to score
+    if (homeStats.cleanSheets >= 40 && awayStats.failedToScore >= 40) {
+      under25Score += 12;
+      homeWinScore += 8;
+    }
+  }
+  
+  // ===== 4. ANÁLISE DE POSIÇÃO NA TABELA (peso: 15%) =====
+  if (adv?.homePosition && adv?.awayPosition) {
+    const posDiff = adv.awayPosition - adv.homePosition;
+    
+    if (posDiff >= 10) {
+      // Casa muito melhor posicionada
+      homeWinScore += 12;
+      factors.push({ name: t.standingsFactor, impact: 'positive', weight: 12, description: `Casa: ${adv.homePosition}º vs Fora: ${adv.awayPosition}º` });
+    } else if (posDiff <= -10) {
+      // Visitante muito melhor posicionado
+      awayWinScore += 12;
+      factors.push({ name: t.standingsFactor, impact: 'positive', weight: 12, description: `Fora: ${adv.awayPosition}º vs Casa: ${adv.homePosition}º` });
+    } else if (Math.abs(posDiff) <= 3) {
+      drawScore += 8;
+    }
+  }
+  
+  // ===== 5. ANÁLISE DE LESÕES (peso: 10%) =====
+  if (adv?.homeInjuries !== undefined && adv?.awayInjuries !== undefined) {
+    if (adv.homeInjuries >= 3) {
+      homeWinScore -= 10;
+      awayWinScore += 8;
+      factors.push({ name: t.injuriesFactor, impact: 'negative', weight: 10, description: `Casa: ${adv.homeInjuries} desfalques` });
+    }
+    if (adv.awayInjuries >= 3) {
+      awayWinScore -= 10;
+      homeWinScore += 8;
+      factors.push({ name: t.injuriesFactor, impact: 'negative', weight: 10, description: `Visitante: ${adv.awayInjuries} desfalques` });
+    }
+  }
+  
+  // ===== 6. PREVISÃO DA API (peso: 10%) =====
+  if (adv?.apiPrediction) {
+    const pred = adv.apiPrediction;
+    
+    if (pred.advice) {
+      if (pred.advice.toLowerCase().includes('over')) {
+        over25Score += 10;
+        factors.push({ name: t.predictionFactor, impact: 'positive', weight: 10, description: pred.advice });
+      } else if (pred.advice.toLowerCase().includes('under')) {
+        under25Score += 10;
+        factors.push({ name: t.predictionFactor, impact: 'positive', weight: 10, description: pred.advice });
+      }
+    }
+    
+    if (pred.winner && pred.winnerConfidence && pred.winnerConfidence >= 60) {
+      if (pred.winner === 'Home') {
+        homeWinScore += 12;
+      } else if (pred.winner === 'Away') {
+        awayWinScore += 12;
+      }
+      factors.push({ name: t.predictionFactor, impact: 'positive', weight: 12, description: `${pred.winner} com ${pred.winnerConfidence}% de confiança` });
+    }
+  }
+  
+  // ===== DETERMINAR MELHOR APOSTA =====
+  const allScores = [
+    { type: t.over25, score: over25Score, odd: game.odds.over },
+    { type: t.under25, score: under25Score, odd: game.odds.under },
+    { type: t.btts, score: bttsScore, odd: (game.odds.home + game.odds.away) / 2 },
+    { type: t.homeWin, score: homeWinScore, odd: game.odds.home },
+    { type: t.awayWin, score: awayWinScore, odd: game.odds.away },
+    { type: t.draw, score: drawScore, odd: game.odds.draw },
+  ];
+  
+  // Ordenar por score
+  allScores.sort((a, b) => b.score - a.score);
+  const best = allScores[0];
+  
+  // Calcular confiança (0-100)
+  const confidence = Math.min(100, Math.max(30, best.score));
+  
+  // Gerar razão baseada nos fatores
+  let reason = '';
+  if (factors.length > 0) {
+    const topFactors = factors.slice(0, 3);
+    reason = topFactors.map(f => f.description).join('. ') + '.';
+  } else {
+    reason = t.highConfidence;
+  }
+  
+  return {
+    type: best.type,
+    reason,
+    profit: parseFloat((betAmount * best.odd - betAmount).toFixed(2)),
+    confidence,
+    factors: factors.slice(0, 5)
+  };
+}
+
+// Fallback para análise simples quando não há dados avançados
+function analyzeSimple(game: Game, lang: string = 'pt'): BettingAnalysis {
   const betAmount = 40;
   const t = analysisTranslations[lang] || analysisTranslations['pt'];
   
   if (game.odds.over > 0 && game.odds.over < 2.0) {
     return {
       type: t.over25,
-      reason: t.over25Reason(game.odds.over.toFixed(2), game.homeTeam, game.awayTeam),
-      profit: parseFloat((betAmount * game.odds.over - betAmount).toFixed(2))
+      reason: `Odd de ${game.odds.over.toFixed(2)} indica alta expectativa de gols.`,
+      profit: parseFloat((betAmount * game.odds.over - betAmount).toFixed(2)),
+      confidence: 55
     };
   }
   
   const avgOdd = (game.odds.home + game.odds.away) / 2;
   return {
     type: t.btts,
-    reason: t.bttsReason(game.odds.home.toFixed(2), game.odds.away.toFixed(2)),
-    profit: parseFloat((betAmount * avgOdd - betAmount).toFixed(2))
+    reason: `Jogo equilibrado com odds similares (Casa: ${game.odds.home.toFixed(2)} / Fora: ${game.odds.away.toFixed(2)}).`,
+    profit: parseFloat((betAmount * avgOdd - betAmount).toFixed(2)),
+    confidence: 50
   };
+}
+
+function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
+  // Se temos dados avançados, usar análise completa
+  if (game.advancedData && Object.keys(game.advancedData).length > 0) {
+    return analyzeAdvanced(game, lang);
+  }
+  // Fallback para análise simples
+  return analyzeSimple(game, lang);
 }
 
 function getDayType(diaEncontrado: number): 'today' | 'tomorrow' | 'future' {
@@ -259,6 +547,203 @@ async function apiFootballRequest(endpoint: string, params: Record<string, strin
   return data;
 }
 
+// ============= BUSCAR DADOS AVANÇADOS =============
+
+async function fetchH2H(homeTeamId: number, awayTeamId: number): Promise<AdvancedGameData['h2h'] | undefined> {
+  try {
+    const data = await apiFootballRequest('/fixtures/headtohead', {
+      h2h: `${homeTeamId}-${awayTeamId}`,
+      last: '10'
+    });
+    
+    if (!data.response || data.response.length === 0) return undefined;
+    
+    const games = data.response;
+    let homeWins = 0, awayWins = 0, draws = 0, totalGoals = 0;
+    const lastGames: { home: number; away: number; date: string }[] = [];
+    
+    for (const game of games) {
+      const homeGoals = game.goals.home || 0;
+      const awayGoals = game.goals.away || 0;
+      totalGoals += homeGoals + awayGoals;
+      
+      // Verificar se o time "home" do nosso fixture é o "home" ou "away" no H2H
+      const isHomeTeamHome = game.teams.home.id === homeTeamId;
+      
+      if (homeGoals > awayGoals) {
+        if (isHomeTeamHome) homeWins++;
+        else awayWins++;
+      } else if (awayGoals > homeGoals) {
+        if (isHomeTeamHome) awayWins++;
+        else homeWins++;
+      } else {
+        draws++;
+      }
+      
+      lastGames.push({ home: homeGoals, away: awayGoals, date: game.fixture.date });
+    }
+    
+    return {
+      totalGames: games.length,
+      homeWins,
+      awayWins,
+      draws,
+      avgGoals: totalGoals / games.length,
+      lastGames: lastGames.slice(0, 5)
+    };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar H2H', { error: String(err) });
+    return undefined;
+  }
+}
+
+async function fetchTeamStats(teamId: number, leagueId: number, season: number): Promise<TeamStats | undefined> {
+  try {
+    const data = await apiFootballRequest('/teams/statistics', {
+      team: teamId.toString(),
+      league: leagueId.toString(),
+      season: season.toString()
+    });
+    
+    if (!data.response) return undefined;
+    
+    const stats = data.response;
+    const totalGames = stats.fixtures?.played?.total || 1;
+    const goalsFor = stats.goals?.for?.total?.total || 0;
+    const goalsAgainst = stats.goals?.against?.total?.total || 0;
+    
+    // Calcular percentuais
+    const cleanSheets = ((stats.clean_sheet?.total || 0) / totalGames) * 100;
+    const failedToScore = ((stats.failed_to_score?.total || 0) / totalGames) * 100;
+    
+    return {
+      goalsScored: goalsFor,
+      goalsConceded: goalsAgainst,
+      avgGoalsScored: goalsFor / totalGames,
+      avgGoalsConceded: goalsAgainst / totalGames,
+      cleanSheets,
+      failedToScore,
+      bttsPercentage: 100 - cleanSheets - failedToScore + (cleanSheets * failedToScore / 100), // Aproximação
+      over25Percentage: (goalsFor + goalsAgainst) / totalGames >= 2.5 ? 65 : 45 // Estimativa
+    };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar estatísticas do time', { teamId, error: String(err) });
+    return undefined;
+  }
+}
+
+async function fetchStandings(leagueId: number, season: number, teamId: number): Promise<{ position: number; form: string } | undefined> {
+  try {
+    const data = await apiFootballRequest('/standings', {
+      league: leagueId.toString(),
+      season: season.toString()
+    });
+    
+    if (!data.response || !data.response[0]?.league?.standings) return undefined;
+    
+    const standings = data.response[0].league.standings[0]; // Primeiro grupo (se houver grupos)
+    const teamStanding = standings.find((s: any) => s.team.id === teamId);
+    
+    if (!teamStanding) return undefined;
+    
+    return {
+      position: teamStanding.rank,
+      form: teamStanding.form || ''
+    };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar standings', { leagueId, error: String(err) });
+    return undefined;
+  }
+}
+
+async function fetchInjuries(teamId: number, fixtureId: number): Promise<number> {
+  try {
+    const data = await apiFootballRequest('/injuries', {
+      fixture: fixtureId.toString()
+    });
+    
+    if (!data.response) return 0;
+    
+    return data.response.filter((inj: any) => inj.team.id === teamId).length;
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar lesões', { teamId, error: String(err) });
+    return 0;
+  }
+}
+
+async function fetchPrediction(fixtureId: number): Promise<AdvancedGameData['apiPrediction'] | undefined> {
+  try {
+    const data = await apiFootballRequest('/predictions', {
+      fixture: fixtureId.toString()
+    });
+    
+    if (!data.response || !data.response[0]) return undefined;
+    
+    const pred = data.response[0].predictions;
+    
+    return {
+      winner: pred?.winner?.name,
+      winnerConfidence: pred?.percent?.home ? parseInt(pred.percent.home) : undefined,
+      homeGoals: pred?.goals?.home,
+      awayGoals: pred?.goals?.away,
+      advice: pred?.advice,
+      under_over: pred?.under_over
+    };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar previsão', { fixtureId, error: String(err) });
+    return undefined;
+  }
+}
+
+// ============= BUSCAR DADOS COMPLETOS =============
+
+async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
+  const homeTeamId = fixture.teams.home.id;
+  const awayTeamId = fixture.teams.away.id;
+  const leagueId = fixture.league.id;
+  const season = fixture.league.season;
+  const fixtureId = fixture.fixture.id;
+  
+  secureLog('info', 'Buscando dados avançados', { 
+    fixture: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+    fixtureId 
+  });
+  
+  // Buscar todos os dados em paralelo
+  const [
+    h2h,
+    homeStats,
+    awayStats,
+    homeStanding,
+    awayStanding,
+    homeInjuries,
+    awayInjuries,
+    prediction
+  ] = await Promise.all([
+    fetchH2H(homeTeamId, awayTeamId),
+    fetchTeamStats(homeTeamId, leagueId, season),
+    fetchTeamStats(awayTeamId, leagueId, season),
+    fetchStandings(leagueId, season, homeTeamId),
+    fetchStandings(leagueId, season, awayTeamId),
+    fetchInjuries(homeTeamId, fixtureId),
+    fetchInjuries(awayTeamId, fixtureId),
+    fetchPrediction(fixtureId)
+  ]);
+  
+  return {
+    h2h,
+    homeStats,
+    awayStats,
+    homePosition: homeStanding?.position,
+    awayPosition: awayStanding?.position,
+    homeForm: homeStanding?.form,
+    awayForm: awayStanding?.form,
+    homeInjuries,
+    awayInjuries,
+    apiPrediction: prediction
+  };
+}
+
 // Buscar fixtures e odds da API-Football
 async function fetchOddsFromAPI(lang: string = 'pt') {
   if (!API_KEY) {
@@ -269,7 +754,6 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   const alerts = alertTranslations[lang] || alertTranslations['pt'];
   const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
   
-  // Tentar buscar jogos para os próximos 7 dias
   const hoje = new Date();
   let jogosEncontrados: any[] = [];
   let diaEncontrado = 0;
@@ -278,20 +762,18 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   for (let diasNoFuturo = 0; diasNoFuturo <= 7; diasNoFuturo++) {
     const targetDate = new Date(hoje);
     targetDate.setDate(targetDate.getDate() + diasNoFuturo);
-    const dateStr = targetDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateStr = targetDate.toISOString().split('T')[0];
     
     secureLog('info', `Buscando fixtures para ${dateStr}`);
     
     try {
-      // Buscar fixtures do dia
       const fixturesData = await apiFootballRequest('/fixtures', {
         date: dateStr,
-        status: 'NS', // Not Started
+        status: 'NS',
         timezone: 'America/Sao_Paulo'
       });
       
       if (fixturesData.response && fixturesData.response.length > 0) {
-        // Filtrar jogos que começam em mais de 10 minutos
         const agora = new Date();
         const limiteMinimo = new Date(agora.getTime() + 10 * 60 * 1000);
         
@@ -319,35 +801,28 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível encontrar jogos disponíveis nos próximos 7 dias');
   }
   
-  // Buscar odds para os fixtures encontrados (máximo 5)
-  const fixturesParaOdds = jogosEncontrados.slice(0, 10); // Buscar odds de até 10 para ter margem
+  // Processar até 5 jogos com dados completos
+  const fixturesParaProcessar = jogosEncontrados.slice(0, 5);
   const gamesWithOdds: Game[] = [];
   
-  for (const fixture of fixturesParaOdds) {
-    if (gamesWithOdds.length >= 5) break;
-    
+  for (const fixture of fixturesParaProcessar) {
     try {
       const fixtureId = fixture.fixture.id;
       
-      // Buscar odds do fixture
-      const oddsData = await apiFootballRequest('/odds', {
-        fixture: fixtureId.toString(),
-        bookmaker: '8', // Bet365
-      });
+      // Buscar odds E dados avançados em paralelo
+      const [oddsData, advancedData] = await Promise.all([
+        apiFootballRequest('/odds', { fixture: fixtureId.toString(), bookmaker: '8' }).catch(() => null),
+        fetchAdvancedData(fixture)
+      ]);
       
-      let homeOdd = 2.0;
-      let drawOdd = 3.2;
-      let awayOdd = 3.5;
-      let overOdd = 1.85;
-      let underOdd = 1.9;
-      let bookmakerName = 'Bet365';
+      let homeOdd = 2.0, drawOdd = 3.2, awayOdd = 3.5, overOdd = 1.85, underOdd = 1.9;
+      let bookmakerName = 'N/A';
       
-      if (oddsData.response && oddsData.response.length > 0) {
+      if (oddsData?.response?.length > 0) {
         const bookmaker = oddsData.response[0]?.bookmakers?.[0];
         if (bookmaker) {
           bookmakerName = bookmaker.name;
           
-          // Match Winner (1X2)
           const matchWinner = bookmaker.bets?.find((b: any) => b.name === 'Match Winner');
           if (matchWinner) {
             homeOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Home')?.odd) || homeOdd;
@@ -355,8 +830,7 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
             awayOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Away')?.odd) || awayOdd;
           }
           
-          // Goals Over/Under 2.5
-          const goalsOU = bookmaker.bets?.find((b: any) => b.name === 'Goals Over/Under' && b.values?.some((v: any) => v.value === 'Over 2.5'));
+          const goalsOU = bookmaker.bets?.find((b: any) => b.name === 'Goals Over/Under');
           if (goalsOU) {
             overOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Over 2.5')?.odd) || overOdd;
             underOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Under 2.5')?.odd) || underOdd;
@@ -368,54 +842,31 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
       const dayType = getDayType(diaEncontrado);
       
       gamesWithOdds.push({
-        id: fixture.fixture.id.toString(),
+        id: fixtureId.toString(),
         homeTeam: fixture.teams.home.name,
         awayTeam: fixture.teams.away.name,
+        homeTeamId: fixture.teams.home.id,
+        awayTeamId: fixture.teams.away.id,
         league: fixture.league.name,
+        leagueId: fixture.league.id,
+        season: fixture.league.season,
         startTime: startTime.toISOString(),
         bookmaker: bookmakerName,
-        odds: {
-          home: homeOdd,
-          draw: drawOdd,
-          away: awayOdd,
-          over: overOdd,
-          under: underOdd,
-        },
+        odds: { home: homeOdd, draw: drawOdd, away: awayOdd, over: overOdd, under: underOdd },
         dayType,
-        dayLabel: '', // Será preenchido por translateCachedData
+        dayLabel: '',
+        advancedData
       });
       
-      secureLog('info', 'Jogo processado', { 
+      secureLog('info', 'Jogo processado com dados avançados', { 
         fixture: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
-        league: fixture.league.name 
+        hasH2H: !!advancedData.h2h,
+        hasStats: !!(advancedData.homeStats && advancedData.awayStats),
+        hasPrediction: !!advancedData.apiPrediction
       });
       
     } catch (err) {
-      secureLog('warn', 'Erro ao buscar odds do fixture', { 
-        fixtureId: fixture.fixture.id,
-        error: String(err)
-      });
-      // Continua sem odds, usando valores padrão
-      const startTime = new Date(fixture.fixture.date);
-      const dayType = getDayType(diaEncontrado);
-      
-      gamesWithOdds.push({
-        id: fixture.fixture.id.toString(),
-        homeTeam: fixture.teams.home.name,
-        awayTeam: fixture.teams.away.name,
-        league: fixture.league.name,
-        startTime: startTime.toISOString(),
-        bookmaker: 'N/A',
-        odds: {
-          home: 2.0,
-          draw: 3.2,
-          away: 3.5,
-          over: 1.85,
-          under: 1.9,
-        },
-        dayType,
-        dayLabel: '',
-      });
+      secureLog('error', 'Erro ao processar fixture', { fixtureId: fixture.fixture.id, error: String(err) });
     }
   }
   
@@ -432,7 +883,7 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   
   return { 
     games: gamesWithOdds,
-    remaining: 100, // API-Football não retorna remaining da mesma forma
+    remaining: 100,
     isToday: diaEncontrado === 0,
     alertMessage: mensagem,
     foundDate: dataAlvo.toISOString(),
@@ -446,7 +897,7 @@ const CACHE_DURATION_MINUTES = 10;
 function getCacheKey(): string {
   const hoje = new Date();
   const dataStr = hoje.toISOString().split('T')[0];
-  return `odds_${dataStr}`;
+  return `odds_v2_${dataStr}`; // Nova versão do cache
 }
 
 async function getFromCache(supabaseAdmin: any): Promise<any | null> {
@@ -672,7 +1123,7 @@ serve(async (req) => {
       );
     }
 
-    secureLog('info', 'Buscando dados frescos da API-Football');
+    secureLog('info', 'Buscando dados frescos da API-Football (modo avançado)');
     const result = await fetchOddsFromAPI(validLang);
     
     saveToCache(supabaseAdmin, result).catch(err => 
