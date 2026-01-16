@@ -5,16 +5,43 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Phone, Lock, Loader2, ArrowLeft, Crown } from 'lucide-react';
+import { Eye, EyeOff, Mail, Phone, Lock, Loader2, ArrowLeft, Crown, Globe } from 'lucide-react';
 import eugineLogo from '@/assets/eugine-logo-new.png';
 import { z } from 'zod';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type AuthMode = 'login' | 'register' | 'reset';
 
+// Country data with phone codes and timezones
+const COUNTRIES = [
+  { code: 'BR', name: 'Brasil', phoneCode: '+55', timezone: 'America/Sao_Paulo', flag: '🇧🇷' },
+  { code: 'US', name: 'United States', phoneCode: '+1', timezone: 'America/New_York', flag: '🇺🇸' },
+  { code: 'PT', name: 'Portugal', phoneCode: '+351', timezone: 'Europe/Lisbon', flag: '🇵🇹' },
+  { code: 'ES', name: 'España', phoneCode: '+34', timezone: 'Europe/Madrid', flag: '🇪🇸' },
+  { code: 'IT', name: 'Italia', phoneCode: '+39', timezone: 'Europe/Rome', flag: '🇮🇹' },
+  { code: 'DE', name: 'Deutschland', phoneCode: '+49', timezone: 'Europe/Berlin', flag: '🇩🇪' },
+  { code: 'FR', name: 'France', phoneCode: '+33', timezone: 'Europe/Paris', flag: '🇫🇷' },
+  { code: 'GB', name: 'United Kingdom', phoneCode: '+44', timezone: 'Europe/London', flag: '🇬🇧' },
+  { code: 'AR', name: 'Argentina', phoneCode: '+54', timezone: 'America/Argentina/Buenos_Aires', flag: '🇦🇷' },
+  { code: 'MX', name: 'México', phoneCode: '+52', timezone: 'America/Mexico_City', flag: '🇲🇽' },
+  { code: 'CO', name: 'Colombia', phoneCode: '+57', timezone: 'America/Bogota', flag: '🇨🇴' },
+  { code: 'CL', name: 'Chile', phoneCode: '+56', timezone: 'America/Santiago', flag: '🇨🇱' },
+  { code: 'PE', name: 'Perú', phoneCode: '+51', timezone: 'America/Lima', flag: '🇵🇪' },
+  { code: 'JP', name: '日本', phoneCode: '+81', timezone: 'Asia/Tokyo', flag: '🇯🇵' },
+  { code: 'AU', name: 'Australia', phoneCode: '+61', timezone: 'Australia/Sydney', flag: '🇦🇺' },
+  { code: 'CA', name: 'Canada', phoneCode: '+1', timezone: 'America/Toronto', flag: '🇨🇦' },
+];
+
 export default function Auth() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -22,13 +49,18 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedCountry, setSelectedCountry] = useState('BR');
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Get selected country data
+  const countryData = COUNTRIES.find(c => c.code === selectedCountry) || COUNTRIES[0];
+
   const signUpSchema = z.object({
     email: z.string().trim().email({ message: t('auth.errors.invalidEmail') }),
-    phone: z.string().trim().min(10, { message: t('auth.errors.phoneMin') }).max(15),
+    phone: z.string().trim().min(8, { message: t('auth.errors.phoneMin') }).max(20),
     password: z.string().min(6, { message: t('auth.errors.passwordMin') }),
+    country: z.string().min(2, { message: t('auth.errors.countryRequired') }),
   });
 
   const signInSchema = z.object({
@@ -131,7 +163,8 @@ export default function Auth() {
           }
         }
       } else {
-        const result = signUpSchema.safeParse({ email, phone, password });
+        const fullPhone = `${countryData.phoneCode} ${phone.trim()}`;
+        const result = signUpSchema.safeParse({ email, phone, password, country: selectedCountry });
         if (!result.success) {
           const fieldErrors: Record<string, string> = {};
           result.error.errors.forEach((err) => {
@@ -152,7 +185,9 @@ export default function Auth() {
           options: {
             emailRedirectTo: redirectUrl,
             data: {
-              phone: phone.trim(),
+              phone: fullPhone,
+              country_code: selectedCountry,
+              timezone: countryData.timezone,
             },
           },
         });
@@ -270,21 +305,56 @@ export default function Auth() {
             </div>
 
             {mode === 'register' && (
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-slate-300">{t('auth.phone')}</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder={t('auth.phonePlaceholder')}
-                    className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
-                  />
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-slate-300">{t('auth.country')}</Label>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-slate-500" />
+                        <SelectValue placeholder={t('auth.selectCountry')} />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700 max-h-60">
+                      {COUNTRIES.map((country) => (
+                        <SelectItem 
+                          key={country.code} 
+                          value={country.code}
+                          className="text-white hover:bg-slate-700 focus:bg-slate-700"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span>{country.flag}</span>
+                            <span>{country.name}</span>
+                            <span className="text-slate-400 text-sm">({country.phoneCode})</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.country && <p className="text-red-400 text-sm">{errors.country}</p>}
                 </div>
-                {errors.phone && <p className="text-red-400 text-sm">{errors.phone}</p>}
-              </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-slate-300">{t('auth.phone')}</Label>
+                  <div className="relative flex gap-2">
+                    <div className="flex items-center bg-slate-800/50 border border-slate-700 rounded-md px-3 text-slate-400 text-sm min-w-[70px] justify-center">
+                      {countryData.phoneCode}
+                    </div>
+                    <div className="relative flex-1">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder={t('auth.phonePlaceholder')}
+                        className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                      />
+                    </div>
+                  </div>
+                  {errors.phone && <p className="text-red-400 text-sm">{errors.phone}</p>}
+                </div>
+              </>
             )}
 
             {mode !== 'reset' && (
