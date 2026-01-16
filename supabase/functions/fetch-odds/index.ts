@@ -803,10 +803,12 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível encontrar jogos disponíveis nos próximos 7 dias');
   }
   
-  // Processar jogos sequencialmente com delay para respeitar rate limit da API-Football
-  // (Até 10 jogos - Premium terá acesso a todos, outros tiers serão filtrados depois)
-  const fixturesParaProcessar = jogosEncontrados.slice(0, 10);
-  const gamesWithOdds: Game[] = [];
+  // ===== SISTEMA DE SELEÇÃO INTELIGENTE =====
+  // Buscar mais jogos (até 20) para poder selecionar os 10 melhores
+  const fixturesParaProcessar = jogosEncontrados.slice(0, 20);
+  const allGamesWithData: (Game & { qualityScore: number })[] = [];
+  
+  secureLog('info', `Processando ${fixturesParaProcessar.length} jogos para seleção inteligente`);
   
   for (let i = 0; i < fixturesParaProcessar.length; i++) {
     const fixture = fixturesParaProcessar[i];
@@ -814,65 +816,113 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     try {
       const fixtureId = fixture.fixture.id;
       
-      // Delay entre jogos para não exceder rate limit (exceto no primeiro)
+      // Delay entre jogos para respeitar rate limit (exceto no primeiro)
       if (i > 0) {
-        await delay(500); // 500ms entre cada jogo
+        await delay(400);
       }
       
-      // Buscar odds E dados avançados (já com delay interno)
+      // Buscar odds E dados avançados
       const [oddsData, advancedData] = await Promise.all([
         apiFootballRequest('/odds', { fixture: fixtureId.toString(), bookmaker: '8' }).catch(() => null),
         fetchAdvancedData(fixture)
       ]);
       
-      let homeOdd = 2.0, drawOdd = 3.2, awayOdd = 3.5, overOdd = 1.85, underOdd = 1.9;
+      let homeOdd = 0, drawOdd = 0, awayOdd = 0, overOdd = 0, underOdd = 0;
       let bookmakerName = 'N/A';
+      let hasValidOdds = false;
       
       if (oddsData?.response?.length > 0) {
         const bookmaker = oddsData.response[0]?.bookmakers?.[0];
         if (bookmaker) {
           bookmakerName = bookmaker.name;
+          hasValidOdds = true;
           
           const matchWinner = bookmaker.bets?.find((b: any) => b.name === 'Match Winner');
           if (matchWinner) {
-            homeOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Home')?.odd) || homeOdd;
-            drawOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Draw')?.odd) || drawOdd;
-            awayOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Away')?.odd) || awayOdd;
+            homeOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Home')?.odd) || 0;
+            drawOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Draw')?.odd) || 0;
+            awayOdd = parseFloat(matchWinner.values.find((v: any) => v.value === 'Away')?.odd) || 0;
           }
           
           const goalsOU = bookmaker.bets?.find((b: any) => b.name === 'Goals Over/Under');
           if (goalsOU) {
-            overOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Over 2.5')?.odd) || overOdd;
-            underOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Under 2.5')?.odd) || underOdd;
+            overOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Over 2.5')?.odd) || 0;
+            underOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Under 2.5')?.odd) || 0;
           }
         }
+      }
+      
+      // ===== CALCULAR QUALITY SCORE (0-100) =====
+      let qualityScore = 0;
+      
+      // 1. Odds válidas (+25 pontos base)
+      if (hasValidOdds && homeOdd > 0 && awayOdd > 0) {
+        qualityScore += 25;
+        
+        // Bonus para odds equilibradas (indica jogo competitivo)
+        const oddsRange = Math.abs(homeOdd - awayOdd);
+        if (oddsRange < 1.0) qualityScore += 10; // Jogo muito equilibrado
+        else if (oddsRange < 2.0) qualityScore += 5; // Jogo equilibrado
+      }
+      
+      // 2. H2H disponível (+15 pontos)
+      if (advancedData.h2h && advancedData.h2h.totalGames >= 3) {
+        qualityScore += 15;
+      }
+      
+      // 3. Form disponível (+10 pontos)
+      if (advancedData.homeForm && advancedData.awayForm) {
+        qualityScore += 10;
+      }
+      
+      // 4. Posições na tabela (+10 pontos)
+      if (advancedData.homePosition && advancedData.awayPosition) {
+        qualityScore += 10;
+      }
+      
+      // 5. Estatísticas de times (+15 pontos)
+      if (advancedData.homeStats && advancedData.awayStats) {
+        qualityScore += 15;
+      }
+      
+      // 6. Previsão da API (+10 pontos)
+      if (advancedData.apiPrediction?.advice) {
+        qualityScore += 10;
+      }
+      
+      // 7. Lesões registradas (+5 pontos - dados de lesões são importantes)
+      if (advancedData.homeInjuries !== undefined && advancedData.awayInjuries !== undefined) {
+        qualityScore += 5;
       }
       
       const startTime = new Date(fixture.fixture.date);
       const dayType = getDayType(diaEncontrado);
       
-      gamesWithOdds.push({
-        id: fixtureId.toString(),
-        homeTeam: fixture.teams.home.name,
-        awayTeam: fixture.teams.away.name,
-        homeTeamId: fixture.teams.home.id,
-        awayTeamId: fixture.teams.away.id,
-        league: fixture.league.name,
-        leagueId: fixture.league.id,
-        season: fixture.league.season,
-        startTime: startTime.toISOString(),
-        bookmaker: bookmakerName,
-        odds: { home: homeOdd, draw: drawOdd, away: awayOdd, over: overOdd, under: underOdd },
-        dayType,
-        dayLabel: '',
-        advancedData
-      });
+      // Só adicionar jogos com odds válidas
+      if (hasValidOdds && homeOdd > 0) {
+        allGamesWithData.push({
+          id: fixtureId.toString(),
+          homeTeam: fixture.teams.home.name,
+          awayTeam: fixture.teams.away.name,
+          homeTeamId: fixture.teams.home.id,
+          awayTeamId: fixture.teams.away.id,
+          league: fixture.league.name,
+          leagueId: fixture.league.id,
+          season: fixture.league.season,
+          startTime: startTime.toISOString(),
+          bookmaker: bookmakerName,
+          odds: { home: homeOdd, draw: drawOdd, away: awayOdd, over: overOdd, under: underOdd },
+          dayType,
+          dayLabel: '',
+          advancedData,
+          qualityScore
+        });
+      }
       
-      secureLog('info', `Jogo ${i + 1}/${fixturesParaProcessar.length} processado`, { 
+      secureLog('info', `Jogo ${i + 1}/${fixturesParaProcessar.length} avaliado`, { 
         fixture: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
-        hasH2H: !!advancedData.h2h,
-        hasStats: !!(advancedData.homeStats && advancedData.awayStats),
-        hasPrediction: !!advancedData.apiPrediction
+        qualityScore,
+        hasOdds: hasValidOdds
       });
       
     } catch (err) {
@@ -880,9 +930,25 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     }
   }
   
-  if (gamesWithOdds.length === 0) {
+  if (allGamesWithData.length === 0) {
     throw new Error('Não foi possível processar os jogos encontrados');
   }
+  
+  // ===== SELECIONAR OS 10 MELHORES JOGOS =====
+  // Ordenar por qualityScore (maior primeiro)
+  allGamesWithData.sort((a, b) => b.qualityScore - a.qualityScore);
+  
+  // Pegar os 10 melhores
+  const gamesWithOdds: Game[] = allGamesWithData.slice(0, 10).map(({ qualityScore, ...game }) => game);
+  
+  secureLog('info', 'Jogos selecionados por qualidade', { 
+    totalAvaliados: allGamesWithData.length,
+    selecionados: gamesWithOdds.length,
+    topScores: allGamesWithData.slice(0, 10).map(g => ({ 
+      game: `${g.homeTeam} vs ${g.awayTeam}`, 
+      score: g.qualityScore 
+    }))
+  });
   
   const diaTexto = dataAlvo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
   const mensagem = diaEncontrado === 0 ? alerts.today :
