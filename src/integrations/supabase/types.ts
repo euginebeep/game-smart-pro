@@ -97,6 +97,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          country_code: string | null
           created_at: string
           email: string
           id: string
@@ -107,12 +108,14 @@ export type Database = {
           subscription_end_date: string | null
           subscription_status: string | null
           subscription_tier: string
+          timezone: string | null
           trial_end_date: string
           trial_start_date: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          country_code?: string | null
           created_at?: string
           email: string
           id?: string
@@ -123,12 +126,14 @@ export type Database = {
           subscription_end_date?: string | null
           subscription_status?: string | null
           subscription_tier?: string
+          timezone?: string | null
           trial_end_date?: string
           trial_start_date?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          country_code?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -139,6 +144,7 @@ export type Database = {
           subscription_end_date?: string | null
           subscription_status?: string | null
           subscription_tier?: string
+          timezone?: string | null
           trial_end_date?: string
           trial_start_date?: string
           updated_at?: string
