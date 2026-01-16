@@ -30,6 +30,10 @@ interface Profile {
   subscription_tier: 'free' | 'basic' | 'advanced' | 'premium';
   subscription_status: 'inactive' | 'active' | 'canceled' | 'past_due' | null;
   subscription_end_date: string | null;
+  country_code: string | null;
+  timezone: string | null;
+  city: string | null;
+  state: string | null;
 }
 
 interface SubscriptionState {

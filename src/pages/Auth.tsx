@@ -67,6 +67,42 @@ const validatePhoneForCountry = (phone: string, countryCode: string): boolean =>
   return digitsOnly.length >= min && digitsOnly.length <= max;
 };
 
+// Brazilian states
+const BRAZILIAN_STATES = [
+  { code: 'AC', name: 'Acre' }, { code: 'AL', name: 'Alagoas' }, { code: 'AP', name: 'Amapá' },
+  { code: 'AM', name: 'Amazonas' }, { code: 'BA', name: 'Bahia' }, { code: 'CE', name: 'Ceará' },
+  { code: 'DF', name: 'Distrito Federal' }, { code: 'ES', name: 'Espírito Santo' }, { code: 'GO', name: 'Goiás' },
+  { code: 'MA', name: 'Maranhão' }, { code: 'MT', name: 'Mato Grosso' }, { code: 'MS', name: 'Mato Grosso do Sul' },
+  { code: 'MG', name: 'Minas Gerais' }, { code: 'PA', name: 'Pará' }, { code: 'PB', name: 'Paraíba' },
+  { code: 'PR', name: 'Paraná' }, { code: 'PE', name: 'Pernambuco' }, { code: 'PI', name: 'Piauí' },
+  { code: 'RJ', name: 'Rio de Janeiro' }, { code: 'RN', name: 'Rio Grande do Norte' }, { code: 'RS', name: 'Rio Grande do Sul' },
+  { code: 'RO', name: 'Rondônia' }, { code: 'RR', name: 'Roraima' }, { code: 'SC', name: 'Santa Catarina' },
+  { code: 'SP', name: 'São Paulo' }, { code: 'SE', name: 'Sergipe' }, { code: 'TO', name: 'Tocantins' },
+];
+
+// Phone mask function
+const applyPhoneMask = (value: string, countryCode: string): string => {
+  const digits = value.replace(/\D/g, '');
+  
+  if (countryCode === 'BR') {
+    // Brazilian format: (11) 99999-9999
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+  }
+  
+  if (countryCode === 'US' || countryCode === 'CA') {
+    // US/Canada format: (202) 555-1234
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+  }
+  
+  // Default: just add spaces every 3 digits
+  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+};
+
 export default function Auth() {
   const { t, language } = useLanguage();
   const [mode, setMode] = useState<AuthMode>('login');
@@ -77,6 +113,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedCountry, setSelectedCountry] = useState('BR');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -196,8 +234,9 @@ export default function Auth() {
           }
         }
       } else {
-        const fullPhone = `${countryData.phoneCode} ${phone.trim()}`;
-        const result = signUpSchema.safeParse({ email, phone, password, country: selectedCountry });
+        const phoneDigits = phone.replace(/\D/g, '');
+        const fullPhone = `${countryData.phoneCode} ${phoneDigits}`;
+        const result = signUpSchema.safeParse({ email, phone: phoneDigits, password, country: selectedCountry });
         if (!result.success) {
           const fieldErrors: Record<string, string> = {};
           result.error.errors.forEach((err) => {
@@ -221,6 +260,8 @@ export default function Auth() {
               phone: fullPhone,
               country_code: selectedCountry,
               timezone: countryData.timezone,
+              city: city.trim() || null,
+              state: state || null,
             },
           },
         });
@@ -380,11 +421,10 @@ export default function Auth() {
                         type="tel"
                         value={phone}
                         onChange={(e) => {
-                          // Allow only digits, spaces, and dashes
-                          const value = e.target.value.replace(/[^\d\s\-]/g, '');
-                          setPhone(value);
+                          const masked = applyPhoneMask(e.target.value, selectedCountry);
+                          setPhone(masked);
                         }}
-                        placeholder={countryData.phoneExample}
+                        placeholder={selectedCountry === 'BR' ? '(11) 99999-9999' : countryData.phoneExample}
                         className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
                       />
                     </div>
@@ -396,6 +436,43 @@ export default function Auth() {
                     }
                   </p>
                   {errors.phone && <p className="text-red-400 text-sm">{errors.phone}</p>}
+                </div>
+
+                {/* State (for Brazil) */}
+                {selectedCountry === 'BR' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="state" className="text-slate-300">{t('profile.state')}</Label>
+                    <Select value={state} onValueChange={setState}>
+                      <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                        <SelectValue placeholder={t('profile.selectState')} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700 max-h-60">
+                        {BRAZILIAN_STATES.map((s) => (
+                          <SelectItem 
+                            key={s.code} 
+                            value={s.code}
+                            className="text-white hover:bg-slate-700 focus:bg-slate-700"
+                          >
+                            {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* City */}
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-slate-300">{t('profile.city')}</Label>
+                  <Input
+                    id="city"
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder={t('profile.cityPlaceholder')}
+                    className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                    maxLength={100}
+                  />
                 </div>
               </>
             )}

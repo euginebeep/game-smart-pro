@@ -44,6 +44,27 @@ export type Database = {
         }
         Relationships: []
       }
+      api_usage: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_searches: {
         Row: {
           created_at: string
@@ -97,12 +118,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          city: string | null
           country_code: string | null
           created_at: string
           email: string
           id: string
           is_active: boolean
           phone: string | null
+          state: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_end_date: string | null
@@ -115,12 +138,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          city?: string | null
           country_code?: string | null
           created_at?: string
           email: string
           id?: string
           is_active?: boolean
           phone?: string | null
+          state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_end_date?: string | null
@@ -133,12 +158,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          city?: string | null
           country_code?: string | null
           created_at?: string
           email?: string
           id?: string
           is_active?: boolean
           phone?: string | null
+          state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_end_date?: string | null
