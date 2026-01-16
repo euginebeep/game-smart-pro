@@ -6,6 +6,7 @@ import { Alert } from '@/components/Alert';
 import { EmptyState } from '@/components/EmptyState';
 import { AccumulatorsSection } from '@/components/AccumulatorsSection';
 import { PremiumDoubleSection } from '@/components/PremiumDoubleSection';
+import { FavoritesDoubleSection } from '@/components/FavoritesDoubleSection';
 import { ZebraSection } from '@/components/ZebraSection';
 import { TrialBanner } from '@/components/TrialBanner';
 import { PricingSection } from '@/components/PricingSection';
@@ -193,6 +194,9 @@ const Index = () => {
 
               {/* Section 2: Premium Double */}
               <PremiumDoubleSection games={games} />
+
+              {/* Section 3: Favorites Double (Premium Only) */}
+              {userTier === 'premium' && <FavoritesDoubleSection games={games} />}
 
               {/* Section 3: Zebra of the Day */}
               <ZebraSection games={games} userTier={userTier} />

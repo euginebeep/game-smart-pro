@@ -138,6 +138,7 @@ const translations: Record<Language, any> = {
       lastUpdate: "Última atualização",
       error: "Erro",
       signOut: "Sair",
+      premiumExclusive: "Exclusivo Premium",
     },
     profile: {
       title: "Meu Perfil",
@@ -266,6 +267,14 @@ const translations: Record<Language, any> = {
       totalOdd: "Odd Total",
       chanceOfSuccess: "Chance de Acerto",
       return: "Retorno",
+    },
+    favoritesDouble: {
+      title: "⭐ Dupla dos Favoritos",
+      subtitle: "Apostas em times favoritos com",
+      highProbability: "alta probabilidade",
+      cardTitle: "Dupla dos Favoritos",
+      favorites: "FAVORITOS",
+      profit: "lucro",
     },
     zebra: {
       title: "ZEBRA DO DIA",
@@ -653,6 +662,7 @@ const translations: Record<Language, any> = {
       lastUpdate: "Last updated",
       error: "Error",
       signOut: "Sign Out",
+      premiumExclusive: "Premium Exclusive",
     },
     profile: {
       title: "My Profile",
@@ -781,6 +791,14 @@ const translations: Record<Language, any> = {
       totalOdd: "Total Odd",
       chanceOfSuccess: "Success Rate",
       return: "Return",
+    },
+    favoritesDouble: {
+      title: "⭐ Favorites Double",
+      subtitle: "Bets on favorite teams with",
+      highProbability: "high probability",
+      cardTitle: "Favorites Double",
+      favorites: "FAVORITES",
+      profit: "profit",
     },
     zebra: {
       title: "ZEBRA OF THE DAY",
@@ -1168,6 +1186,7 @@ const translations: Record<Language, any> = {
       lastUpdate: "Última actualización",
       error: "Error",
       signOut: "Cerrar sesión",
+      premiumExclusive: "Exclusivo Premium",
     },
     profile: {
       title: "Mi Perfil",
@@ -1296,6 +1315,14 @@ const translations: Record<Language, any> = {
       totalOdd: "Cuota Total",
       chanceOfSuccess: "Probabilidad de Acierto",
       return: "Retorno",
+    },
+    favoritesDouble: {
+      title: "⭐ Doble de Favoritos",
+      subtitle: "Apuestas en equipos favoritos con",
+      highProbability: "alta probabilidad",
+      cardTitle: "Doble de Favoritos",
+      favorites: "FAVORITOS",
+      profit: "ganancia",
     },
     zebra: {
       title: "ZEBRA DEL DÍA",
@@ -1683,6 +1710,7 @@ const translations: Record<Language, any> = {
       lastUpdate: "Ultimo aggiornamento",
       error: "Errore",
       signOut: "Esci",
+      premiumExclusive: "Esclusivo Premium",
     },
     profile: {
       title: "Il Mio Profilo",
@@ -1811,6 +1839,14 @@ const translations: Record<Language, any> = {
       totalOdd: "Quota Totale",
       chanceOfSuccess: "Probabilità di Successo",
       return: "Ritorno",
+    },
+    favoritesDouble: {
+      title: "⭐ Doppia dei Favoriti",
+      subtitle: "Scommesse su squadre favorite con",
+      highProbability: "alta probabilità",
+      cardTitle: "Doppia dei Favoriti",
+      favorites: "FAVORITI",
+      profit: "profitto",
     },
     zebra: {
       title: "ZEBRA DEL GIORNO",
