@@ -9,9 +9,9 @@ interface FavoritesDoubleSectionProps {
 export function FavoritesDoubleSection({ games }: FavoritesDoubleSectionProps) {
   const { t } = useLanguage();
   
-  // Find two games with the lowest home odds (strongest favorites)
+  // Find two games with odds between 1.60 and 2.20 (high probability favorites)
   const sortedByFavorite = [...games]
-    .filter(g => g.odds.home > 1.10 && g.odds.home < 1.70)
+    .filter(g => g.odds.home >= 1.60 && g.odds.home <= 2.20)
     .sort((a, b) => a.odds.home - b.odds.home)
     .slice(0, 2);
 
