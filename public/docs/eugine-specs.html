@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EUGINE - Especificações Técnicas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    
+    @media print {
+      body { background: white; color: #1e293b; padding: 1rem; }
+      .no-print { display: none; }
+      h1, h2, h3 { color: #0f172a; }
+      pre, code { background: #f1f5f9 !important; color: #1e293b !important; }
+      .card { border: 1px solid #e2e8f0; background: #f8fafc; }
+      table { border-color: #e2e8f0; }
+      th { background: #f1f5f9 !important; color: #1e293b !important; }
+      td { border-color: #e2e8f0 !important; }
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid var(--primary);
+    }
+    
+    .logo {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+    
+    .meta {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    h1 { font-size: 2rem; margin: 2.5rem 0 1rem; color: var(--primary); }
+    h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--text-muted); }
+    
+    p { margin: 1rem 0; }
+    
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+    }
+    
+    pre {
+      background: #0d1117;
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      margin: 1rem 0;
+      border: 1px solid var(--border);
+    }
+    
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: var(--primary);
+    }
+    
+    pre code {
+      background: none;
+      padding: 0;
+      color: #e2e8f0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    th {
+      background: var(--bg-card);
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    ul, ol {
+      margin: 1rem 0;
+      padding-left: 1.5rem;
+    }
+    
+    li { margin: 0.5rem 0; }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    
+    .feature-card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+    }
+    
+    .feature-card h4 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    
+    .badge-primary { background: rgba(16, 185, 129, 0.2); color: var(--primary); }
+    .badge-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .badge-purple { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+    .badge-amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    
+    .diagram {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      text-align: center;
+      border: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      white-space: pre;
+      overflow-x: auto;
+      text-align: left;
+    }
+    
+    .print-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+      transition: transform 0.2s;
+    }
+    
+    .print-btn:hover { transform: scale(1.05); }
+    
+    .toc {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      border: 1px solid var(--border);
+    }
+    
+    .toc h3 { margin-top: 0; }
+    
+    .toc ol {
+      columns: 2;
+      column-gap: 2rem;
+    }
+    
+    .toc a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    
+    .toc a:hover { color: var(--primary); }
+    
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <button class="print-btn no-print" onclick="window.print()">📄 Salvar como PDF</button>
+
+  <div class="header">
+    <div class="logo">EUGINE</div>
+    <div class="subtitle">Sistema Profissional de Análise de Apostas Esportivas</div>
+    <div class="meta">
+      <span class="badge badge-primary">Versão 3.0</span>
+      <span class="badge badge-blue">Janeiro 2026</span>
+      <span class="badge badge-purple">GS ItalyInvestments</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>📋 Índice</h3>
+    <ol>
+      <li><a href="#overview">Visão Geral do Sistema</a></li>
+      <li><a href="#architecture">Arquitetura Técnica</a></li>
+      <li><a href="#database">Banco de Dados</a></li>
+      <li><a href="#analysis">Motor de Análise</a></li>
+      <li><a href="#functions">Edge Functions</a></li>
+      <li><a href="#auth">Sistema de Autenticação</a></li>
+      <li><a href="#subscriptions">Planos e Assinaturas</a></li>
+      <li><a href="#security">Segurança</a></li>
+      <li><a href="#apis">APIs Externas</a></li>
+      <li><a href="#frontend">Frontend</a></li>
+    </ol>
+  </div>
+
+  <h1 id="overview">1. Visão Geral do Sistema</h1>
+  
+  <div class="card">
+    <h3>Propósito</h3>
+    <p>EUGINE é um sistema de análise de apostas esportivas que consome dados da API-Football para gerar recomendações automáticas de alta probabilidade em futebol.</p>
+  </div>
+
+  <h2>Funcionalidades Principais</h2>
+  <div class="grid">
+    <div class="feature-card">
+      <h4>🎯 Análise Automatizada</h4>
+      <p>Processamento de H2H, forma, classificação, lesões e estatísticas</p>
+    </div>
+    <div class="feature-card">
+      <h4>📊 Score de Confiança</h4>
+      <p>Cálculo de confiança de 0-100% para cada recomendação</p>
+    </div>
+    <div class="feature-card">
+      <h4>🔐 Anti-Multi-Login</h4>
+      <p>Uma sessão por conta com validação SHA-256</p>
+    </div>
+    <div class="feature-card">
+      <h4>👑 Sistema de Tiers</h4>
+      <p>Basic, Advanced e Premium com diferentes níveis de análise</p>
+    </div>
+    <div class="feature-card">
+      <h4>🌍 Multilíngue</h4>
+      <p>Suporte a Português e Inglês com tradução dinâmica</p>
+    </div>
+    <div class="feature-card">
+      <h4>⚙️ Painel Admin</h4>
+      <p>Gestão completa de usuários e analytics</p>
+    </div>
+  </div>
+
+  <h2>Stack Tecnológica</h2>
+  <div class="grid">
+    <div class="card">
+      <h4>Frontend</h4>
+      <ul>
+        <li>React 18.3.1</li>
+        <li>TypeScript</li>
+        <li>Vite</li>
+        <li>Tailwind CSS</li>
+        <li>shadcn/ui</li>
+        <li>React Query</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Backend</h4>
+      <ul>
+        <li>Supabase (PostgreSQL)</li>
+        <li>Edge Functions (Deno)</li>
+        <li>Row Level Security (RLS)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Integrações</h4>
+      <ul>
+        <li>API-Football</li>
+        <li>Stripe</li>
+        <li>Resend</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <h1 id="architecture">2. Arquitetura Técnica</h1>
+
+  <div class="diagram">
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│    Frontend     │────▶│  Edge Functions  │────▶│  API-Football   │
+│    (React)      │◀────│   (Supabase)     │◀────│   (Externo)     │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+                               │
+                               ▼
+                        ┌──────────────────┐
+                        │    PostgreSQL    │
+                        │   (Supabase)     │
+                        └──────────────────┘
+  </div>
+
+  <h2>Estratégia de Cache</h2>
+  <div class="card">
+    <ul>
+      <li>Cache de <strong>10 minutos</strong> para dados da API-Football</li>
+      <li>Armazenado na tabela <code>odds_cache</code></li>
+      <li>Tradução dinâmica em tempo real (não afeta cache)</li>
+      <li>Cleanup automático de cache expirado via função SQL</li>
+    </ul>
+  </div>
+
+  <h2>Controle de Rate Limiting</h2>
+  <div class="card">
+    <ul>
+      <li>Delays sequenciais entre chamadas à API (200-400ms)</li>
+      <li>Evita suspensão de conta por excesso de requisições</li>
+      <li>Sistema de detecção e log de falhas de API</li>
+    </ul>
+  </div>
+
+  <h1 id="database">3. Banco de Dados</h1>
+
+  <h2>Tabelas Principais</h2>
+  <table>
+    <tr>
+      <th>Tabela</th>
+      <th>Descrição</th>
+      <th>RLS</th>
+    </tr>
+    <tr>
+      <td><code>profiles</code></td>
+      <td>Dados de usuário, assinatura, trial</td>
+      <td>✅ user_id = auth.uid()</td>
+    </tr>
+    <tr>
+      <td><code>daily_searches</code></td>
+      <td>Contador de buscas diárias por usuário</td>
+      <td>✅ user_id = auth.uid()</td>
+    </tr>
+    <tr>
+      <td><code>active_sessions</code></td>
+      <td>Sessões ativas (anti-multi-login)</td>
+      <td>✅ user_id = auth.uid()</td>
+    </tr>
+    <tr>
+      <td><code>api_usage</code></td>
+      <td>Log de chamadas de API</td>
+      <td>✅ user_id = auth.uid()</td>
+    </tr>
+    <tr>
+      <td><code>user_roles</code></td>
+      <td>Roles de admin/user</td>
+      <td>✅ has_role() check</td>
+    </tr>
+    <tr>
+      <td><code>odds_cache</code></td>
+      <td>Cache de dados da API</td>
+      <td>📖 Read-only</td>
+    </tr>
+    <tr>
+      <td><code>subscription_plans</code></td>
+      <td>Planos de assinatura</td>
+      <td>📖 Read-only</td>
+    </tr>
+  </table>
+
+  <h2>Funções SQL</h2>
+  <table>
+    <tr>
+      <th>Função</th>
+      <th>Descrição</th>
+    </tr>
+    <tr>
+      <td><code>increment_search_count()</code></td>
+      <td>Incrementa contador e verifica limites por tier</td>
+    </tr>
+    <tr>
+      <td><code>get_remaining_searches()</code></td>
+      <td>Retorna buscas restantes sem incrementar</td>
+    </tr>
+    <tr>
+      <td><code>has_role()</code></td>
+      <td>Verifica se usuário tem role específica</td>
+    </tr>
+    <tr>
+      <td><code>handle_new_user()</code></td>
+      <td>Trigger que cria profile após signup</td>
+    </tr>
+    <tr>
+      <td><code>cleanup_expired_cache()</code></td>
+      <td>Remove cache expirado</td>
+    </tr>
+  </table>
+
+  <div class="page-break"></div>
+
+  <h1 id="analysis">4. Motor de Análise</h1>
+
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                    MOTOR DE ANÁLISE EUGINE                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │    H2H      │  │   Form      │  │  Standings  │             │
+│  │  (10-20%)   │  │  (15-25%)   │  │  (10-15%)   │             │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
+│         │                │                │                     │
+│         └────────────────┼────────────────┘                     │
+│                          ▼                                      │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │  Injuries   │  │ Statistics  │  │   Odds      │             │
+│  │   (5-15%)   │  │  (20-30%)   │  │  (10-20%)   │             │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
+│         │                │                │                     │
+│         └────────────────┼────────────────┘                     │
+│                          ▼                                      │
+│              ┌───────────────────────┐                          │
+│              │   CONFIDENCE SCORE    │                          │
+│              │       (0-100%)        │                          │
+│              └───────────────────────┘                          │
+└─────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <h2>Pesos de Análise</h2>
+  <table>
+    <tr>
+      <th>Fator</th>
+      <th>Peso</th>
+      <th>Descrição</th>
+    </tr>
+    <tr>
+      <td>Estatísticas</td>
+      <td>25%</td>
+      <td>Gols marcados/sofridos, over/under, BTTS</td>
+    </tr>
+    <tr>
+      <td>Forma Recente</td>
+      <td>20%</td>
+      <td>Últimos 5 jogos (WWDLW)</td>
+    </tr>
+    <tr>
+      <td>Head-to-Head</td>
+      <td>15%</td>
+      <td>Histórico de confrontos diretos</td>
+    </tr>
+    <tr>
+      <td>Valor das Odds</td>
+      <td>15%</td>
+      <td>Análise de value betting</td>
+    </tr>
+    <tr>
+      <td>Classificação</td>
+      <td>10%</td>
+      <td>Posição na tabela</td>
+    </tr>
+    <tr>
+      <td>Lesões</td>
+      <td>10%</td>
+      <td>Jogadores importantes ausentes</td>
+    </tr>
+    <tr>
+      <td>API Prediction</td>
+      <td>5%</td>
+      <td>Previsão nativa da API-Football</td>
+    </tr>
+  </table>
+
+  <h2>Tipos de Recomendação</h2>
+  <div class="grid">
+    <div class="card">
+      <code>home</code> - Vitória casa<br>
+      <code>away</code> - Vitória visitante<br>
+      <code>draw</code> - Empate
+    </div>
+    <div class="card">
+      <code>over</code> - Mais de 2.5 gols<br>
+      <code>under</code> - Menos de 2.5 gols<br>
+      <code>btts_yes/no</code> - Ambas marcam
+    </div>
+    <div class="card">
+      <code>double_chance</code> - Dupla chance<br>
+      <code>skip</code> - Não apostar (risco alto)
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <h1 id="functions">5. Edge Functions</h1>
+
+  <table>
+    <tr>
+      <th>Função</th>
+      <th>Descrição</th>
+    </tr>
+    <tr>
+      <td><code>fetch-odds</code></td>
+      <td>Busca e análise de odds (principal)</td>
+    </tr>
+    <tr>
+      <td><code>check-subscription</code></td>
+      <td>Verificação de status de assinatura</td>
+    </tr>
+    <tr>
+      <td><code>validate-session</code></td>
+      <td>Anti-multi-login com hash SHA-256</td>
+    </tr>
+    <tr>
+      <td><code>admin-users</code></td>
+      <td>Gestão de usuários (admin only)</td>
+    </tr>
+    <tr>
+      <td><code>create-checkout</code></td>
+      <td>Criar sessão Stripe Checkout</td>
+    </tr>
+    <tr>
+      <td><code>customer-portal</code></td>
+      <td>Portal do cliente Stripe</td>
+    </tr>
+    <tr>
+      <td><code>stripe-webhook</code></td>
+      <td>Processar webhooks do Stripe</td>
+    </tr>
+    <tr>
+      <td><code>send-trial-reminder</code></td>
+      <td>Emails de lembrete de trial</td>
+    </tr>
+  </table>
+
+  <h1 id="auth">6. Sistema de Autenticação</h1>
+
+  <div class="diagram">
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Signup     │────▶│  Supabase    │────▶│   Trigger    │
+│   Form       │     │    Auth      │     │ handle_new_  │
+└──────────────┘     └──────────────┘     │    user()    │
+                                          └──────┬───────┘
+                                                 │
+                                                 ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   validate-  │◀────│   Login      │────▶│   profiles   │
+│   session    │     │   Success    │     │   (criado)   │
+└──────────────┘     └──────────────┘     └──────────────┘
+       │
+       │ Registra sessão única (SHA-256)
+       ▼
+┌──────────────┐
+│   active_    │
+│   sessions   │
+└──────────────┘
+  </div>
+
+  <h2>Validação Periódica</h2>
+  <div class="card">
+    <p>O frontend valida a sessão a cada <strong>30 segundos</strong>. Se outra sessão for detectada, o usuário é deslogado automaticamente com notificação.</p>
+  </div>
+
+  <h1 id="subscriptions">7. Planos e Assinaturas</h1>
+
+  <table>
+    <tr>
+      <th>Plano</th>
+      <th>Preço/mês</th>
+      <th>Buscas/dia</th>
+      <th>Funcionalidades</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-primary">Trial</span></td>
+      <td>Grátis</td>
+      <td>3</td>
+      <td>Premium por 7 dias</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">Basic</span></td>
+      <td>R$29,90</td>
+      <td>1</td>
+      <td>Odds + Recomendação simples</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-purple">Advanced</span></td>
+      <td>R$49,90</td>
+      <td>3</td>
+      <td>+ H2H, Forma, Classificação</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-amber">Premium</span></td>
+      <td>R$79,90</td>
+      <td>6</td>
+      <td>+ Lesões, Stats, Predictions</td>
+    </tr>
+  </table>
+
+  <div class="page-break"></div>
+
+  <h1 id="security">8. Segurança</h1>
+
+  <div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                      CAMADAS DE SEGURANÇA                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. CORS (Edge Functions)                                       │
+│     - Whitelist de origens permitidas                           │
+│     - Rejeição de origens não autorizadas                       │
+│                                                                 │
+│  2. JWT Validation (supabase.auth.getClaims)                    │
+│     - Validação de token em todas as funções                    │
+│     - Extração segura de user_id                                │
+│                                                                 │
+│  3. Row Level Security (PostgreSQL)                             │
+│     - Deny anonymous access em todas tabelas sensíveis          │
+│     - Scoping por auth.uid() = user_id                          │
+│                                                                 │
+│  4. Anti-Multi-Login                                            │
+│     - Hash SHA-256 dos tokens de sessão                         │
+│     - Upsert para invalidar sessões anteriores                  │
+│                                                                 │
+│  5. Admin Role Check                                            │
+│     - Função has_role() para verificar privilégios              │
+│     - Separação de endpoints admin                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <h2>Secrets (Environment Variables)</h2>
+  <table>
+    <tr>
+      <th>Secret</th>
+      <th>Uso</th>
+    </tr>
+    <tr><td><code>SUPABASE_URL</code></td><td>URL do projeto</td></tr>
+    <tr><td><code>SUPABASE_ANON_KEY</code></td><td>Chave pública</td></tr>
+    <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>Chave admin (Edge Functions)</td></tr>
+    <tr><td><code>API_FOOTBALL_KEY</code></td><td>Chave da API-Football</td></tr>
+    <tr><td><code>STRIPE_SECRET_KEY</code></td><td>Chave secreta Stripe</td></tr>
+    <tr><td><code>STRIPE_WEBHOOK_SECRET</code></td><td>Secret do webhook</td></tr>
+    <tr><td><code>RESEND_API_KEY</code></td><td>Chave Resend (emails)</td></tr>
+  </table>
+
+  <h1 id="apis">9. APIs Externas</h1>
+
+  <h2>API-Football</h2>
+  <div class="card">
+    <p><strong>Base URL:</strong> <code>https://api-football-v1.p.rapidapi.com/v3</code></p>
+    <p><strong>Endpoints:</strong> /fixtures, /odds, /fixtures/h2h, /standings, /injuries, /teams/stats, /predictions</p>
+  </div>
+
+  <h2>Stripe</h2>
+  <div class="card">
+    <p><strong>Produtos/Preços:</strong> Configurados no Stripe Dashboard</p>
+    <p><strong>Webhooks:</strong> checkout.session.completed, customer.subscription.*</p>
+  </div>
+
+  <h1 id="frontend">10. Frontend</h1>
+
+  <h2>Estrutura de Páginas</h2>
+  <table>
+    <tr>
+      <th>Rota</th>
+      <th>Componente</th>
+      <th>Descrição</th>
+    </tr>
+    <tr><td><code>/</code></td><td>Index.tsx</td><td>Dashboard principal</td></tr>
+    <tr><td><code>/auth</code></td><td>Auth.tsx</td><td>Login/Signup</td></tr>
+    <tr><td><code>/profile</code></td><td>Profile.tsx</td><td>Perfil do usuário</td></tr>
+    <tr><td><code>/admin</code></td><td>Admin.tsx</td><td>Painel admin</td></tr>
+    <tr><td><code>/reset-password</code></td><td>ResetPassword.tsx</td><td>Recuperação</td></tr>
+  </table>
+
+  <div class="card" style="margin-top: 3rem; text-align: center;">
+    <p><strong>EUGINE v3.0</strong> | GS ItalyInvestments | Janeiro 2026</p>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Documento gerado para migração e referência técnica</p>
+  </div>
+
+</body>
+</html>
