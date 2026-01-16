@@ -21,35 +21,45 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    // Verify admin using user's token
+    // Verify user using getClaims (signing-keys compatible)
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
+    const token = authHeader.replace('Bearer ', '');
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
+      auth: { persistSession: false }
     });
 
-    const { data: { user }, error: userError } = await userClient.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Unauthorized');
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    logStep("User authenticated", { userId: user.id.substring(0, 8) });
+    const userId = claimsData.claims.sub;
+    logStep("User authenticated", { userId: userId.substring(0, 8) });
 
     // Check if user is admin using service role
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false }
+    });
     
     const { data: roleData, error: roleError } = await adminClient
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('role', 'admin')
       .maybeSingle();
 
     if (roleError || !roleData) {
-      logStep("Access denied - not admin", { userId: user.id.substring(0, 8) });
+      logStep("Access denied - not admin", { userId: userId.substring(0, 8) });
       return new Response(
         JSON.stringify({ error: 'Access denied. Admin role required.' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -90,13 +100,13 @@ serve(async (req) => {
       }
 
       case 'update_user': {
-        const { userId, updates } = params;
+        const { userId: targetUserId, updates } = params;
         
-        if (!userId || !updates) {
+        if (!targetUserId || !updates) {
           throw new Error('userId and updates are required');
         }
 
-        logStep("Updating user", { userId: userId.substring(0, 8), updates });
+        logStep("Updating user", { userId: targetUserId.substring(0, 8), updates });
 
         const { error } = await adminClient
           .from('profiles')
@@ -108,7 +118,7 @@ serve(async (req) => {
             phone: updates.phone,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', userId);
+          .eq('user_id', targetUserId);
 
         if (error) throw error;
 
@@ -119,18 +129,18 @@ serve(async (req) => {
       }
 
       case 'reset_searches': {
-        const { userId } = params;
+        const { userId: targetUserId } = params;
         
-        if (!userId) {
+        if (!targetUserId) {
           throw new Error('userId is required');
         }
 
-        logStep("Resetting searches", { userId: userId.substring(0, 8) });
+        logStep("Resetting searches", { userId: targetUserId.substring(0, 8) });
 
         const { error } = await adminClient
           .from('daily_searches')
           .delete()
-          .eq('user_id', userId)
+          .eq('user_id', targetUserId)
           .eq('search_date', new Date().toISOString().split('T')[0]);
 
         if (error) throw error;
@@ -142,20 +152,20 @@ serve(async (req) => {
       }
 
       case 'set_searches': {
-        const { userId, count } = params;
+        const { userId: targetUserId, count } = params;
         
-        if (!userId || count === undefined) {
+        if (!targetUserId || count === undefined) {
           throw new Error('userId and count are required');
         }
 
-        logStep("Setting search count", { userId: userId.substring(0, 8), count });
+        logStep("Setting search count", { userId: targetUserId.substring(0, 8), count });
 
         const today = new Date().toISOString().split('T')[0];
 
         const { error } = await adminClient
           .from('daily_searches')
           .upsert({
-            user_id: userId,
+            user_id: targetUserId,
             search_date: today,
             search_count: count,
             updated_at: new Date().toISOString()
