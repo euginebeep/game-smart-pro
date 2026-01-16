@@ -20,25 +20,52 @@ import {
 
 type AuthMode = 'login' | 'register' | 'reset';
 
-// Country data with phone codes and timezones
+// Country data with phone codes, timezones, and phone validation rules
 const COUNTRIES = [
-  { code: 'BR', name: 'Brasil', phoneCode: '+55', timezone: 'America/Sao_Paulo', flag: '🇧🇷' },
-  { code: 'US', name: 'United States', phoneCode: '+1', timezone: 'America/New_York', flag: '🇺🇸' },
-  { code: 'PT', name: 'Portugal', phoneCode: '+351', timezone: 'Europe/Lisbon', flag: '🇵🇹' },
-  { code: 'ES', name: 'España', phoneCode: '+34', timezone: 'Europe/Madrid', flag: '🇪🇸' },
-  { code: 'IT', name: 'Italia', phoneCode: '+39', timezone: 'Europe/Rome', flag: '🇮🇹' },
-  { code: 'DE', name: 'Deutschland', phoneCode: '+49', timezone: 'Europe/Berlin', flag: '🇩🇪' },
-  { code: 'FR', name: 'France', phoneCode: '+33', timezone: 'Europe/Paris', flag: '🇫🇷' },
-  { code: 'GB', name: 'United Kingdom', phoneCode: '+44', timezone: 'Europe/London', flag: '🇬🇧' },
-  { code: 'AR', name: 'Argentina', phoneCode: '+54', timezone: 'America/Argentina/Buenos_Aires', flag: '🇦🇷' },
-  { code: 'MX', name: 'México', phoneCode: '+52', timezone: 'America/Mexico_City', flag: '🇲🇽' },
-  { code: 'CO', name: 'Colombia', phoneCode: '+57', timezone: 'America/Bogota', flag: '🇨🇴' },
-  { code: 'CL', name: 'Chile', phoneCode: '+56', timezone: 'America/Santiago', flag: '🇨🇱' },
-  { code: 'PE', name: 'Perú', phoneCode: '+51', timezone: 'America/Lima', flag: '🇵🇪' },
-  { code: 'JP', name: '日本', phoneCode: '+81', timezone: 'Asia/Tokyo', flag: '🇯🇵' },
-  { code: 'AU', name: 'Australia', phoneCode: '+61', timezone: 'Australia/Sydney', flag: '🇦🇺' },
-  { code: 'CA', name: 'Canada', phoneCode: '+1', timezone: 'America/Toronto', flag: '🇨🇦' },
+  { code: 'BR', name: 'Brasil', phoneCode: '+55', timezone: 'America/Sao_Paulo', flag: '🇧🇷', phoneDigits: { min: 10, max: 11 }, phoneExample: '11999999999' },
+  { code: 'US', name: 'United States', phoneCode: '+1', timezone: 'America/New_York', flag: '🇺🇸', phoneDigits: { min: 10, max: 10 }, phoneExample: '2025551234' },
+  { code: 'PT', name: 'Portugal', phoneCode: '+351', timezone: 'Europe/Lisbon', flag: '🇵🇹', phoneDigits: { min: 9, max: 9 }, phoneExample: '912345678' },
+  { code: 'ES', name: 'España', phoneCode: '+34', timezone: 'Europe/Madrid', flag: '🇪🇸', phoneDigits: { min: 9, max: 9 }, phoneExample: '612345678' },
+  { code: 'IT', name: 'Italia', phoneCode: '+39', timezone: 'Europe/Rome', flag: '🇮🇹', phoneDigits: { min: 9, max: 10 }, phoneExample: '3123456789' },
+  { code: 'DE', name: 'Deutschland', phoneCode: '+49', timezone: 'Europe/Berlin', flag: '🇩🇪', phoneDigits: { min: 10, max: 12 }, phoneExample: '15123456789' },
+  { code: 'FR', name: 'France', phoneCode: '+33', timezone: 'Europe/Paris', flag: '🇫🇷', phoneDigits: { min: 9, max: 9 }, phoneExample: '612345678' },
+  { code: 'GB', name: 'United Kingdom', phoneCode: '+44', timezone: 'Europe/London', flag: '🇬🇧', phoneDigits: { min: 10, max: 11 }, phoneExample: '7911123456' },
+  { code: 'AR', name: 'Argentina', phoneCode: '+54', timezone: 'America/Argentina/Buenos_Aires', flag: '🇦🇷', phoneDigits: { min: 10, max: 10 }, phoneExample: '1123456789' },
+  { code: 'MX', name: 'México', phoneCode: '+52', timezone: 'America/Mexico_City', flag: '🇲🇽', phoneDigits: { min: 10, max: 10 }, phoneExample: '5512345678' },
+  { code: 'CO', name: 'Colombia', phoneCode: '+57', timezone: 'America/Bogota', flag: '🇨🇴', phoneDigits: { min: 10, max: 10 }, phoneExample: '3001234567' },
+  { code: 'CL', name: 'Chile', phoneCode: '+56', timezone: 'America/Santiago', flag: '🇨🇱', phoneDigits: { min: 9, max: 9 }, phoneExample: '912345678' },
+  { code: 'PE', name: 'Perú', phoneCode: '+51', timezone: 'America/Lima', flag: '🇵🇪', phoneDigits: { min: 9, max: 9 }, phoneExample: '912345678' },
+  { code: 'JP', name: '日本', phoneCode: '+81', timezone: 'Asia/Tokyo', flag: '🇯🇵', phoneDigits: { min: 10, max: 11 }, phoneExample: '9012345678' },
+  { code: 'AU', name: 'Australia', phoneCode: '+61', timezone: 'Australia/Sydney', flag: '🇦🇺', phoneDigits: { min: 9, max: 9 }, phoneExample: '412345678' },
+  { code: 'CA', name: 'Canada', phoneCode: '+1', timezone: 'America/Toronto', flag: '🇨🇦', phoneDigits: { min: 10, max: 10 }, phoneExample: '4165551234' },
 ];
+
+// Helper function to get phone validation error message
+const getPhoneValidationMessage = (countryCode: string, t: (key: string) => string): string => {
+  const country = COUNTRIES.find(c => c.code === countryCode);
+  if (!country) return t('auth.errors.phoneInvalid');
+  
+  const { min, max } = country.phoneDigits;
+  if (min === max) {
+    return t('auth.errors.phoneExactDigits').replace('{digits}', min.toString()).replace('{example}', country.phoneExample);
+  }
+  return t('auth.errors.phoneRangeDigits')
+    .replace('{min}', min.toString())
+    .replace('{max}', max.toString())
+    .replace('{example}', country.phoneExample);
+};
+
+// Validate phone based on country
+const validatePhoneForCountry = (phone: string, countryCode: string): boolean => {
+  const country = COUNTRIES.find(c => c.code === countryCode);
+  if (!country) return false;
+  
+  // Remove non-digits
+  const digitsOnly = phone.replace(/\D/g, '');
+  const { min, max } = country.phoneDigits;
+  
+  return digitsOnly.length >= min && digitsOnly.length <= max;
+};
 
 export default function Auth() {
   const { t, language } = useLanguage();
@@ -58,7 +85,13 @@ export default function Auth() {
 
   const signUpSchema = z.object({
     email: z.string().trim().email({ message: t('auth.errors.invalidEmail') }),
-    phone: z.string().trim().min(8, { message: t('auth.errors.phoneMin') }).max(20),
+    phone: z.string().trim()
+      .refine((val) => /^\d+$/.test(val.replace(/[\s\-\(\)]/g, '')), { 
+        message: t('auth.errors.phoneOnlyDigits') 
+      })
+      .refine((val) => validatePhoneForCountry(val, selectedCountry), { 
+        message: getPhoneValidationMessage(selectedCountry, t) 
+      }),
     password: z.string().min(6, { message: t('auth.errors.passwordMin') }),
     country: z.string().min(2, { message: t('auth.errors.countryRequired') }),
   });
@@ -346,12 +379,22 @@ export default function Auth() {
                         id="phone"
                         type="tel"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder={t('auth.phonePlaceholder')}
+                        onChange={(e) => {
+                          // Allow only digits, spaces, and dashes
+                          const value = e.target.value.replace(/[^\d\s\-]/g, '');
+                          setPhone(value);
+                        }}
+                        placeholder={countryData.phoneExample}
                         className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
                       />
                     </div>
                   </div>
+                  <p className="text-slate-500 text-xs">
+                    {countryData.phoneDigits.min === countryData.phoneDigits.max 
+                      ? `${countryData.phoneDigits.min} ${t('auth.phoneDigitsRequired')}`
+                      : `${countryData.phoneDigits.min}-${countryData.phoneDigits.max} ${t('auth.phoneDigitsRequired')}`
+                    }
+                  </p>
                   {errors.phone && <p className="text-red-400 text-sm">{errors.phone}</p>}
                 </div>
               </>
