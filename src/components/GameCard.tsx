@@ -105,7 +105,7 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
           <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{game.bookmaker}</p>
           {analysis.confidence && hasPremiumAccess && (
             <div className="mt-2 flex items-center gap-2 justify-end">
-              <div className="text-xs text-muted-foreground">Confiança:</div>
+              <div className="text-xs text-muted-foreground">{t('gameCard.confidence')}:</div>
               <div className="flex items-center gap-1">
                 <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                   <div 
@@ -182,19 +182,19 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-purple-400" />
-                <h4 className="font-bold text-purple-400 text-xs uppercase">Head to Head</h4>
+                <h4 className="font-bold text-purple-400 text-xs uppercase">{t('gameCard.headToHead')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 <p className="text-foreground/80">
-                  <span className="text-muted-foreground">Jogos:</span> {adv.h2h.totalGames}
+                  <span className="text-muted-foreground">{t('gameCard.games')}:</span> {adv.h2h.totalGames}
                 </p>
                 <p className="text-foreground/80">
-                  <span className="text-muted-foreground">Casa:</span> {adv.h2h.homeWins} | 
-                  <span className="text-muted-foreground"> Emp:</span> {adv.h2h.draws} | 
-                  <span className="text-muted-foreground"> Fora:</span> {adv.h2h.awayWins}
+                  <span className="text-muted-foreground">{t('gameCard.homeWins')}:</span> {adv.h2h.homeWins} | 
+                  <span className="text-muted-foreground"> {t('gameCard.draws')}:</span> {adv.h2h.draws} | 
+                  <span className="text-muted-foreground"> {t('gameCard.awayWins')}:</span> {adv.h2h.awayWins}
                 </p>
                 <p className="text-foreground/80">
-                  <span className="text-muted-foreground">Média gols:</span> {adv.h2h.avgGoals.toFixed(1)}
+                  <span className="text-muted-foreground">{t('gameCard.avgGoals')}:</span> {adv.h2h.avgGoals.toFixed(1)}
                 </p>
               </div>
             </div>
@@ -205,7 +205,7 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Activity className="w-4 h-4 text-blue-400" />
-                <h4 className="font-bold text-blue-400 text-xs uppercase">Forma Recente</h4>
+                <h4 className="font-bold text-blue-400 text-xs uppercase">{t('gameCard.recentForm')}</h4>
               </div>
               <div className="space-y-2 text-xs">
                 {adv.homeForm && (
@@ -245,7 +245,7 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-4 h-4 text-cyan-400" />
-                <h4 className="font-bold text-cyan-400 text-xs uppercase">Classificação</h4>
+                <h4 className="font-bold text-cyan-400 text-xs uppercase">{t('gameCard.standings')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 <p className="text-foreground/80">
@@ -286,14 +286,14 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Stethoscope className="w-4 h-4 text-red-400" />
-                <h4 className="font-bold text-red-400 text-xs uppercase">Lesões</h4>
+                <h4 className="font-bold text-red-400 text-xs uppercase">{t('gameCard.injuries')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 <p className="text-foreground/80">
-                  <span className="text-muted-foreground">{game.homeTeam.slice(0,10)}:</span> {adv.homeInjuries || 0} desfalques
+                  <span className="text-muted-foreground">{game.homeTeam.slice(0,10)}:</span> {adv.homeInjuries || 0} {t('gameCard.absences')}
                 </p>
                 <p className="text-foreground/80">
-                  <span className="text-muted-foreground">{game.awayTeam.slice(0,10)}:</span> {adv.awayInjuries || 0} desfalques
+                  <span className="text-muted-foreground">{game.awayTeam.slice(0,10)}:</span> {adv.awayInjuries || 0} {t('gameCard.absences')}
                 </p>
               </div>
             </div>
@@ -304,7 +304,7 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Activity className="w-4 h-4 text-green-400" />
-                <h4 className="font-bold text-green-400 text-xs uppercase">Estatísticas</h4>
+                <h4 className="font-bold text-green-400 text-xs uppercase">{t('gameCard.statistics')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 {adv.homeStats && (
@@ -367,7 +367,7 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
         <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
           <h4 className="font-bold text-amber-400 text-xs uppercase mb-3 flex items-center gap-2">
             <Target className="w-4 h-4" />
-            Fatores da Análise
+            {t('gameCard.analysisFactors')}
           </h4>
           <div className="space-y-2">
             {analysis.factors.map((factor, idx) => (

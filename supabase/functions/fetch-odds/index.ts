@@ -427,6 +427,26 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     confidence: 'de confiança',
     noEdge: 'Sem edge suficiente',
     lowConfidence: 'Confiança insuficiente',
+    // Factor descriptions
+    avgGoalsH2H: 'Média {goals} gols nos confrontos',
+    avgGoalsLow: 'Média baixa: {goals} gols',
+    homeWonPercent: 'Casa venceu {percent}% dos jogos',
+    awayWonPercent: 'Visitante venceu {percent}% dos jogos',
+    homeGreatForm: 'Casa em ótima forma ({percent}%)',
+    awayGreatForm: 'Visitante em ótima forma ({percent}%)',
+    avgCombinedGoals: 'Média combinada: {goals} gols/jogo',
+    avgCombinedLow: 'Média baixa: {goals} gols/jogo',
+    bttsPercent: 'BTTS {percent}% das partidas',
+    over25Percent: 'Over 2.5 em {percent}% dos jogos',
+    homeStrongGoals: 'Casa forte: {goals} gols/jogo em casa',
+    apiPredicts: 'Previsão API: {prediction}',
+    homeInjured: 'Casa tem {count} lesionados',
+    awayInjured: 'Visitante tem {count} lesionados',
+    homeTopPosition: 'Casa no Top 5 ({position}º)',
+    awayTopPosition: 'Visitante no Top 5 ({position}º)',
+    valueDetected: 'Edge de {percent}% detectado',
+    oddIndicates: 'Odd de {odd} indica alta expectativa de gols.',
+    balancedGame: 'Jogo equilibrado com odds similares (Casa: {home} / Fora: {away}).',
   },
   en: {
     over25: 'OVER 2.5 GOALS',
@@ -451,6 +471,26 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     confidence: 'confidence',
     noEdge: 'No edge found',
     lowConfidence: 'Insufficient confidence',
+    // Factor descriptions
+    avgGoalsH2H: 'Average {goals} goals in head to head',
+    avgGoalsLow: 'Low average: {goals} goals',
+    homeWonPercent: 'Home won {percent}% of games',
+    awayWonPercent: 'Away won {percent}% of games',
+    homeGreatForm: 'Home in great form ({percent}%)',
+    awayGreatForm: 'Away in great form ({percent}%)',
+    avgCombinedGoals: 'Combined average: {goals} goals/game',
+    avgCombinedLow: 'Low average: {goals} goals/game',
+    bttsPercent: 'BTTS in {percent}% of matches',
+    over25Percent: 'Over 2.5 in {percent}% of games',
+    homeStrongGoals: 'Strong home: {goals} goals/game at home',
+    apiPredicts: 'API Prediction: {prediction}',
+    homeInjured: 'Home has {count} injured',
+    awayInjured: 'Away has {count} injured',
+    homeTopPosition: 'Home in Top 5 ({position}th)',
+    awayTopPosition: 'Away in Top 5 ({position}th)',
+    valueDetected: 'Edge of {percent}% detected',
+    oddIndicates: 'Odd of {odd} indicates high goal expectation.',
+    balancedGame: 'Balanced game with similar odds (Home: {home} / Away: {away}).',
   },
   es: {
     over25: 'MÁS DE 2.5 GOLES',
@@ -475,6 +515,26 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     confidence: 'de confianza',
     noEdge: 'Sin edge suficiente',
     lowConfidence: 'Confianza insuficiente',
+    // Factor descriptions
+    avgGoalsH2H: 'Promedio {goals} goles en enfrentamientos',
+    avgGoalsLow: 'Promedio bajo: {goals} goles',
+    homeWonPercent: 'Local ganó {percent}% de los partidos',
+    awayWonPercent: 'Visitante ganó {percent}% de los partidos',
+    homeGreatForm: 'Local en gran forma ({percent}%)',
+    awayGreatForm: 'Visitante en gran forma ({percent}%)',
+    avgCombinedGoals: 'Promedio combinado: {goals} goles/partido',
+    avgCombinedLow: 'Promedio bajo: {goals} goles/partido',
+    bttsPercent: 'BTTS en {percent}% de los partidos',
+    over25Percent: 'Over 2.5 en {percent}% de los partidos',
+    homeStrongGoals: 'Local fuerte: {goals} goles/partido en casa',
+    apiPredicts: 'Predicción API: {prediction}',
+    homeInjured: 'Local tiene {count} lesionados',
+    awayInjured: 'Visitante tiene {count} lesionados',
+    homeTopPosition: 'Local en Top 5 ({position}º)',
+    awayTopPosition: 'Visitante en Top 5 ({position}º)',
+    valueDetected: 'Edge de {percent}% detectado',
+    oddIndicates: 'Cuota de {odd} indica alta expectativa de goles.',
+    balancedGame: 'Partido equilibrado con cuotas similares (Local: {home} / Visitante: {away}).',
   },
   it: {
     over25: 'PIÙ DI 2.5 GOL',
@@ -499,6 +559,26 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     confidence: 'di fiducia',
     noEdge: 'Nessun edge trovato',
     lowConfidence: 'Fiducia insufficiente',
+    // Factor descriptions
+    avgGoalsH2H: 'Media {goals} gol negli scontri diretti',
+    avgGoalsLow: 'Media bassa: {goals} gol',
+    homeWonPercent: 'Casa ha vinto il {percent}% delle partite',
+    awayWonPercent: 'Trasferta ha vinto il {percent}% delle partite',
+    homeGreatForm: 'Casa in ottima forma ({percent}%)',
+    awayGreatForm: 'Trasferta in ottima forma ({percent}%)',
+    avgCombinedGoals: 'Media combinata: {goals} gol/partita',
+    avgCombinedLow: 'Media bassa: {goals} gol/partita',
+    bttsPercent: 'BTTS nel {percent}% delle partite',
+    over25Percent: 'Over 2.5 nel {percent}% delle partite',
+    homeStrongGoals: 'Casa forte: {goals} gol/partita in casa',
+    apiPredicts: 'Previsione API: {prediction}',
+    homeInjured: 'Casa ha {count} infortunati',
+    awayInjured: 'Trasferta ha {count} infortunati',
+    homeTopPosition: 'Casa nel Top 5 ({position}º)',
+    awayTopPosition: 'Trasferta nel Top 5 ({position}º)',
+    valueDetected: 'Edge del {percent}% rilevato',
+    oddIndicates: 'Quota di {odd} indica alta aspettativa di gol.',
+    balancedGame: 'Partita equilibrata con quote simili (Casa: {home} / Trasferta: {away}).',
   },
 };
 
@@ -646,7 +726,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
         name: t.h2hFactor, 
         impact: 'positive', 
         weight: Math.round(15 * h2hMultiplier), 
-        description: `Média ${h2h.avgGoals.toFixed(1)} gols nos confrontos` 
+        description: t.avgGoalsH2H.replace('{goals}', h2h.avgGoals.toFixed(1))
       });
     } else if (h2h.avgGoals <= 2.0) {
       under25Score += Math.round(15 * h2hMultiplier);
@@ -655,7 +735,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
         name: t.h2hFactor, 
         impact: 'positive', 
         weight: Math.round(15 * h2hMultiplier), 
-        description: `Média baixa: ${h2h.avgGoals.toFixed(1)} gols` 
+        description: t.avgGoalsLow.replace('{goals}', h2h.avgGoals.toFixed(1))
       });
     }
     
@@ -667,7 +747,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
         name: t.h2hFactor, 
         impact: 'positive', 
         weight: Math.round(12 * h2hMultiplier), 
-        description: `Casa venceu ${(homeWinRate * 100).toFixed(0)}% dos jogos` 
+        description: t.homeWonPercent.replace('{percent}', (homeWinRate * 100).toFixed(0))
       });
     } else if (awayWinRate >= 0.5) {
       awayWinScore += Math.round(12 * h2hMultiplier);
@@ -675,7 +755,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
         name: t.h2hFactor, 
         impact: 'positive', 
         weight: Math.round(12 * h2hMultiplier), 
-        description: `Visitante venceu ${(awayWinRate * 100).toFixed(0)}% dos jogos` 
+        description: t.awayWonPercent.replace('{percent}', (awayWinRate * 100).toFixed(0))
       });
     }
   }
