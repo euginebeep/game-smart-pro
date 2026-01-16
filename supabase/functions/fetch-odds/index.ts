@@ -747,6 +747,61 @@ async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
 }
 
 // Buscar fixtures e odds da API-Football
+// ===== LIGAS PRIORITÁRIAS (PRINCIPAIS) =====
+// IDs das principais ligas para priorizar na busca
+const PRIORITY_LEAGUES: Record<number, { name: string; tier: number }> = {
+  // TIER 1 - Top 5 Europeias (sempre prioridade máxima)
+  39: { name: 'Premier League', tier: 1 },
+  140: { name: 'La Liga', tier: 1 },
+  135: { name: 'Serie A', tier: 1 },
+  78: { name: 'Bundesliga', tier: 1 },
+  61: { name: 'Ligue 1', tier: 1 },
+  
+  // TIER 1.5 - Competições UEFA
+  2: { name: 'Champions League', tier: 1 },
+  3: { name: 'Europa League', tier: 1 },
+  848: { name: 'Conference League', tier: 1 },
+  
+  // TIER 2 - Outras ligas europeias top
+  94: { name: 'Primeira Liga (Portugal)', tier: 2 },
+  88: { name: 'Eredivisie', tier: 2 },
+  144: { name: 'Jupiler Pro League (Bélgica)', tier: 2 },
+  203: { name: 'Super Lig (Turquia)', tier: 2 },
+  179: { name: 'Scottish Premiership', tier: 2 },
+  
+  // TIER 2.5 - Segundas divisões top 5
+  40: { name: 'Championship (ENG)', tier: 2 },
+  141: { name: 'La Liga 2', tier: 2 },
+  136: { name: 'Serie B (ITA)', tier: 2 },
+  79: { name: '2. Bundesliga', tier: 2 },
+  62: { name: 'Ligue 2', tier: 2 },
+  
+  // TIER 3 - América do Sul
+  71: { name: 'Brasileirão Série A', tier: 3 },
+  72: { name: 'Brasileirão Série B', tier: 3 },
+  128: { name: 'Liga Profesional (Argentina)', tier: 3 },
+  13: { name: 'Libertadores', tier: 3 },
+  11: { name: 'Copa Sudamericana', tier: 3 },
+  
+  // TIER 3.5 - Outras ligas populares
+  218: { name: 'Bundesliga (Áustria)', tier: 3 },
+  207: { name: 'Super League (Suíça)', tier: 3 },
+  113: { name: 'Allsvenskan (Suécia)', tier: 3 },
+  103: { name: 'Eliteserien (Noruega)', tier: 3 },
+  119: { name: 'Superligaen (Dinamarca)', tier: 3 },
+  106: { name: 'Ekstraklasa (Polônia)', tier: 3 },
+  
+  // TIER 4 - MLS e outras
+  253: { name: 'MLS', tier: 4 },
+  262: { name: 'Liga MX', tier: 4 },
+};
+
+function getLeaguePriority(leagueId: number): number {
+  const league = PRIORITY_LEAGUES[leagueId];
+  if (league) return league.tier;
+  return 10; // Liga não prioritária
+}
+
 async function fetchOddsFromAPI(lang: string = 'pt') {
   if (!API_KEY) {
     secureLog('error', 'API_FOOTBALL_KEY não configurada no backend');
@@ -779,10 +834,22 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
         const agora = new Date();
         const limiteMinimo = new Date(agora.getTime() + 10 * 60 * 1000);
         
+        // Filtrar jogos válidos (>10min do início)
         const jogosValidos = fixturesData.response.filter((fixture: any) => {
           const dataJogo = new Date(fixture.fixture.date);
           return dataJogo > limiteMinimo;
         });
+        
+        // Ordenar por prioridade da liga (menores = melhores)
+        jogosValidos.sort((a: any, b: any) => {
+          const prioA = getLeaguePriority(a.league.id);
+          const prioB = getLeaguePriority(b.league.id);
+          return prioA - prioB;
+        });
+        
+        // Log das ligas encontradas
+        const ligasEncontradas = [...new Set(jogosValidos.slice(0, 30).map((f: any) => `${f.league.name} (ID:${f.league.id}, Tier:${getLeaguePriority(f.league.id)})`))];
+        secureLog('info', `Ligas nos primeiros 30 jogos`, { ligas: ligasEncontradas.slice(0, 10) });
         
         if (jogosValidos.length > 0) {
           jogosEncontrados = jogosValidos;
@@ -804,8 +871,8 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   }
   
   // ===== SISTEMA DE SELEÇÃO INTELIGENTE =====
-  // Buscar mais jogos (até 20) para poder selecionar os 10 melhores
-  const fixturesParaProcessar = jogosEncontrados.slice(0, 20);
+  // Pegar os primeiros 25 jogos (já ordenados por prioridade de liga)
+  const fixturesParaProcessar = jogosEncontrados.slice(0, 25);
   const allGamesWithData: (Game & { qualityScore: number })[] = [];
   
   secureLog('info', `Processando ${fixturesParaProcessar.length} jogos para seleção inteligente`);
@@ -852,8 +919,17 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
         }
       }
       
-      // ===== CALCULAR QUALITY SCORE (0-100) =====
+      // ===== CALCULAR QUALITY SCORE (0-120) =====
       let qualityScore = 0;
+      const leagueId = fixture.league.id;
+      const leagueTier = getLeaguePriority(leagueId);
+      
+      // 0. PRIORIDADE DA LIGA (até +30 pontos) - MUITO IMPORTANTE!
+      if (leagueTier === 1) qualityScore += 30; // Top 5 + UEFA
+      else if (leagueTier === 2) qualityScore += 22; // Segundas ligas top
+      else if (leagueTier === 3) qualityScore += 15; // Brasil/Argentina
+      else if (leagueTier === 4) qualityScore += 8;  // MLS/Liga MX
+      // Tier 10 (não listada) = 0 pontos
       
       // 1. Odds válidas (+25 pontos base)
       if (hasValidOdds && homeOdd > 0 && awayOdd > 0) {
@@ -894,6 +970,13 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
       if (advancedData.homeInjuries !== undefined && advancedData.awayInjuries !== undefined) {
         qualityScore += 5;
       }
+      
+      secureLog('info', `Quality score para ${fixture.teams.home.name} vs ${fixture.teams.away.name}`, {
+        leagueId,
+        leagueTier,
+        qualityScore,
+        hasOdds: hasValidOdds
+      });
       
       const startTime = new Date(fixture.fixture.date);
       const dayType = getDayType(diaEncontrado);
