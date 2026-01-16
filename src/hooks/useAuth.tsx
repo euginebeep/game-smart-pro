@@ -111,7 +111,12 @@ export function useAuth() {
   };
 
   const checkSubscription = useCallback(async () => {
-    if (!authState.session) return;
+    // Ensure we have a valid session with access token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      console.log('[checkSubscription] No valid session, skipping');
+      return;
+    }
 
     setAuthState(prev => ({
       ...prev,
@@ -123,6 +128,10 @@ export function useAuth() {
       
       if (error) {
         console.error('Error checking subscription:', error);
+        setAuthState(prev => ({
+          ...prev,
+          subscription: { ...prev.subscription, isLoading: false },
+        }));
         return;
       }
 
@@ -137,8 +146,8 @@ export function useAuth() {
       }));
 
       // Atualizar profile local
-      if (authState.user) {
-        const profile = await fetchProfile(authState.user.id);
+      if (session.user) {
+        const profile = await fetchProfile(session.user.id);
         if (profile) {
           const trialStatus = calculateTrialStatus(profile);
           setAuthState(prev => ({
@@ -155,7 +164,7 @@ export function useAuth() {
         subscription: { ...prev.subscription, isLoading: false },
       }));
     }
-  }, [authState.session, authState.user]);
+  }, []);
 
   const createCheckout = async (tier: 'basic' | 'advanced' | 'premium', language?: string) => {
     try {
@@ -189,6 +198,13 @@ export function useAuth() {
 
   // Registrar sessão no servidor para controle anti-multilogin
   const registerSession = useCallback(async () => {
+    // Ensure we have a valid session with access token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      console.log('[registerSession] No valid session, skipping');
+      return;
+    }
+
     try {
       const sessionToken = getSessionToken();
       const deviceInfo = getDeviceInfo();
@@ -213,7 +229,12 @@ export function useAuth() {
 
   // Validar se a sessão atual ainda é válida
   const validateSession = useCallback(async () => {
-    if (!authState.session) return;
+    // Ensure we have a valid session with access token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      console.log('[validateSession] No valid session, skipping');
+      return;
+    }
 
     try {
       const sessionToken = getSessionToken();
@@ -249,7 +270,7 @@ export function useAuth() {
     } catch (err) {
       console.error('Error in validateSession:', err);
     }
-  }, [authState.session]);
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
