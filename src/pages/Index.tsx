@@ -11,6 +11,7 @@ import { ZebraSection } from '@/components/ZebraSection';
 import { TrialBanner } from '@/components/TrialBanner';
 import { PricingSection } from '@/components/PricingSection';
 import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
+import { AdminExportButtons } from '@/components/AdminExportButtons';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,6 +36,7 @@ const Index = () => {
   const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
   const [userTier, setUserTier] = useState<'free' | 'basic' | 'advanced' | 'premium'>('free');
   const previousLanguage = useRef(language);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleFetchGames = useCallback(async () => {
     setLoading(true);
@@ -169,7 +171,7 @@ const Index = () => {
 
           {/* Games List */}
           {!loading && games.length > 0 && (
-            <div className="space-y-6">
+            <div className="space-y-6" ref={contentRef}>
               {/* Day Alert */}
               <Alert 
                 type={isToday ? "success" : "info"} 
@@ -200,6 +202,9 @@ const Index = () => {
 
               {/* Section 3: Zebra of the Day */}
               <ZebraSection games={games} userTier={userTier} />
+
+              {/* Admin Export Buttons */}
+              {isAdmin && <AdminExportButtons containerRef={contentRef} />}
 
               {/* Pricing Section */}
               <PricingSection />
