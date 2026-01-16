@@ -30,6 +30,13 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
+  // Use an anon client to validate JWT claims (signing-keys compatible)
+  const supabaseAuth = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   try {
     logStep("Function started");
 
@@ -37,13 +44,35 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    const user = {
+      id: claimsData.claims.sub,
+      email: (claimsData.claims as any).email as string | undefined,
+    };
+
+    if (!user.email) {
+      return new Response(JSON.stringify({ error: "User not authenticated or email not available" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     // If an admin manually granted access (via admin panel), do NOT downgrade the user here.

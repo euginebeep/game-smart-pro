@@ -32,22 +32,35 @@ serve(async (req) => {
     { auth: { persistSession: false } }
   );
 
+  // Use an anon client to validate JWT claims (signing-keys compatible)
+  const supabaseAuth = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   try {
     logStep("Function started");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("No authorization header provided");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
-    
-    if (userError || !userData.user) {
-      throw new Error("User not authenticated");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
 
-    const userId = userData.user.id;
+    const userId = claimsData.claims.sub;
     const body = await req.json().catch(() => ({}));
     const action = body.action || 'validate';
     const sessionToken = body.sessionToken;
