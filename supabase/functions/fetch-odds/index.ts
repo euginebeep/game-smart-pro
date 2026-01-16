@@ -216,6 +216,9 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Previsão Analítica Matemática',
     injuriesFactor: 'Lesões e desfalques',
     standingsFactor: 'Posição na tabela',
+    favorite: 'Favorito',
+    withConfidence: 'com',
+    confidence: 'de confiança',
   },
   en: {
     over25: 'OVER 2.5 GOALS',
@@ -232,6 +235,9 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Mathematical Analytical Prediction',
     injuriesFactor: 'Injuries and absences',
     standingsFactor: 'League position',
+    favorite: 'Favorite',
+    withConfidence: 'with',
+    confidence: 'confidence',
   },
   es: {
     over25: 'MÁS DE 2.5 GOLES',
@@ -248,6 +254,9 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Predicción Analítica Matemática',
     injuriesFactor: 'Lesiones y ausencias',
     standingsFactor: 'Posición en la tabla',
+    favorite: 'Favorito',
+    withConfidence: 'con',
+    confidence: 'de confianza',
   },
   it: {
     over25: 'PIÙ DI 2.5 GOL',
@@ -264,8 +273,130 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Previsione Analitica Matematica',
     injuriesFactor: 'Infortuni e assenze',
     standingsFactor: 'Posizione in classifica',
+    favorite: 'Favorito',
+    withConfidence: 'con',
+    confidence: 'di fiducia',
   },
 };
+
+// Traduções do advice da API (vem em inglês da API-Football)
+const adviceTranslations: Record<string, Record<string, string>> = {
+  pt: {
+    'Double chance : Home or Draw': 'Dupla chance: Vitória Casa ou Empate',
+    'Double chance : Draw or Away': 'Dupla chance: Empate ou Vitória Fora',
+    'Double chance : Home or Away': 'Dupla chance: Vitória Casa ou Fora',
+    'Combo Double chance : Home or Draw and target Over 1.5': 'Combo: Casa/Empate + Mais de 1.5 gols',
+    'Combo Double chance : Home or Draw and target Over 2.5': 'Combo: Casa/Empate + Mais de 2.5 gols',
+    'Combo Double chance : Home or Draw and target Under 3.5': 'Combo: Casa/Empate + Menos de 3.5 gols',
+    'Combo Double chance : Draw or Away and target Over 1.5': 'Combo: Empate/Fora + Mais de 1.5 gols',
+    'Combo Double chance : Draw or Away and target Over 2.5': 'Combo: Empate/Fora + Mais de 2.5 gols',
+    'Combo Double chance : Draw or Away and target Under 3.5': 'Combo: Empate/Fora + Menos de 3.5 gols',
+    'Winner : Home': 'Vencedor: Casa',
+    'Winner : Away': 'Vencedor: Fora',
+    'Winner : Draw': 'Resultado: Empate',
+  },
+  es: {
+    'Double chance : Home or Draw': 'Doble oportunidad: Victoria Local o Empate',
+    'Double chance : Draw or Away': 'Doble oportunidad: Empate o Victoria Visitante',
+    'Double chance : Home or Away': 'Doble oportunidad: Victoria Local o Visitante',
+    'Combo Double chance : Home or Draw and target Over 1.5': 'Combo: Local/Empate + Más de 1.5 goles',
+    'Combo Double chance : Home or Draw and target Over 2.5': 'Combo: Local/Empate + Más de 2.5 goles',
+    'Combo Double chance : Home or Draw and target Under 3.5': 'Combo: Local/Empate + Menos de 3.5 goles',
+    'Combo Double chance : Draw or Away and target Over 1.5': 'Combo: Empate/Visitante + Más de 1.5 goles',
+    'Combo Double chance : Draw or Away and target Over 2.5': 'Combo: Empate/Visitante + Más de 2.5 goles',
+    'Combo Double chance : Draw or Away and target Under 3.5': 'Combo: Empate/Visitante + Menos de 3.5 goles',
+    'Winner : Home': 'Ganador: Local',
+    'Winner : Away': 'Ganador: Visitante',
+    'Winner : Draw': 'Resultado: Empate',
+  },
+  it: {
+    'Double chance : Home or Draw': 'Doppia chance: Vittoria Casa o Pareggio',
+    'Double chance : Draw or Away': 'Doppia chance: Pareggio o Vittoria Trasferta',
+    'Double chance : Home or Away': 'Doppia chance: Vittoria Casa o Trasferta',
+    'Combo Double chance : Home or Draw and target Over 1.5': 'Combo: Casa/Pareggio + Più di 1.5 gol',
+    'Combo Double chance : Home or Draw and target Over 2.5': 'Combo: Casa/Pareggio + Più di 2.5 gol',
+    'Combo Double chance : Home or Draw and target Under 3.5': 'Combo: Casa/Pareggio + Meno di 3.5 gol',
+    'Combo Double chance : Draw or Away and target Over 1.5': 'Combo: Pareggio/Trasferta + Più di 1.5 gol',
+    'Combo Double chance : Draw or Away and target Over 2.5': 'Combo: Pareggio/Trasferta + Più di 2.5 gol',
+    'Combo Double chance : Draw or Away and target Under 3.5': 'Combo: Pareggio/Trasferta + Meno di 3.5 gol',
+    'Winner : Home': 'Vincitore: Casa',
+    'Winner : Away': 'Vincitore: Trasferta',
+    'Winner : Draw': 'Risultato: Pareggio',
+  },
+};
+
+// Função para traduzir advice da API
+function translateAdvice(advice: string | undefined, lang: string): string | undefined {
+  if (!advice) return undefined;
+  if (lang === 'en') return advice; // Inglês é o idioma original
+  
+  const translations = adviceTranslations[lang];
+  if (!translations) return advice;
+  
+  // Tentar tradução exata primeiro
+  if (translations[advice]) return translations[advice];
+  
+  // Tradução por padrões comuns
+  let translated = advice;
+  
+  // Padrões gerais
+  const patterns: Record<string, Record<string, string>> = {
+    pt: {
+      'Double chance': 'Dupla chance',
+      'Home or Draw': 'Casa ou Empate',
+      'Draw or Away': 'Empate ou Fora',
+      'Home or Away': 'Casa ou Fora',
+      'Winner': 'Vencedor',
+      'Home': 'Casa',
+      'Away': 'Fora',
+      'Draw': 'Empate',
+      'Over': 'Mais de',
+      'Under': 'Menos de',
+      'goals': 'gols',
+      'and target': 'e objetivo',
+      'Combo': 'Combo',
+    },
+    es: {
+      'Double chance': 'Doble oportunidad',
+      'Home or Draw': 'Local o Empate',
+      'Draw or Away': 'Empate o Visitante',
+      'Home or Away': 'Local o Visitante',
+      'Winner': 'Ganador',
+      'Home': 'Local',
+      'Away': 'Visitante',
+      'Draw': 'Empate',
+      'Over': 'Más de',
+      'Under': 'Menos de',
+      'goals': 'goles',
+      'and target': 'y objetivo',
+      'Combo': 'Combo',
+    },
+    it: {
+      'Double chance': 'Doppia chance',
+      'Home or Draw': 'Casa o Pareggio',
+      'Draw or Away': 'Pareggio o Trasferta',
+      'Home or Away': 'Casa o Trasferta',
+      'Winner': 'Vincitore',
+      'Home': 'Casa',
+      'Away': 'Trasferta',
+      'Draw': 'Pareggio',
+      'Over': 'Più di',
+      'Under': 'Meno di',
+      'goals': 'gol',
+      'and target': 'e obiettivo',
+      'Combo': 'Combo',
+    },
+  };
+  
+  const langPatterns = patterns[lang];
+  if (langPatterns) {
+    for (const [en, local] of Object.entries(langPatterns)) {
+      translated = translated.replace(new RegExp(en, 'gi'), local);
+    }
+  }
+  
+  return translated;
+}
 
 const dayLabelsTranslations: Record<string, Record<string, string>> = {
   pt: { today: '🔴 HOJE', tomorrow: '📅 AMANHÃ' },
@@ -1116,11 +1247,36 @@ async function saveToCache(supabaseAdmin: any, data: any): Promise<void> {
 }
 
 function translateCachedData(cachedData: any, lang: string): any {
-  const games = cachedData.games.map((game: any) => ({
-    ...game,
-    dayLabel: getDayLabel(new Date(game.startTime), lang),
-    analysis: analyzeBet(game as Game, lang)
-  }));
+  const t = analysisTranslations[lang] || analysisTranslations['pt'];
+  
+  const games = cachedData.games.map((game: any) => {
+    // Traduzir apiPrediction se existir
+    let translatedAdvancedData = game.advancedData;
+    if (game.advancedData?.apiPrediction) {
+      const prediction = game.advancedData.apiPrediction;
+      translatedAdvancedData = {
+        ...game.advancedData,
+        apiPrediction: {
+          ...prediction,
+          advice: translateAdvice(prediction.advice, lang),
+          // Traduzir o winner para o idioma local
+          winnerLabel: prediction.winner ? 
+            (prediction.winner === 'Home' ? game.homeTeam : 
+             prediction.winner === 'Away' ? game.awayTeam : 
+             prediction.winner) : undefined,
+          confidenceLabel: prediction.winnerConfidence ? 
+            `${t.withConfidence} ${prediction.winnerConfidence}% ${t.confidence}` : undefined,
+        }
+      };
+    }
+    
+    return {
+      ...game,
+      advancedData: translatedAdvancedData,
+      dayLabel: getDayLabel(new Date(game.startTime), lang),
+      analysis: analyzeBet({ ...game, advancedData: translatedAdvancedData } as Game, lang)
+    };
+  });
   
   const alerts = alertTranslations[lang] || alertTranslations['pt'];
   const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
@@ -1145,7 +1301,8 @@ function translateCachedData(cachedData: any, lang: string): any {
   return {
     ...cachedData,
     games,
-    alertMessage
+    alertMessage,
+    _lang: lang
   };
 }
 
