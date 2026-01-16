@@ -1152,7 +1152,7 @@ serve(async (req) => {
 
   const origin = req.headers.get('Origin') || '';
   const isAllowedOrigin = ALLOWED_ORIGINS.some(allowed => 
-    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
+    origin === allowed || origin.includes('localhost') || origin.includes('127.0.0.1')
   );
   
   if (origin && !isAllowedOrigin) {
@@ -1234,12 +1234,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Buscar o tier do usuário
+    // Buscar o tier e timezone do usuário
     const { data: profileData } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, subscription_status, trial_end_date')
+      .select('subscription_tier, subscription_status, trial_end_date, timezone, country_code')
       .eq('user_id', userId)
       .single();
+    
+    const userTimezone = profileData?.timezone || 'America/Sao_Paulo';
+    const userCountry = profileData?.country_code || 'BR';
     
     const isSubscribed = profileData?.subscription_status === 'active';
     
@@ -1361,6 +1364,8 @@ serve(async (req) => {
       filteredData.dailySearchesRemaining = dailySearchInfo.remaining;
       filteredData.isTrial = dailySearchInfo.is_trial;
       filteredData.userTier = userTier;
+      filteredData.userTimezone = userTimezone;
+      filteredData.userCountry = userCountry;
       
       return new Response(
         JSON.stringify(filteredData),
@@ -1384,7 +1389,9 @@ serve(async (req) => {
         fromCache: false,
         dailySearchesRemaining: dailySearchInfo.remaining,
         isTrial: dailySearchInfo.is_trial,
-        userTier: userTier
+        userTier: userTier,
+        userTimezone: userTimezone,
+        userCountry: userCountry
       }),
       { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
     );
