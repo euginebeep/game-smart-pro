@@ -100,11 +100,11 @@ export function Header({
             <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           
-          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+          <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black gradient-text tracking-tight whitespace-nowrap">
               EUGINE v3.0
             </h1>
-            <p className="text-muted-foreground text-xs sm:text-sm font-medium hidden sm:block">
+            <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-0.5">
               {t('main.subtitle')}
             </p>
           </div>
@@ -179,10 +179,10 @@ export function Header({
           <button
             onClick={onFetch}
             disabled={loading || (isTrial && dailySearchesRemaining === 0)}
-            className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base px-4 py-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base px-6 py-2.5 min-w-[140px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Zap className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>
+            <Zap className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+            <span className="text-center">{loading ? t('main.fetching') : t('main.fetchGames')}</span>
           </button>
 
           {/* Admin Button */}
