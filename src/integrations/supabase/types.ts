@@ -65,6 +65,75 @@ export type Database = {
         }
         Relationships: []
       }
+      backtest_results: {
+        Row: {
+          best_bet_type: string | null
+          breakdown_by_league: Json | null
+          breakdown_by_type: Json | null
+          created_at: string
+          date_from: string
+          date_to: string
+          executed_by: string | null
+          hit_rate: number
+          id: string
+          league_ids: number[] | null
+          min_confidence: number
+          min_value_percentage: number | null
+          total_fixtures: number
+          total_hits: number
+          total_misses: number
+          total_recommendations: number
+          total_roi: number
+          total_skips: number
+          worst_bet_type: string | null
+          yield_per_bet: number
+        }
+        Insert: {
+          best_bet_type?: string | null
+          breakdown_by_league?: Json | null
+          breakdown_by_type?: Json | null
+          created_at?: string
+          date_from: string
+          date_to: string
+          executed_by?: string | null
+          hit_rate: number
+          id?: string
+          league_ids?: number[] | null
+          min_confidence?: number
+          min_value_percentage?: number | null
+          total_fixtures: number
+          total_hits: number
+          total_misses: number
+          total_recommendations: number
+          total_roi: number
+          total_skips: number
+          worst_bet_type?: string | null
+          yield_per_bet: number
+        }
+        Update: {
+          best_bet_type?: string | null
+          breakdown_by_league?: Json | null
+          breakdown_by_type?: Json | null
+          created_at?: string
+          date_from?: string
+          date_to?: string
+          executed_by?: string | null
+          hit_rate?: number
+          id?: string
+          league_ids?: number[] | null
+          min_confidence?: number
+          min_value_percentage?: number | null
+          total_fixtures?: number
+          total_hits?: number
+          total_misses?: number
+          total_recommendations?: number
+          total_roi?: number
+          total_skips?: number
+          worst_bet_type?: string | null
+          yield_per_bet?: number
+        }
+        Relationships: []
+      }
       daily_searches: {
         Row: {
           created_at: string
@@ -89,6 +158,111 @@ export type Database = {
           search_date?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      historical_recommendations: {
+        Row: {
+          actual_away_goals: number | null
+          actual_btts: boolean | null
+          actual_home_goals: number | null
+          actual_outcome: string | null
+          actual_over25: boolean | null
+          away_team: string
+          away_team_id: number | null
+          confidence_score: number
+          created_at: string
+          estimated_probability: number | null
+          factors_used: Json | null
+          fixture_id: number
+          hit: boolean | null
+          home_team: string
+          home_team_id: number | null
+          id: string
+          implied_probability: number | null
+          is_simulated: boolean
+          league_id: number
+          league_name: string
+          match_date: string
+          odds_away: number
+          odds_draw: number
+          odds_home: number
+          odds_over: number | null
+          odds_under: number | null
+          recommendation_type: string
+          roi_unit: number | null
+          season: number
+          updated_at: string
+          value_percentage: number | null
+          weights_used: Json | null
+        }
+        Insert: {
+          actual_away_goals?: number | null
+          actual_btts?: boolean | null
+          actual_home_goals?: number | null
+          actual_outcome?: string | null
+          actual_over25?: boolean | null
+          away_team: string
+          away_team_id?: number | null
+          confidence_score: number
+          created_at?: string
+          estimated_probability?: number | null
+          factors_used?: Json | null
+          fixture_id: number
+          hit?: boolean | null
+          home_team: string
+          home_team_id?: number | null
+          id?: string
+          implied_probability?: number | null
+          is_simulated?: boolean
+          league_id: number
+          league_name: string
+          match_date: string
+          odds_away: number
+          odds_draw: number
+          odds_home: number
+          odds_over?: number | null
+          odds_under?: number | null
+          recommendation_type: string
+          roi_unit?: number | null
+          season: number
+          updated_at?: string
+          value_percentage?: number | null
+          weights_used?: Json | null
+        }
+        Update: {
+          actual_away_goals?: number | null
+          actual_btts?: boolean | null
+          actual_home_goals?: number | null
+          actual_outcome?: string | null
+          actual_over25?: boolean | null
+          away_team?: string
+          away_team_id?: number | null
+          confidence_score?: number
+          created_at?: string
+          estimated_probability?: number | null
+          factors_used?: Json | null
+          fixture_id?: number
+          hit?: boolean | null
+          home_team?: string
+          home_team_id?: number | null
+          id?: string
+          implied_probability?: number | null
+          is_simulated?: boolean
+          league_id?: number
+          league_name?: string
+          match_date?: string
+          odds_away?: number
+          odds_draw?: number
+          odds_home?: number
+          odds_over?: number | null
+          odds_under?: number | null
+          recommendation_type?: string
+          roi_unit?: number | null
+          season?: number
+          updated_at?: string
+          value_percentage?: number | null
+          weights_used?: Json | null
         }
         Relationships: []
       }

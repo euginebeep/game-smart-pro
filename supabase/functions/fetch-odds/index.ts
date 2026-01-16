@@ -22,11 +22,9 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
   
-  // Check for Lovable preview URLs pattern
   const isLovablePreview = /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/.test(origin) ||
                            /^https:\/\/[a-z0-9-]+-preview--[a-z0-9-]+\.lovable\.app$/.test(origin);
   
-  // Exact match for allowed origins (no substring matching for security)
   const isAllowed = ALLOWED_ORIGINS.includes(origin) || 
                     isLovablePreview ||
                     origin === 'http://localhost:5173' ||
@@ -144,6 +142,16 @@ interface Game {
   dayType: 'today' | 'tomorrow' | 'future';
   dayLabel: string;
   advancedData?: AdvancedGameData;
+  fixtureStats?: FixtureStats;
+}
+
+interface FixtureStats {
+  homePossession?: number;
+  awayPossession?: number;
+  homeShotsOnTarget?: number;
+  awayShotsOnTarget?: number;
+  homeTotalShots?: number;
+  awayTotalShots?: number;
 }
 
 interface AdvancedGameData {
@@ -182,6 +190,10 @@ interface TeamStats {
   failedToScore: number;
   bttsPercentage: number;
   over25Percentage: number;
+  homeGoalsAvg?: number;
+  awayGoalsAvg?: number;
+  homeGoalsConcededAvg?: number;
+  awayGoalsConcededAvg?: number;
 }
 
 interface BettingAnalysis {
@@ -190,6 +202,11 @@ interface BettingAnalysis {
   profit: number;
   confidence?: number;
   factors?: AnalysisFactor[];
+  valuePercentage?: number;
+  impliedProbability?: number;
+  estimatedProbability?: number;
+  isSkip?: boolean;
+  skipReason?: string;
 }
 
 interface AnalysisFactor {
@@ -199,7 +216,192 @@ interface AnalysisFactor {
   description: string;
 }
 
-// Traduções das análises
+// ============= PESOS DINÂMICOS POR LIGA E TIPO DE APOSTA =============
+
+interface DynamicWeights {
+  stats: number;
+  form: number;
+  h2h: number;
+  value: number;
+  standings: number;
+  injuries: number;
+  apiPrediction: number;
+  homeAway: number; // Novo: boost casa/fora
+}
+
+// Configuração de pesos base
+const BASE_WEIGHTS: DynamicWeights = {
+  stats: 25,
+  form: 20,
+  h2h: 15,
+  value: 15,
+  standings: 10,
+  injuries: 10,
+  apiPrediction: 5,
+  homeAway: 0,
+};
+
+// Ajustes por liga (baseado em características conhecidas)
+const LEAGUE_WEIGHT_ADJUSTMENTS: Record<string, Partial<DynamicWeights>> = {
+  // Premier League: Jogo mais físico e imprevisível, estatísticas muito importantes
+  'Premier League': { stats: 32, h2h: 10, form: 18, injuries: 12 },
+  'Championship': { stats: 28, form: 22, h2h: 12 },
+  
+  // Serie A (Itália): Táticas defensivas, lesões impactam muito
+  'Serie A': { stats: 20, injuries: 18, standings: 15, form: 18 },
+  'Serie B': { stats: 22, injuries: 15, form: 20 },
+  
+  // La Liga: Estatísticas e posse de bola muito relevantes
+  'La Liga': { stats: 30, form: 18, standings: 12 },
+  'La Liga 2': { stats: 25, form: 22 },
+  
+  // Bundesliga: Muitos gols, over/under relevante
+  'Bundesliga': { stats: 30, form: 22, h2h: 12 },
+  '2. Bundesliga': { stats: 28, form: 22 },
+  
+  // Ligue 1: PSG domina, standings muito importante
+  'Ligue 1': { standings: 18, stats: 22, form: 20 },
+  
+  // Brasil: Casa muito forte, forma recente crucial
+  'Brasileirão Série A': { homeAway: 10, form: 25, standings: 12 },
+  'Brasileirão Série B': { homeAway: 12, form: 25 },
+  
+  // Argentina: H2H e rivalidades importantes
+  'Liga Profesional Argentina': { h2h: 20, form: 22, homeAway: 8 },
+  
+  // Competições europeias: H2H crucial
+  'UEFA Champions League': { h2h: 22, form: 18, stats: 25 },
+  'UEFA Europa League': { h2h: 18, form: 22 },
+  'UEFA Europa Conference League': { form: 25, standings: 15 },
+};
+
+// Ajustes por tipo de aposta
+function getWeightsForBetType(baseWeights: DynamicWeights, betType: 'result' | 'over_under' | 'btts'): DynamicWeights {
+  const adjusted = { ...baseWeights };
+  
+  switch (betType) {
+    case 'over_under':
+      // Over/Under: estatísticas de gols são cruciais
+      adjusted.stats += 12;
+      adjusted.h2h += 5;
+      adjusted.form -= 5;
+      adjusted.standings -= 8;
+      break;
+    case 'btts':
+      // BTTS: estatísticas ofensivas/defensivas importantes
+      adjusted.stats += 10;
+      adjusted.h2h += 3;
+      adjusted.injuries += 5;
+      adjusted.standings -= 10;
+      break;
+    case 'result':
+    default:
+      // 1X2: forma e classificação mais relevantes
+      adjusted.form += 8;
+      adjusted.standings += 5;
+      adjusted.stats -= 5;
+      break;
+  }
+  
+  // Normalizar para somar 100
+  const total = Object.values(adjusted).reduce((a, b) => a + b, 0);
+  const factor = 100 / total;
+  
+  return {
+    stats: Math.round(adjusted.stats * factor),
+    form: Math.round(adjusted.form * factor),
+    h2h: Math.round(adjusted.h2h * factor),
+    value: Math.round(adjusted.value * factor),
+    standings: Math.round(adjusted.standings * factor),
+    injuries: Math.round(adjusted.injuries * factor),
+    apiPrediction: Math.round(adjusted.apiPrediction * factor),
+    homeAway: Math.round(adjusted.homeAway * factor),
+  };
+}
+
+function calculateDynamicWeights(leagueName: string, betType: 'result' | 'over_under' | 'btts'): DynamicWeights {
+  // Começar com pesos base
+  let weights = { ...BASE_WEIGHTS };
+  
+  // Aplicar ajustes da liga (busca parcial no nome)
+  for (const [league, adjustments] of Object.entries(LEAGUE_WEIGHT_ADJUSTMENTS)) {
+    if (leagueName.toLowerCase().includes(league.toLowerCase())) {
+      weights = { ...weights, ...adjustments };
+      break;
+    }
+  }
+  
+  // Aplicar ajustes por tipo de aposta
+  weights = getWeightsForBetType(weights, betType);
+  
+  secureLog('info', 'Dynamic weights calculated', { league: leagueName, betType, weights });
+  
+  return weights;
+}
+
+// ============= VALUE BETTING FUNCTIONS =============
+
+const MIN_VALUE_THRESHOLD = 5; // 5% de edge mínimo
+const MIN_CONFIDENCE_THRESHOLD = 65; // 65% de confiança mínima
+
+function calculateImpliedProbability(odds: number): number {
+  if (odds <= 1) return 100;
+  return (1 / odds) * 100;
+}
+
+function calculateValue(estimatedProb: number, odds: number): number {
+  const impliedProb = calculateImpliedProbability(odds);
+  // Value = (Prob Estimada / Prob Implícita - 1) * 100
+  const value = ((estimatedProb / impliedProb) - 1) * 100;
+  return Math.round(value * 100) / 100;
+}
+
+function shouldSkipBet(confidence: number, value: number): { skip: boolean; reason?: string } {
+  if (confidence < MIN_CONFIDENCE_THRESHOLD) {
+    return { skip: true, reason: `Confiança baixa (${confidence}% < ${MIN_CONFIDENCE_THRESHOLD}%)` };
+  }
+  if (value < MIN_VALUE_THRESHOLD) {
+    return { skip: true, reason: `Sem edge suficiente (Value ${value.toFixed(1)}% < ${MIN_VALUE_THRESHOLD}%)` };
+  }
+  return { skip: false };
+}
+
+// ============= FORMA PONDERADA (últimos 3 com 60%, últimos 5 com 40%) =============
+
+function calculateWeightedForm(form: string): number {
+  if (!form || form.length === 0) return 50;
+  
+  const getPoints = (result: string): number => {
+    switch (result.toUpperCase()) {
+      case 'W': return 3;
+      case 'D': return 1;
+      case 'L': return 0;
+      default: return 0;
+    }
+  };
+  
+  const results = form.split('').reverse(); // Mais recente primeiro
+  
+  // Últimos 3 jogos (peso 60%)
+  const last3 = results.slice(0, 3);
+  const last3Points = last3.reduce((sum, r) => sum + getPoints(r), 0);
+  const last3Max = last3.length * 3;
+  const last3Score = last3Max > 0 ? (last3Points / last3Max) * 100 : 50;
+  
+  // Últimos 5 jogos (peso 40%)
+  const last5 = results.slice(0, 5);
+  const last5Points = last5.reduce((sum, r) => sum + getPoints(r), 0);
+  const last5Max = last5.length * 3;
+  const last5Score = last5Max > 0 ? (last5Points / last5Max) * 100 : 50;
+  
+  // Média ponderada
+  const weightedScore = (last3Score * 0.6) + (last5Score * 0.4);
+  
+  return Math.round(weightedScore);
+}
+
+// ============= TRADUÇÕES =============
+
 const analysisTranslations: Record<string, Record<string, any>> = {
   pt: {
     over25: 'MAIS DE 2.5 GOLS',
@@ -209,6 +411,7 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     homeWin: 'VITÓRIA CASA',
     awayWin: 'VITÓRIA FORA',
     draw: 'EMPATE',
+    skip: 'SKIP - SEM EDGE',
     highConfidence: 'Alta confiança baseada em análise completa',
     h2hFactor: 'Histórico de confrontos',
     formFactor: 'Forma recente',
@@ -216,9 +419,13 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Previsão Analítica Matemática',
     injuriesFactor: 'Lesões e desfalques',
     standingsFactor: 'Posição na tabela',
+    homeAwayFactor: 'Desempenho casa/fora',
+    valueFactor: 'Value positivo nas odds',
     favorite: 'Favorito',
     withConfidence: 'com',
     confidence: 'de confiança',
+    noEdge: 'Sem edge suficiente',
+    lowConfidence: 'Confiança insuficiente',
   },
   en: {
     over25: 'OVER 2.5 GOALS',
@@ -228,6 +435,7 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     homeWin: 'HOME WIN',
     awayWin: 'AWAY WIN',
     draw: 'DRAW',
+    skip: 'SKIP - NO EDGE',
     highConfidence: 'High confidence based on complete analysis',
     h2hFactor: 'Head to head history',
     formFactor: 'Recent form',
@@ -235,9 +443,13 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Mathematical Analytical Prediction',
     injuriesFactor: 'Injuries and absences',
     standingsFactor: 'League position',
+    homeAwayFactor: 'Home/away performance',
+    valueFactor: 'Positive value in odds',
     favorite: 'Favorite',
     withConfidence: 'with',
     confidence: 'confidence',
+    noEdge: 'No edge found',
+    lowConfidence: 'Insufficient confidence',
   },
   es: {
     over25: 'MÁS DE 2.5 GOLES',
@@ -247,6 +459,7 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     homeWin: 'VICTORIA LOCAL',
     awayWin: 'VICTORIA VISITANTE',
     draw: 'EMPATE',
+    skip: 'SKIP - SIN EDGE',
     highConfidence: 'Alta confianza basada en análisis completo',
     h2hFactor: 'Historial de enfrentamientos',
     formFactor: 'Forma reciente',
@@ -254,9 +467,13 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Predicción Analítica Matemática',
     injuriesFactor: 'Lesiones y ausencias',
     standingsFactor: 'Posición en la tabla',
+    homeAwayFactor: 'Rendimiento local/visitante',
+    valueFactor: 'Valor positivo en las cuotas',
     favorite: 'Favorito',
     withConfidence: 'con',
     confidence: 'de confianza',
+    noEdge: 'Sin edge suficiente',
+    lowConfidence: 'Confianza insuficiente',
   },
   it: {
     over25: 'PIÙ DI 2.5 GOL',
@@ -266,6 +483,7 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     homeWin: 'VITTORIA CASA',
     awayWin: 'VITTORIA TRASFERTA',
     draw: 'PAREGGIO',
+    skip: 'SKIP - NESSUN EDGE',
     highConfidence: 'Alta fiducia basata su analisi completa',
     h2hFactor: 'Storico scontri diretti',
     formFactor: 'Forma recente',
@@ -273,13 +491,16 @@ const analysisTranslations: Record<string, Record<string, any>> = {
     predictionFactor: 'Previsione Analitica Matematica',
     injuriesFactor: 'Infortuni e assenze',
     standingsFactor: 'Posizione in classifica',
+    homeAwayFactor: 'Prestazioni casa/trasferta',
+    valueFactor: 'Valore positivo nelle quote',
     favorite: 'Favorito',
     withConfidence: 'con',
     confidence: 'di fiducia',
+    noEdge: 'Nessun edge trovato',
+    lowConfidence: 'Fiducia insufficiente',
   },
 };
 
-// Traduções do advice da API (vem em inglês da API-Football)
 const adviceTranslations: Record<string, Record<string, string>> = {
   pt: {
     'Double chance : Home or Draw': 'Dupla chance: Vitória Casa ou Empate',
@@ -299,12 +520,6 @@ const adviceTranslations: Record<string, Record<string, string>> = {
     'Double chance : Home or Draw': 'Doble oportunidad: Victoria Local o Empate',
     'Double chance : Draw or Away': 'Doble oportunidad: Empate o Victoria Visitante',
     'Double chance : Home or Away': 'Doble oportunidad: Victoria Local o Visitante',
-    'Combo Double chance : Home or Draw and target Over 1.5': 'Combo: Local/Empate + Más de 1.5 goles',
-    'Combo Double chance : Home or Draw and target Over 2.5': 'Combo: Local/Empate + Más de 2.5 goles',
-    'Combo Double chance : Home or Draw and target Under 3.5': 'Combo: Local/Empate + Menos de 3.5 goles',
-    'Combo Double chance : Draw or Away and target Over 1.5': 'Combo: Empate/Visitante + Más de 1.5 goles',
-    'Combo Double chance : Draw or Away and target Over 2.5': 'Combo: Empate/Visitante + Más de 2.5 goles',
-    'Combo Double chance : Draw or Away and target Under 3.5': 'Combo: Empate/Visitante + Menos de 3.5 goles',
     'Winner : Home': 'Ganador: Local',
     'Winner : Away': 'Ganador: Visitante',
     'Winner : Draw': 'Resultado: Empate',
@@ -313,33 +528,22 @@ const adviceTranslations: Record<string, Record<string, string>> = {
     'Double chance : Home or Draw': 'Doppia chance: Vittoria Casa o Pareggio',
     'Double chance : Draw or Away': 'Doppia chance: Pareggio o Vittoria Trasferta',
     'Double chance : Home or Away': 'Doppia chance: Vittoria Casa o Trasferta',
-    'Combo Double chance : Home or Draw and target Over 1.5': 'Combo: Casa/Pareggio + Più di 1.5 gol',
-    'Combo Double chance : Home or Draw and target Over 2.5': 'Combo: Casa/Pareggio + Più di 2.5 gol',
-    'Combo Double chance : Home or Draw and target Under 3.5': 'Combo: Casa/Pareggio + Meno di 3.5 gol',
-    'Combo Double chance : Draw or Away and target Over 1.5': 'Combo: Pareggio/Trasferta + Più di 1.5 gol',
-    'Combo Double chance : Draw or Away and target Over 2.5': 'Combo: Pareggio/Trasferta + Più di 2.5 gol',
-    'Combo Double chance : Draw or Away and target Under 3.5': 'Combo: Pareggio/Trasferta + Meno di 3.5 gol',
     'Winner : Home': 'Vincitore: Casa',
     'Winner : Away': 'Vincitore: Trasferta',
     'Winner : Draw': 'Risultato: Pareggio',
   },
 };
 
-// Função para traduzir advice da API
 function translateAdvice(advice: string | undefined, lang: string): string | undefined {
   if (!advice) return undefined;
-  if (lang === 'en') return advice; // Inglês é o idioma original
+  if (lang === 'en') return advice;
   
   const translations = adviceTranslations[lang];
   if (!translations) return advice;
   
-  // Tentar tradução exata primeiro
   if (translations[advice]) return translations[advice];
   
-  // Tradução por padrões comuns
   let translated = advice;
-  
-  // Padrões gerais
   const patterns: Record<string, Record<string, string>> = {
     pt: {
       'Double chance': 'Dupla chance',
@@ -360,7 +564,6 @@ function translateAdvice(advice: string | undefined, lang: string): string | und
       'Double chance': 'Doble oportunidad',
       'Home or Draw': 'Local o Empate',
       'Draw or Away': 'Empate o Visitante',
-      'Home or Away': 'Local o Visitante',
       'Winner': 'Ganador',
       'Home': 'Local',
       'Away': 'Visitante',
@@ -368,14 +571,11 @@ function translateAdvice(advice: string | undefined, lang: string): string | und
       'Over': 'Más de',
       'Under': 'Menos de',
       'goals': 'goles',
-      'and target': 'y objetivo',
-      'Combo': 'Combo',
     },
     it: {
       'Double chance': 'Doppia chance',
       'Home or Draw': 'Casa o Pareggio',
       'Draw or Away': 'Pareggio o Trasferta',
-      'Home or Away': 'Casa o Trasferta',
       'Winner': 'Vincitore',
       'Home': 'Casa',
       'Away': 'Trasferta',
@@ -383,8 +583,6 @@ function translateAdvice(advice: string | undefined, lang: string): string | und
       'Over': 'Più di',
       'Under': 'Meno di',
       'goals': 'gol',
-      'and target': 'e obiettivo',
-      'Combo': 'Combo',
     },
   };
   
@@ -412,12 +610,15 @@ const alertTranslations: Record<string, Record<string, string>> = {
   it: { today: '🔴 PARTITE DI OGGI', tomorrow: '📅 PARTITE DI DOMANI', future: '📅 PARTITE DEL' },
 };
 
-// ============= MOTOR DE ANÁLISE AVANÇADO =============
+// ============= MOTOR DE ANÁLISE AVANÇADO V2 =============
 
 function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   const betAmount = 40;
   const t = analysisTranslations[lang] || analysisTranslations['pt'];
   const factors: AnalysisFactor[] = [];
+  
+  // Obter pesos dinâmicos baseados na liga
+  const leagueName = game.league || '';
   
   // Scores para cada tipo de aposta
   let over25Score = 50;
@@ -428,127 +629,250 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   let drawScore = 50;
   
   const adv = game.advancedData;
+  const stats = game.fixtureStats;
   
-  // ===== 1. ANÁLISE DO H2H (peso: 20%) =====
+  // ===== 1. ANÁLISE DO H2H (peso dinâmico) =====
+  const h2hWeights = calculateDynamicWeights(leagueName, 'result');
+  
   if (adv?.h2h && adv.h2h.totalGames >= 3) {
     const h2h = adv.h2h;
+    const h2hMultiplier = h2hWeights.h2h / 15; // Normalizado pelo peso base
     
-    // Over/Under baseado na média de gols histórica
     if (h2h.avgGoals >= 3.0) {
-      over25Score += 15;
-      under25Score -= 10;
-      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 15, description: `Média ${h2h.avgGoals.toFixed(1)} gols nos confrontos` });
+      over25Score += Math.round(15 * h2hMultiplier);
+      under25Score -= Math.round(10 * h2hMultiplier);
+      factors.push({ 
+        name: t.h2hFactor, 
+        impact: 'positive', 
+        weight: Math.round(15 * h2hMultiplier), 
+        description: `Média ${h2h.avgGoals.toFixed(1)} gols nos confrontos` 
+      });
     } else if (h2h.avgGoals <= 2.0) {
-      under25Score += 15;
-      over25Score -= 10;
-      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 15, description: `Média baixa: ${h2h.avgGoals.toFixed(1)} gols` });
+      under25Score += Math.round(15 * h2hMultiplier);
+      over25Score -= Math.round(10 * h2hMultiplier);
+      factors.push({ 
+        name: t.h2hFactor, 
+        impact: 'positive', 
+        weight: Math.round(15 * h2hMultiplier), 
+        description: `Média baixa: ${h2h.avgGoals.toFixed(1)} gols` 
+      });
     }
     
-    // Resultado baseado no histórico
     const homeWinRate = h2h.homeWins / h2h.totalGames;
     const awayWinRate = h2h.awayWins / h2h.totalGames;
     if (homeWinRate >= 0.6) {
-      homeWinScore += 12;
-      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 12, description: `Casa venceu ${(homeWinRate * 100).toFixed(0)}% dos jogos` });
+      homeWinScore += Math.round(12 * h2hMultiplier);
+      factors.push({ 
+        name: t.h2hFactor, 
+        impact: 'positive', 
+        weight: Math.round(12 * h2hMultiplier), 
+        description: `Casa venceu ${(homeWinRate * 100).toFixed(0)}% dos jogos` 
+      });
     } else if (awayWinRate >= 0.5) {
-      awayWinScore += 12;
-      factors.push({ name: t.h2hFactor, impact: 'positive', weight: 12, description: `Visitante venceu ${(awayWinRate * 100).toFixed(0)}% dos jogos` });
+      awayWinScore += Math.round(12 * h2hMultiplier);
+      factors.push({ 
+        name: t.h2hFactor, 
+        impact: 'positive', 
+        weight: Math.round(12 * h2hMultiplier), 
+        description: `Visitante venceu ${(awayWinRate * 100).toFixed(0)}% dos jogos` 
+      });
     }
   }
   
-  // ===== 2. ANÁLISE DE FORMA (peso: 20%) =====
+  // ===== 2. ANÁLISE DE FORMA PONDERADA =====
+  const formWeights = calculateDynamicWeights(leagueName, 'result');
+  
   if (adv?.homeForm && adv?.awayForm) {
-    const countWins = (form: string) => (form.match(/W/g) || []).length;
-    const countLosses = (form: string) => (form.match(/L/g) || []).length;
+    const homeFormScore = calculateWeightedForm(adv.homeForm);
+    const awayFormScore = calculateWeightedForm(adv.awayForm);
+    const formMultiplier = formWeights.form / 20;
     
-    const homeWins = countWins(adv.homeForm);
-    const awayWins = countWins(adv.awayForm);
-    const homeLosses = countLosses(adv.homeForm);
-    const awayLosses = countLosses(adv.awayForm);
+    if (homeFormScore >= 70) {
+      homeWinScore += Math.round(15 * formMultiplier);
+      factors.push({ 
+        name: t.formFactor, 
+        impact: 'positive', 
+        weight: Math.round(15 * formMultiplier), 
+        description: `Casa em ótima forma (${homeFormScore}%)` 
+      });
+    } else if (homeFormScore <= 30) {
+      homeWinScore -= Math.round(10 * formMultiplier);
+      awayWinScore += Math.round(8 * formMultiplier);
+    }
     
-    if (homeWins >= 4) {
-      homeWinScore += 15;
-      factors.push({ name: t.formFactor, impact: 'positive', weight: 15, description: `Casa: ${homeWins} vitórias nos últimos 5` });
+    if (awayFormScore >= 70) {
+      awayWinScore += Math.round(15 * formMultiplier);
+      factors.push({ 
+        name: t.formFactor, 
+        impact: 'positive', 
+        weight: Math.round(15 * formMultiplier), 
+        description: `Visitante em ótima forma (${awayFormScore}%)` 
+      });
+    } else if (awayFormScore <= 30) {
+      awayWinScore -= Math.round(10 * formMultiplier);
+      homeWinScore += Math.round(8 * formMultiplier);
     }
-    if (awayWins >= 4) {
-      awayWinScore += 15;
-      factors.push({ name: t.formFactor, impact: 'positive', weight: 15, description: `Visitante: ${awayWins} vitórias nos últimos 5` });
-    }
-    if (homeLosses >= 3 && awayLosses >= 3) {
-      drawScore += 10;
+    
+    // Se ambos em má forma, empate mais provável
+    if (homeFormScore <= 40 && awayFormScore <= 40) {
+      drawScore += Math.round(12 * formMultiplier);
     }
   }
   
-  // ===== 3. ANÁLISE DE ESTATÍSTICAS (peso: 25%) =====
+  // ===== 3. ANÁLISE DE ESTATÍSTICAS (com dados de fixture se disponível) =====
+  const statsWeights = calculateDynamicWeights(leagueName, 'over_under');
+  
   if (adv?.homeStats && adv?.awayStats) {
     const homeStats = adv.homeStats;
     const awayStats = adv.awayStats;
+    const statsMultiplier = statsWeights.stats / 25;
     
     // Over 2.5 baseado em média de gols
     const avgGoalsTotal = homeStats.avgGoalsScored + awayStats.avgGoalsScored;
     if (avgGoalsTotal >= 3.2) {
-      over25Score += 20;
-      factors.push({ name: t.statsFactor, impact: 'positive', weight: 20, description: `Média combinada: ${avgGoalsTotal.toFixed(1)} gols/jogo` });
+      over25Score += Math.round(20 * statsMultiplier);
+      factors.push({ 
+        name: t.statsFactor, 
+        impact: 'positive', 
+        weight: Math.round(20 * statsMultiplier), 
+        description: `Média combinada: ${avgGoalsTotal.toFixed(1)} gols/jogo` 
+      });
     } else if (avgGoalsTotal <= 2.0) {
-      under25Score += 20;
-      factors.push({ name: t.statsFactor, impact: 'positive', weight: 20, description: `Média baixa: ${avgGoalsTotal.toFixed(1)} gols/jogo` });
+      under25Score += Math.round(20 * statsMultiplier);
+      factors.push({ 
+        name: t.statsFactor, 
+        impact: 'positive', 
+        weight: Math.round(20 * statsMultiplier), 
+        description: `Média baixa: ${avgGoalsTotal.toFixed(1)} gols/jogo` 
+      });
     }
     
     // BTTS baseado em percentual histórico
     const avgBtts = (homeStats.bttsPercentage + awayStats.bttsPercentage) / 2;
     if (avgBtts >= 60) {
-      bttsScore += 18;
-      factors.push({ name: t.statsFactor, impact: 'positive', weight: 18, description: `BTTS ${avgBtts.toFixed(0)}% das partidas` });
+      bttsScore += Math.round(18 * statsMultiplier);
+      factors.push({ 
+        name: t.statsFactor, 
+        impact: 'positive', 
+        weight: Math.round(18 * statsMultiplier), 
+        description: `BTTS ${avgBtts.toFixed(0)}% das partidas` 
+      });
     } else if (avgBtts <= 35) {
-      bttsScore -= 15;
+      bttsScore -= Math.round(15 * statsMultiplier);
     }
     
     // Over 2.5 baseado em percentual histórico
     const avgOver25 = (homeStats.over25Percentage + awayStats.over25Percentage) / 2;
     if (avgOver25 >= 65) {
-      over25Score += 18;
-      factors.push({ name: t.statsFactor, impact: 'positive', weight: 18, description: `Over 2.5 em ${avgOver25.toFixed(0)}% dos jogos` });
+      over25Score += Math.round(18 * statsMultiplier);
+      factors.push({ 
+        name: t.statsFactor, 
+        impact: 'positive', 
+        weight: Math.round(18 * statsMultiplier), 
+        description: `Over 2.5 em ${avgOver25.toFixed(0)}% dos jogos` 
+      });
     }
     
     // Clean sheets vs Failed to score
     if (homeStats.cleanSheets >= 40 && awayStats.failedToScore >= 40) {
-      under25Score += 12;
-      homeWinScore += 8;
+      under25Score += Math.round(12 * statsMultiplier);
+      homeWinScore += Math.round(8 * statsMultiplier);
+    }
+    
+    // ===== HOME/AWAY SPLITS =====
+    if (homeStats.homeGoalsAvg && awayStats.awayGoalsConcededAvg) {
+      const homeAdvantage = homeStats.homeGoalsAvg - (awayStats.awayGoalsConcededAvg || 0);
+      if (homeAdvantage > 0.5) {
+        homeWinScore += Math.round(10 * (formWeights.homeAway / 10 || 1));
+        factors.push({
+          name: t.homeAwayFactor,
+          impact: 'positive',
+          weight: 10,
+          description: `Casa forte: ${homeStats.homeGoalsAvg?.toFixed(1)} gols/jogo em casa`
+        });
+      }
     }
   }
   
-  // ===== 4. ANÁLISE DE POSIÇÃO NA TABELA (peso: 15%) =====
+  // ===== 4. SHOTS & POSSESSION (dados de fixture) =====
+  if (stats) {
+    if (stats.homeShotsOnTarget && stats.awayShotsOnTarget) {
+      const shotsDiff = stats.homeShotsOnTarget - stats.awayShotsOnTarget;
+      if (shotsDiff > 3) {
+        homeWinScore += 8;
+        over25Score += 5;
+      } else if (shotsDiff < -3) {
+        awayWinScore += 8;
+        over25Score += 5;
+      }
+    }
+    
+    if (stats.homePossession && stats.awayPossession) {
+      if (stats.homePossession > 60) {
+        homeWinScore += 5;
+      } else if (stats.awayPossession > 60) {
+        awayWinScore += 5;
+      }
+    }
+  }
+  
+  // ===== 5. ANÁLISE DE POSIÇÃO NA TABELA =====
+  const standingsWeights = calculateDynamicWeights(leagueName, 'result');
+  
   if (adv?.homePosition && adv?.awayPosition) {
     const posDiff = adv.awayPosition - adv.homePosition;
+    const standingsMultiplier = standingsWeights.standings / 10;
     
     if (posDiff >= 10) {
-      // Casa muito melhor posicionada
-      homeWinScore += 12;
-      factors.push({ name: t.standingsFactor, impact: 'positive', weight: 12, description: `Casa: ${adv.homePosition}º vs Fora: ${adv.awayPosition}º` });
+      homeWinScore += Math.round(12 * standingsMultiplier);
+      factors.push({ 
+        name: t.standingsFactor, 
+        impact: 'positive', 
+        weight: Math.round(12 * standingsMultiplier), 
+        description: `Casa: ${adv.homePosition}º vs Fora: ${adv.awayPosition}º` 
+      });
     } else if (posDiff <= -10) {
-      // Visitante muito melhor posicionado
-      awayWinScore += 12;
-      factors.push({ name: t.standingsFactor, impact: 'positive', weight: 12, description: `Fora: ${adv.awayPosition}º vs Casa: ${adv.homePosition}º` });
+      awayWinScore += Math.round(12 * standingsMultiplier);
+      factors.push({ 
+        name: t.standingsFactor, 
+        impact: 'positive', 
+        weight: Math.round(12 * standingsMultiplier), 
+        description: `Fora: ${adv.awayPosition}º vs Casa: ${adv.homePosition}º` 
+      });
     } else if (Math.abs(posDiff) <= 3) {
-      drawScore += 8;
+      drawScore += Math.round(8 * standingsMultiplier);
     }
   }
   
-  // ===== 5. ANÁLISE DE LESÕES (peso: 10%) =====
+  // ===== 6. ANÁLISE DE LESÕES =====
+  const injuryWeights = calculateDynamicWeights(leagueName, 'result');
+  
   if (adv?.homeInjuries !== undefined && adv?.awayInjuries !== undefined) {
+    const injuryMultiplier = injuryWeights.injuries / 10;
+    
     if (adv.homeInjuries >= 3) {
-      homeWinScore -= 10;
-      awayWinScore += 8;
-      factors.push({ name: t.injuriesFactor, impact: 'negative', weight: 10, description: `Casa: ${adv.homeInjuries} desfalques` });
+      homeWinScore -= Math.round(10 * injuryMultiplier);
+      awayWinScore += Math.round(8 * injuryMultiplier);
+      factors.push({ 
+        name: t.injuriesFactor, 
+        impact: 'negative', 
+        weight: Math.round(10 * injuryMultiplier), 
+        description: `Casa: ${adv.homeInjuries} desfalques` 
+      });
     }
     if (adv.awayInjuries >= 3) {
-      awayWinScore -= 10;
-      homeWinScore += 8;
-      factors.push({ name: t.injuriesFactor, impact: 'negative', weight: 10, description: `Visitante: ${adv.awayInjuries} desfalques` });
+      awayWinScore -= Math.round(10 * injuryMultiplier);
+      homeWinScore += Math.round(8 * injuryMultiplier);
+      factors.push({ 
+        name: t.injuriesFactor, 
+        impact: 'negative', 
+        weight: Math.round(10 * injuryMultiplier), 
+        description: `Visitante: ${adv.awayInjuries} desfalques` 
+      });
     }
   }
   
-  // ===== 6. PREVISÃO DA API (peso: 10%) =====
+  // ===== 7. PREVISÃO DA API =====
   if (adv?.apiPrediction) {
     const pred = adv.apiPrediction;
     
@@ -568,26 +892,73 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
       } else if (pred.winner === 'Away') {
         awayWinScore += 12;
       }
-      factors.push({ name: t.predictionFactor, impact: 'positive', weight: 12, description: `${pred.winner} com ${pred.winnerConfidence}% de confiança` });
+      factors.push({ 
+        name: t.predictionFactor, 
+        impact: 'positive', 
+        weight: 12, 
+        description: `${pred.winner} com ${pred.winnerConfidence}% de confiança` 
+      });
     }
   }
   
-  // ===== DETERMINAR MELHOR APOSTA =====
+  // ===== DETERMINAR MELHOR APOSTA COM VALUE =====
   const allScores = [
-    { type: t.over25, score: over25Score, odd: game.odds.over },
-    { type: t.under25, score: under25Score, odd: game.odds.under },
-    { type: t.btts, score: bttsScore, odd: (game.odds.home + game.odds.away) / 2 },
-    { type: t.homeWin, score: homeWinScore, odd: game.odds.home },
-    { type: t.awayWin, score: awayWinScore, odd: game.odds.away },
-    { type: t.draw, score: drawScore, odd: game.odds.draw },
+    { type: t.over25, score: over25Score, odd: game.odds.over, betType: 'over25' as const },
+    { type: t.under25, score: under25Score, odd: game.odds.under, betType: 'under25' as const },
+    { type: t.btts, score: bttsScore, odd: (game.odds.home + game.odds.away) / 2, betType: 'btts' as const },
+    { type: t.homeWin, score: homeWinScore, odd: game.odds.home, betType: 'home' as const },
+    { type: t.awayWin, score: awayWinScore, odd: game.odds.away, betType: 'away' as const },
+    { type: t.draw, score: drawScore, odd: game.odds.draw, betType: 'draw' as const },
   ];
   
-  // Ordenar por score
-  allScores.sort((a, b) => b.score - a.score);
-  const best = allScores[0];
+  // Calcular value para cada aposta
+  const scoresWithValue = allScores.map(bet => {
+    const estimatedProb = Math.min(100, Math.max(0, bet.score));
+    const impliedProb = calculateImpliedProbability(bet.odd);
+    const value = calculateValue(estimatedProb, bet.odd);
+    
+    return {
+      ...bet,
+      estimatedProb,
+      impliedProb,
+      value,
+    };
+  });
+  
+  // Ordenar por score (confiança)
+  scoresWithValue.sort((a, b) => b.score - a.score);
+  const best = scoresWithValue[0];
   
   // Calcular confiança (0-100)
   const confidence = Math.min(100, Math.max(30, best.score));
+  
+  // Verificar se deve fazer skip
+  const skipCheck = shouldSkipBet(confidence, best.value);
+  
+  if (skipCheck.skip) {
+    return {
+      type: t.skip,
+      reason: skipCheck.reason || t.noEdge,
+      profit: 0,
+      confidence,
+      factors: factors.slice(0, 3),
+      valuePercentage: best.value,
+      impliedProbability: best.impliedProb,
+      estimatedProbability: best.estimatedProb,
+      isSkip: true,
+      skipReason: skipCheck.reason,
+    };
+  }
+  
+  // Adicionar fator de value se positivo
+  if (best.value >= MIN_VALUE_THRESHOLD) {
+    factors.unshift({
+      name: t.valueFactor,
+      impact: 'positive',
+      weight: Math.round(best.value),
+      description: `Value +${best.value.toFixed(1)}% nas odds`
+    });
+  }
   
   // Gerar razão baseada nos fatores
   let reason = '';
@@ -603,7 +974,11 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
     reason,
     profit: parseFloat((betAmount * best.odd - betAmount).toFixed(2)),
     confidence,
-    factors: factors.slice(0, 5)
+    factors: factors.slice(0, 5),
+    valuePercentage: best.value,
+    impliedProbability: best.impliedProb,
+    estimatedProbability: best.estimatedProb,
+    isSkip: false,
   };
 }
 
@@ -612,30 +987,48 @@ function analyzeSimple(game: Game, lang: string = 'pt'): BettingAnalysis {
   const betAmount = 40;
   const t = analysisTranslations[lang] || analysisTranslations['pt'];
   
+  // Calcular value mesmo na análise simples
+  const homeImplied = calculateImpliedProbability(game.odds.home);
+  const awayImplied = calculateImpliedProbability(game.odds.away);
+  const overImplied = calculateImpliedProbability(game.odds.over);
+  
+  // Análise básica baseada apenas em odds
   if (game.odds.over > 0 && game.odds.over < 2.0) {
+    const estimatedProb = 55;
+    const value = calculateValue(estimatedProb, game.odds.over);
+    
     return {
       type: t.over25,
       reason: `Odd de ${game.odds.over.toFixed(2)} indica alta expectativa de gols.`,
       profit: parseFloat((betAmount * game.odds.over - betAmount).toFixed(2)),
-      confidence: 55
+      confidence: 55,
+      valuePercentage: value,
+      impliedProbability: overImplied,
+      estimatedProbability: estimatedProb,
+      isSkip: value < MIN_VALUE_THRESHOLD,
     };
   }
   
   const avgOdd = (game.odds.home + game.odds.away) / 2;
+  const estimatedProb = 50;
+  const value = calculateValue(estimatedProb, avgOdd);
+  
   return {
     type: t.btts,
     reason: `Jogo equilibrado com odds similares (Casa: ${game.odds.home.toFixed(2)} / Fora: ${game.odds.away.toFixed(2)}).`,
     profit: parseFloat((betAmount * avgOdd - betAmount).toFixed(2)),
-    confidence: 50
+    confidence: 50,
+    valuePercentage: value,
+    impliedProbability: (homeImplied + awayImplied) / 2,
+    estimatedProbability: estimatedProb,
+    isSkip: value < MIN_VALUE_THRESHOLD,
   };
 }
 
 function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
-  // Se temos dados avançados, usar análise completa
   if (game.advancedData && Object.keys(game.advancedData).length > 0) {
     return analyzeAdvanced(game, lang);
   }
-  // Fallback para análise simples
   return analyzeSimple(game, lang);
 }
 
@@ -711,7 +1104,6 @@ async function fetchH2H(homeTeamId: number, awayTeamId: number): Promise<Advance
       const awayGoals = game.goals.away || 0;
       totalGoals += homeGoals + awayGoals;
       
-      // Verificar se o time "home" do nosso fixture é o "home" ou "away" no H2H
       const isHomeTeamHome = game.teams.home.id === homeTeamId;
       
       if (homeGoals > awayGoals) {
@@ -756,7 +1148,14 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number):
     const goalsFor = stats.goals?.for?.total?.total || 0;
     const goalsAgainst = stats.goals?.against?.total?.total || 0;
     
-    // Calcular percentuais
+    // Gols casa/fora
+    const homeGames = stats.fixtures?.played?.home || 1;
+    const awayGames = stats.fixtures?.played?.away || 1;
+    const homeGoals = stats.goals?.for?.total?.home || 0;
+    const awayGoals = stats.goals?.for?.total?.away || 0;
+    const homeGoalsConceded = stats.goals?.against?.total?.home || 0;
+    const awayGoalsConceded = stats.goals?.against?.total?.away || 0;
+    
     const cleanSheets = ((stats.clean_sheet?.total || 0) / totalGames) * 100;
     const failedToScore = ((stats.failed_to_score?.total || 0) / totalGames) * 100;
     
@@ -767,8 +1166,12 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number):
       avgGoalsConceded: goalsAgainst / totalGames,
       cleanSheets,
       failedToScore,
-      bttsPercentage: 100 - cleanSheets - failedToScore + (cleanSheets * failedToScore / 100), // Aproximação
-      over25Percentage: (goalsFor + goalsAgainst) / totalGames >= 2.5 ? 65 : 45 // Estimativa
+      bttsPercentage: 100 - cleanSheets - failedToScore + (cleanSheets * failedToScore / 100),
+      over25Percentage: (goalsFor + goalsAgainst) / totalGames >= 2.5 ? 65 : 45,
+      homeGoalsAvg: homeGoals / homeGames,
+      awayGoalsAvg: awayGoals / awayGames,
+      homeGoalsConcededAvg: homeGoalsConceded / homeGames,
+      awayGoalsConcededAvg: awayGoalsConceded / awayGames,
     };
   } catch (err) {
     secureLog('warn', 'Erro ao buscar estatísticas do time', { teamId, error: String(err) });
@@ -785,7 +1188,7 @@ async function fetchStandings(leagueId: number, season: number, teamId: number):
     
     if (!data.response || !data.response[0]?.league?.standings) return undefined;
     
-    const standings = data.response[0].league.standings[0]; // Primeiro grupo (se houver grupos)
+    const standings = data.response[0].league.standings[0];
     const teamStanding = standings.find((s: any) => s.team.id === teamId);
     
     if (!teamStanding) return undefined;
@@ -841,7 +1244,6 @@ async function fetchPrediction(fixtureId: number): Promise<AdvancedGameData['api
 
 // ============= BUSCAR DADOS COMPLETOS =============
 
-// Helper para delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
@@ -856,18 +1258,14 @@ async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
     fixtureId 
   });
   
-  // Buscar dados em 2 etapas para não exceder rate limit
-  // Etapa 1: H2H e Standings (mais importantes e leves)
   const [h2h, homeStanding, awayStanding] = await Promise.all([
     fetchH2H(homeTeamId, awayTeamId),
     fetchStandings(leagueId, season, homeTeamId),
     fetchStandings(leagueId, season, awayTeamId),
   ]);
   
-  // Pequeno delay entre etapas para respeitar rate limit
   await delay(200);
   
-  // Etapa 2: Stats, Injuries e Prediction
   const [homeStats, awayStats, homeInjuries, awayInjuries, prediction] = await Promise.all([
     fetchTeamStats(homeTeamId, leagueId, season),
     fetchTeamStats(awayTeamId, leagueId, season),
@@ -890,52 +1288,37 @@ async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
   };
 }
 
-// Buscar fixtures e odds da API-Football
-// ===== LIGAS PRIORITÁRIAS (PRINCIPAIS) =====
-// IDs das principais ligas para priorizar na busca
+// ===== LIGAS PRIORITÁRIAS =====
 const PRIORITY_LEAGUES: Record<number, { name: string; tier: number }> = {
-  // TIER 1 - Top 5 Europeias (sempre prioridade máxima)
   39: { name: 'Premier League', tier: 1 },
   140: { name: 'La Liga', tier: 1 },
   135: { name: 'Serie A', tier: 1 },
   78: { name: 'Bundesliga', tier: 1 },
   61: { name: 'Ligue 1', tier: 1 },
-  
-  // TIER 1.5 - Competições UEFA
   2: { name: 'Champions League', tier: 1 },
   3: { name: 'Europa League', tier: 1 },
   848: { name: 'Conference League', tier: 1 },
-  
-  // TIER 2 - Outras ligas europeias top
   94: { name: 'Primeira Liga (Portugal)', tier: 2 },
   88: { name: 'Eredivisie', tier: 2 },
   144: { name: 'Jupiler Pro League (Bélgica)', tier: 2 },
   203: { name: 'Super Lig (Turquia)', tier: 2 },
   179: { name: 'Scottish Premiership', tier: 2 },
-  
-  // TIER 2.5 - Segundas divisões top 5
   40: { name: 'Championship (ENG)', tier: 2 },
   141: { name: 'La Liga 2', tier: 2 },
   136: { name: 'Serie B (ITA)', tier: 2 },
   79: { name: '2. Bundesliga', tier: 2 },
   62: { name: 'Ligue 2', tier: 2 },
-  
-  // TIER 3 - América do Sul
   71: { name: 'Brasileirão Série A', tier: 3 },
   72: { name: 'Brasileirão Série B', tier: 3 },
   128: { name: 'Liga Profesional (Argentina)', tier: 3 },
   13: { name: 'Libertadores', tier: 3 },
   11: { name: 'Copa Sudamericana', tier: 3 },
-  
-  // TIER 3.5 - Outras ligas populares
   218: { name: 'Bundesliga (Áustria)', tier: 3 },
   207: { name: 'Super League (Suíça)', tier: 3 },
   113: { name: 'Allsvenskan (Suécia)', tier: 3 },
   103: { name: 'Eliteserien (Noruega)', tier: 3 },
   119: { name: 'Superligaen (Dinamarca)', tier: 3 },
   106: { name: 'Ekstraklasa (Polônia)', tier: 3 },
-  
-  // TIER 4 - MLS e outras
   253: { name: 'MLS', tier: 4 },
   262: { name: 'Liga MX', tier: 4 },
 };
@@ -943,7 +1326,7 @@ const PRIORITY_LEAGUES: Record<number, { name: string; tier: number }> = {
 function getLeaguePriority(leagueId: number): number {
   const league = PRIORITY_LEAGUES[leagueId];
   if (league) return league.tier;
-  return 10; // Liga não prioritária
+  return 10;
 }
 
 async function fetchOddsFromAPI(lang: string = 'pt') {
@@ -978,24 +1361,19 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
         const agora = new Date();
         const limiteMinimo = new Date(agora.getTime() + 10 * 60 * 1000);
         
-        // Filtrar jogos válidos (>10min do início)
         const jogosValidos = fixturesData.response.filter((fixture: any) => {
           const dataJogo = new Date(fixture.fixture.date);
           return dataJogo > limiteMinimo;
         });
         
-        // Ordenar por prioridade da liga (menores = melhores)
-        jogosValidos.sort((a: any, b: any) => {
-          const prioA = getLeaguePriority(a.league.id);
-          const prioB = getLeaguePriority(b.league.id);
-          return prioA - prioB;
-        });
-        
-        // Log das ligas encontradas
-        const ligasEncontradas = [...new Set(jogosValidos.slice(0, 30).map((f: any) => `${f.league.name} (ID:${f.league.id}, Tier:${getLeaguePriority(f.league.id)})`))];
-        secureLog('info', `Ligas nos primeiros 30 jogos`, { ligas: ligasEncontradas.slice(0, 10) });
-        
         if (jogosValidos.length > 0) {
+          jogosValidos.sort((a: any, b: any) => {
+            const prioA = getLeaguePriority(a.league.id);
+            const prioB = getLeaguePriority(b.league.id);
+            if (prioA !== prioB) return prioA - prioB;
+            return new Date(a.fixture.date).getTime() - new Date(b.fixture.date).getTime();
+          });
+          
           jogosEncontrados = jogosValidos;
           diaEncontrado = diasNoFuturo;
           dataAlvo = targetDate;
@@ -1014,8 +1392,6 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível encontrar jogos disponíveis nos próximos 7 dias');
   }
   
-  // ===== SISTEMA DE SELEÇÃO INTELIGENTE =====
-  // Pegar os primeiros 25 jogos (já ordenados por prioridade de liga)
   const fixturesParaProcessar = jogosEncontrados.slice(0, 25);
   const allGamesWithData: (Game & { qualityScore: number })[] = [];
   
@@ -1027,12 +1403,10 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     try {
       const fixtureId = fixture.fixture.id;
       
-      // Delay entre jogos para respeitar rate limit (exceto no primeiro)
       if (i > 0) {
         await delay(400);
       }
       
-      // Buscar odds E dados avançados
       const [oddsData, advancedData] = await Promise.all([
         apiFootballRequest('/odds', { fixture: fixtureId.toString(), bookmaker: '8' }).catch(() => null),
         fetchAdvancedData(fixture)
@@ -1063,54 +1437,42 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
         }
       }
       
-      // ===== CALCULAR QUALITY SCORE (0-120) =====
       let qualityScore = 0;
       const leagueId = fixture.league.id;
       const leagueTier = getLeaguePriority(leagueId);
       
-      // 0. PRIORIDADE DA LIGA (até +30 pontos) - MUITO IMPORTANTE!
-      if (leagueTier === 1) qualityScore += 30; // Top 5 + UEFA
-      else if (leagueTier === 2) qualityScore += 22; // Segundas ligas top
-      else if (leagueTier === 3) qualityScore += 15; // Brasil/Argentina
-      else if (leagueTier === 4) qualityScore += 8;  // MLS/Liga MX
-      // Tier 10 (não listada) = 0 pontos
+      if (leagueTier === 1) qualityScore += 30;
+      else if (leagueTier === 2) qualityScore += 22;
+      else if (leagueTier === 3) qualityScore += 15;
+      else if (leagueTier === 4) qualityScore += 8;
       
-      // 1. Odds válidas (+25 pontos base)
       if (hasValidOdds && homeOdd > 0 && awayOdd > 0) {
         qualityScore += 25;
-        
-        // Bonus para odds equilibradas (indica jogo competitivo)
         const oddsRange = Math.abs(homeOdd - awayOdd);
-        if (oddsRange < 1.0) qualityScore += 10; // Jogo muito equilibrado
-        else if (oddsRange < 2.0) qualityScore += 5; // Jogo equilibrado
+        if (oddsRange < 1.0) qualityScore += 10;
+        else if (oddsRange < 2.0) qualityScore += 5;
       }
       
-      // 2. H2H disponível (+15 pontos)
       if (advancedData.h2h && advancedData.h2h.totalGames >= 3) {
         qualityScore += 15;
       }
       
-      // 3. Form disponível (+10 pontos)
       if (advancedData.homeForm && advancedData.awayForm) {
         qualityScore += 10;
       }
       
-      // 4. Posições na tabela (+10 pontos)
       if (advancedData.homePosition && advancedData.awayPosition) {
         qualityScore += 10;
       }
       
-      // 5. Estatísticas de times (+15 pontos)
       if (advancedData.homeStats && advancedData.awayStats) {
         qualityScore += 15;
       }
       
-      // 6. Previsão da API (+10 pontos)
       if (advancedData.apiPrediction?.advice) {
         qualityScore += 10;
       }
       
-      // 7. Lesões registradas (+5 pontos - dados de lesões são importantes)
       if (advancedData.homeInjuries !== undefined && advancedData.awayInjuries !== undefined) {
         qualityScore += 5;
       }
@@ -1125,7 +1487,6 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
       const startTime = new Date(fixture.fixture.date);
       const dayType = getDayType(diaEncontrado);
       
-      // Só adicionar jogos com odds válidas
       if (hasValidOdds && homeOdd > 0) {
         allGamesWithData.push({
           id: fixtureId.toString(),
@@ -1161,11 +1522,8 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível processar os jogos encontrados');
   }
   
-  // ===== SELECIONAR OS 10 MELHORES JOGOS =====
-  // Ordenar por qualityScore (maior primeiro)
   allGamesWithData.sort((a, b) => b.qualityScore - a.qualityScore);
   
-  // Pegar os 10 melhores
   const gamesWithOdds: Game[] = allGamesWithData.slice(0, 10).map(({ qualityScore, ...game }) => game);
   
   secureLog('info', 'Jogos selecionados por qualidade', { 
@@ -1200,7 +1558,7 @@ const CACHE_DURATION_MINUTES = 10;
 function getCacheKey(): string {
   const hoje = new Date();
   const dataStr = hoje.toISOString().split('T')[0];
-  return `odds_v2_${dataStr}`; // Nova versão do cache
+  return `odds_v3_${dataStr}`; // Nova versão do cache com pesos dinâmicos
 }
 
 async function getFromCache(supabaseAdmin: any): Promise<any | null> {
@@ -1250,7 +1608,6 @@ function translateCachedData(cachedData: any, lang: string): any {
   const t = analysisTranslations[lang] || analysisTranslations['pt'];
   
   const games = cachedData.games.map((game: any) => {
-    // Traduzir apiPrediction se existir
     let translatedAdvancedData = game.advancedData;
     if (game.advancedData?.apiPrediction) {
       const prediction = game.advancedData.apiPrediction;
@@ -1259,7 +1616,6 @@ function translateCachedData(cachedData: any, lang: string): any {
         apiPrediction: {
           ...prediction,
           advice: translateAdvice(prediction.advice, lang),
-          // Traduzir o winner para o idioma local
           winnerLabel: prediction.winner ? 
             (prediction.winner === 'Home' ? game.homeTeam : 
              prediction.winner === 'Away' ? game.awayTeam : 
@@ -1404,7 +1760,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Buscar o tier e timezone do usuário
     const { data: profileData } = await supabaseAdmin
       .from('profiles')
       .select('subscription_tier, subscription_status, trial_end_date, timezone, country_code')
@@ -1416,21 +1771,16 @@ serve(async (req) => {
     
     const isSubscribed = profileData?.subscription_status === 'active';
     
-    // Verificar se está em período de trial (trial_end_date >= now)
     const trialEndDate = profileData?.trial_end_date ? new Date(profileData.trial_end_date) : null;
     const isInTrial = trialEndDate ? trialEndDate >= new Date() : false;
     
-    // Trial = Premium com limite de 3 buscas/dia
-    // Assinante = tier do plano sem limite
-    // Fora do trial e sem assinatura = free
     let userTier = profileData?.subscription_tier || 'free';
     if (isInTrial && !isSubscribed) {
-      userTier = 'premium'; // Trial sempre é premium
+      userTier = 'premium';
     }
     
     secureLog('info', 'User tier', { tier: userTier, isSubscribed, isInTrial });
 
-    // Verificar limite de buscas apenas para trial (não assinante)
     let dailySearchInfo = { remaining: -1, is_trial: false };
     
     if (isInTrial && !isSubscribed) {
@@ -1447,10 +1797,9 @@ serve(async (req) => {
             dailyLimitReached: true,
             remaining: 0,
             isTrial: true,
-            userTier: 'premium' // Trial é premium mas com limite
+            userTier: 'premium'
           }), 
           { 
-            // Business-rule response: do not return non-2xx to avoid treating it as a runtime failure on clients.
             status: 200, 
             headers: { 
               ...corsHeaders, 
@@ -1462,7 +1811,6 @@ serve(async (req) => {
       }
       dailySearchInfo = searchLimitData || { remaining: -1, is_trial: true };
     } else if (!isSubscribed && !isInTrial) {
-      // Usuário sem trial e sem assinatura - bloquear acesso
       return new Response(
         JSON.stringify({ 
           error: 'Período de trial expirado. Assine um plano para continuar.',
@@ -1491,11 +1839,9 @@ serve(async (req) => {
 
     const cachedData = await getFromCache(supabaseAdmin);
     
-    // Função para filtrar dados baseado no tier
     const filterDataByTier = (data: any, tier: string) => {
       if (!data?.games) return data;
       
-      // Premium: 10 jogos, outros tiers: 5 jogos
       const maxGames = tier === 'premium' ? 10 : 5;
       const limitedGames = data.games.slice(0, maxGames);
       
@@ -1503,14 +1849,13 @@ serve(async (req) => {
         const filteredGame = { ...game };
         
         if (tier === 'free' || tier === 'basic') {
-          // Basic: apenas odds e recomendação simples (sem dados avançados)
           delete filteredGame.advancedData;
           if (filteredGame.analysis) {
             filteredGame.analysis.factors = [];
             filteredGame.analysis.confidence = undefined;
+            filteredGame.analysis.valuePercentage = undefined;
           }
         } else if (tier === 'advanced') {
-          // Advanced: H2H, Form, Standings (sem lesões e predictions)
           if (filteredGame.advancedData) {
             delete filteredGame.advancedData.homeInjuries;
             delete filteredGame.advancedData.awayInjuries;
@@ -1519,7 +1864,6 @@ serve(async (req) => {
             delete filteredGame.advancedData.awayStats;
           }
         }
-        // Premium: tudo disponível (15 jogos com todos os dados)
         
         return filteredGame;
       });
@@ -1543,7 +1887,7 @@ serve(async (req) => {
       );
     }
 
-    secureLog('info', 'Buscando dados frescos da API-Football (modo avançado)');
+    secureLog('info', 'Buscando dados frescos da API-Football (modo avançado v2)');
     const result = await fetchOddsFromAPI(validLang);
     
     saveToCache(supabaseAdmin, result).catch(err => 
