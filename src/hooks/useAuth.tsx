@@ -440,27 +440,32 @@ export function useAuth() {
   }, [authState.user]);
 
   // Auto-check subscription on page load and periodically
+  // Only run after profile is loaded to ensure auth is fully initialized
   useEffect(() => {
-    if (authState.session && !authState.loading) {
-      // Check on initial load
-      checkSubscription();
+    if (authState.session?.access_token && !authState.loading && authState.profile) {
+      // Check on initial load with delay to ensure auth is propagated
+      const timer = setTimeout(checkSubscription, 1000);
       
       // Check every 60 seconds
       const interval = setInterval(checkSubscription, 60000);
-      return () => clearInterval(interval);
+      return () => {
+        clearTimeout(timer);
+        clearInterval(interval);
+      };
     }
-  }, [authState.session, authState.loading, checkSubscription]);
+  }, [authState.session?.access_token, authState.loading, authState.profile, checkSubscription]);
 
   // Registrar sessão ao fazer login
+  // Only run after profile is loaded to ensure auth is fully initialized
   useEffect(() => {
-    if (authState.session?.access_token && !authState.loading) {
+    if (authState.session?.access_token && !authState.loading && authState.profile) {
       // Delay to ensure auth state is fully propagated
       const timer = setTimeout(() => {
         registerSession();
-      }, 500);
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [authState.session?.access_token, authState.loading, registerSession]);
+  }, [authState.session?.access_token, authState.loading, authState.profile, registerSession]);
 
   // Validar sessão periodicamente (anti-multilogin)
   // Only validate after profile is loaded to ensure auth is fully ready
