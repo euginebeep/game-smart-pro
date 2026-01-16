@@ -1,4 +1,363 @@
 # EUGINE - Documentação Técnica Completa
+
+## 🎨 Diagramas de Arquitetura
+
+### Arquitetura Geral do Sistema
+
+```mermaid
+flowchart TB
+    subgraph Frontend["🖥️ Frontend (React + Vite)"]
+        UI[UI Components]
+        RQ[React Query]
+        Auth[useAuth Hook]
+        Lang[Language Context]
+    end
+
+    subgraph EdgeFunctions["⚡ Edge Functions (Deno)"]
+        FO[fetch-odds]
+        CS[check-subscription]
+        VS[validate-session]
+        AU[admin-users]
+        CC[create-checkout]
+        CP[customer-portal]
+        SW[stripe-webhook]
+    end
+
+    subgraph Database["🗄️ PostgreSQL (Supabase)"]
+        profiles[(profiles)]
+        daily_searches[(daily_searches)]
+        active_sessions[(active_sessions)]
+        api_usage[(api_usage)]
+        odds_cache[(odds_cache)]
+        user_roles[(user_roles)]
+    end
+
+    subgraph External["🌐 APIs Externas"]
+        APIF[API-Football]
+        STRIPE[Stripe]
+        RESEND[Resend Email]
+    end
+
+    UI --> RQ
+    RQ --> FO
+    RQ --> CS
+    Auth --> VS
+    
+    FO --> APIF
+    FO --> odds_cache
+    FO --> daily_searches
+    FO --> api_usage
+    
+    CS --> profiles
+    VS --> active_sessions
+    AU --> profiles
+    AU --> user_roles
+    
+    CC --> STRIPE
+    CP --> STRIPE
+    SW --> STRIPE
+    SW --> profiles
+    
+    EdgeFunctions --> RESEND
+```
+
+### Fluxo de Autenticação
+
+```mermaid
+sequenceDiagram
+    participant U as Usuário
+    participant F as Frontend
+    participant SA as Supabase Auth
+    participant VS as validate-session
+    participant DB as Database
+
+    U->>F: Preenche formulário
+    F->>SA: signUp/signIn
+    SA->>DB: Trigger handle_new_user()
+    DB-->>SA: Profile criado
+    SA-->>F: Session + JWT
+    F->>VS: Registrar sessão
+    VS->>DB: Upsert active_sessions (hash SHA-256)
+    VS-->>F: Sessão registrada
+    
+    loop A cada 30 segundos
+        F->>VS: Validar sessão
+        VS->>DB: Comparar hash
+        alt Sessão válida
+            VS-->>F: ✅ valid: true
+        else Outra sessão ativa
+            VS-->>F: ❌ valid: false
+            F->>U: Logout forçado
+        end
+    end
+```
+
+### Fluxo de Busca de Odds
+
+```mermaid
+flowchart LR
+    subgraph Request["📥 Requisição"]
+        R1[Usuário clica Buscar]
+        R2[Validar JWT]
+        R3[Verificar limites]
+    end
+
+    subgraph Cache["💾 Cache Check"]
+        C1{Cache válido?}
+        C2[Retornar cache]
+    end
+
+    subgraph APIFootball["⚽ API-Football"]
+        A1[Fixtures]
+        A2[H2H]
+        A3[Standings]
+        A4[Injuries]
+        A5[Predictions]
+    end
+
+    subgraph Analysis["🧠 Motor de Análise"]
+        AN1[Calcular scores]
+        AN2[Gerar fatores]
+        AN3[Ranking top 10]
+    end
+
+    subgraph Response["📤 Resposta"]
+        RS1[Filtrar por tier]
+        RS2[Traduzir]
+        RS3[Salvar cache]
+        RS4[Retornar jogos]
+    end
+
+    R1 --> R2 --> R3 --> C1
+    C1 -->|Sim| C2 --> RS1
+    C1 -->|Não| A1
+    A1 -->|200ms delay| A2
+    A2 -->|200ms delay| A3
+    A3 -->|400ms delay| A4
+    A4 --> A5
+    A5 --> AN1 --> AN2 --> AN3
+    AN3 --> RS1 --> RS2 --> RS3 --> RS4
+```
+
+### Motor de Análise - Pesos
+
+```mermaid
+pie title Distribuição de Pesos na Análise
+    "Estatísticas" : 25
+    "Forma Recente" : 20
+    "Head-to-Head" : 15
+    "Valor das Odds" : 15
+    "Classificação" : 10
+    "Lesões" : 10
+    "API Prediction" : 5
+```
+
+### Sistema de Tiers
+
+```mermaid
+flowchart TB
+    subgraph Trial["🆓 Trial (7 dias)"]
+        T1[3 buscas/dia]
+        T2[Acesso Premium]
+        T3[Todas análises]
+    end
+
+    subgraph Basic["💎 Basic"]
+        B1[1 busca/dia]
+        B2[Odds básicas]
+        B3[Recomendação simples]
+    end
+
+    subgraph Advanced["🔷 Advanced"]
+        AD1[3 buscas/dia]
+        AD2[+ H2H]
+        AD3[+ Forma]
+        AD4[+ Classificação]
+    end
+
+    subgraph Premium["👑 Premium"]
+        P1[6 buscas/dia]
+        P2[+ Lesões]
+        P3[+ Stats completas]
+        P4[+ API Predictions]
+        P5[+ Fatores detalhados]
+    end
+
+    Trial -->|Expira| Basic
+    Basic -->|Upgrade| Advanced
+    Advanced -->|Upgrade| Premium
+```
+
+### Fluxo de Pagamento Stripe
+
+```mermaid
+sequenceDiagram
+    participant U as Usuário
+    participant F as Frontend
+    participant CC as create-checkout
+    participant S as Stripe
+    participant SW as stripe-webhook
+    participant DB as Database
+
+    U->>F: Clica "Assinar"
+    F->>CC: Criar sessão
+    CC->>S: checkout.sessions.create
+    S-->>CC: Session URL
+    CC-->>F: Redirect URL
+    F->>S: Redirect para checkout
+    U->>S: Preenche pagamento
+    S->>SW: webhook: checkout.session.completed
+    SW->>DB: UPDATE profiles SET subscription_status='active'
+    S-->>U: Redirect success_url
+    U->>F: Volta ao app
+    F->>DB: check-subscription
+    DB-->>F: ✅ Assinatura ativa
+```
+
+### Arquitetura de Segurança
+
+```mermaid
+flowchart TB
+    subgraph Layer1["🛡️ Camada 1: CORS"]
+        C1[Whitelist de origens]
+        C2[Rejeição de não-autorizados]
+    end
+
+    subgraph Layer2["🔐 Camada 2: JWT"]
+        J1[getClaims validation]
+        J2[Extração de user_id]
+    end
+
+    subgraph Layer3["🔒 Camada 3: RLS"]
+        R1[Deny anonymous]
+        R2[auth.uid = user_id]
+        R3[Admin has_role check]
+    end
+
+    subgraph Layer4["🔑 Camada 4: Session"]
+        S1[Hash SHA-256]
+        S2[Upsert único]
+        S3[Validação periódica]
+    end
+
+    subgraph Layer5["👮 Camada 5: Admin"]
+        A1[Role verification]
+        A2[Endpoints separados]
+    end
+
+    Layer1 --> Layer2 --> Layer3 --> Layer4 --> Layer5
+```
+
+### Estrutura do Banco de Dados
+
+```mermaid
+erDiagram
+    AUTH_USERS ||--|| PROFILES : "user_id"
+    PROFILES ||--o{ DAILY_SEARCHES : "user_id"
+    PROFILES ||--o| ACTIVE_SESSIONS : "user_id"
+    PROFILES ||--o{ API_USAGE : "user_id"
+    PROFILES ||--o{ USER_ROLES : "user_id"
+    
+    PROFILES {
+        uuid id PK
+        uuid user_id UK
+        text email
+        text phone
+        text subscription_tier
+        text subscription_status
+        timestamp subscription_end_date
+        text stripe_customer_id
+        text stripe_subscription_id
+        timestamp trial_start_date
+        timestamp trial_end_date
+        boolean is_active
+        text country_code
+        text city
+        text state
+    }
+    
+    DAILY_SEARCHES {
+        uuid id PK
+        uuid user_id FK
+        date search_date
+        integer search_count
+    }
+    
+    ACTIVE_SESSIONS {
+        uuid id PK
+        uuid user_id UK
+        text session_token
+        text device_info
+        timestamp last_active_at
+    }
+    
+    API_USAGE {
+        uuid id PK
+        uuid user_id FK
+        text endpoint
+        timestamp created_at
+    }
+    
+    USER_ROLES {
+        uuid id PK
+        uuid user_id FK
+        app_role role
+    }
+    
+    ODDS_CACHE {
+        uuid id PK
+        text cache_key UK
+        jsonb data
+        timestamp expires_at
+    }
+    
+    SUBSCRIPTION_PLANS {
+        uuid id PK
+        text name
+        text tier
+        integer price_cents
+        text stripe_price_id
+        jsonb features
+    }
+```
+
+### Fluxo do Admin Panel
+
+```mermaid
+flowchart LR
+    subgraph Auth["🔐 Autenticação"]
+        A1[Login admin]
+        A2[Verificar role]
+    end
+
+    subgraph Actions["⚙️ Ações"]
+        AC1[Listar usuários]
+        AC2[Editar perfil]
+        AC3[Alterar plano]
+        AC4[Reset buscas]
+        AC5[Ver analytics]
+    end
+
+    subgraph Data["📊 Dados"]
+        D1[Total API calls]
+        D2[Calls hoje]
+        D3[Top cidades]
+        D4[Top estados]
+    end
+
+    A1 --> A2
+    A2 -->|admin| AC1
+    A2 -->|admin| AC2
+    A2 -->|admin| AC3
+    A2 -->|admin| AC4
+    A2 -->|admin| AC5
+    AC5 --> D1
+    AC5 --> D2
+    AC5 --> D3
+    AC5 --> D4
+```
+
+---
 ## Sistema Profissional de Análise de Apostas Esportivas
 
 **Versão:** 3.0  
