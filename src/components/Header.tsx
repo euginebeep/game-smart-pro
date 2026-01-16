@@ -88,23 +88,23 @@ export function Header({
     <header className="mb-6 sm:mb-8 lg:mb-12">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6">
         {/* Logo and Title */}
-        <div className="flex items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Animated Logo */}
           <div 
-            className="w-12 h-12 sm:w-14 sm:h-14 lg:w-[70px] lg:h-[70px] rounded-xl sm:rounded-2xl lg:rounded-[20px] flex items-center justify-center animate-pulse-slow"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center animate-pulse-slow shrink-0"
             style={{
               background: 'linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(160 84% 39%) 100%)',
               boxShadow: '0 0 30px hsla(160, 84%, 39%, 0.4)'
             }}
           >
-            <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-white" />
+            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black gradient-text tracking-tight">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black gradient-text tracking-tight whitespace-nowrap">
               EUGINE v3.0
             </h1>
-            <p className="text-muted-foreground text-xs sm:text-sm lg:text-base font-medium mt-0.5 sm:mt-1">
+            <p className="text-muted-foreground text-xs sm:text-sm font-medium hidden sm:block">
               {t('main.subtitle')}
             </p>
           </div>
@@ -179,9 +179,9 @@ export function Header({
           <button
             onClick={onFetch}
             disabled={loading || (isTrial && dailySearchesRemaining === 0)}
-            className="btn-primary flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary flex items-center gap-2 text-sm sm:text-base px-4 py-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${loading ? 'animate-spin' : ''}`} />
+            <Zap className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>
           </button>
 
