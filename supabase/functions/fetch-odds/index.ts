@@ -697,6 +697,9 @@ async function fetchPrediction(fixtureId: number): Promise<AdvancedGameData['api
 
 // ============= BUSCAR DADOS COMPLETOS =============
 
+// Helper para delay
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
   const homeTeamId = fixture.teams.home.id;
   const awayTeamId = fixture.teams.away.id;
@@ -709,22 +712,21 @@ async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
     fixtureId 
   });
   
-  // Buscar todos os dados em paralelo
-  const [
-    h2h,
-    homeStats,
-    awayStats,
-    homeStanding,
-    awayStanding,
-    homeInjuries,
-    awayInjuries,
-    prediction
-  ] = await Promise.all([
+  // Buscar dados em 2 etapas para não exceder rate limit
+  // Etapa 1: H2H e Standings (mais importantes e leves)
+  const [h2h, homeStanding, awayStanding] = await Promise.all([
     fetchH2H(homeTeamId, awayTeamId),
-    fetchTeamStats(homeTeamId, leagueId, season),
-    fetchTeamStats(awayTeamId, leagueId, season),
     fetchStandings(leagueId, season, homeTeamId),
     fetchStandings(leagueId, season, awayTeamId),
+  ]);
+  
+  // Pequeno delay entre etapas para respeitar rate limit
+  await delay(200);
+  
+  // Etapa 2: Stats, Injuries e Prediction
+  const [homeStats, awayStats, homeInjuries, awayInjuries, prediction] = await Promise.all([
+    fetchTeamStats(homeTeamId, leagueId, season),
+    fetchTeamStats(awayTeamId, leagueId, season),
     fetchInjuries(homeTeamId, fixtureId),
     fetchInjuries(awayTeamId, fixtureId),
     fetchPrediction(fixtureId)
@@ -801,15 +803,23 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível encontrar jogos disponíveis nos próximos 7 dias');
   }
   
-  // Processar até 15 jogos com dados completos (Premium terá acesso a todos, outros tiers serão filtrados depois)
-  const fixturesParaProcessar = jogosEncontrados.slice(0, 15);
+  // Processar jogos sequencialmente com delay para respeitar rate limit da API-Football
+  // (Até 10 jogos - Premium terá acesso a todos, outros tiers serão filtrados depois)
+  const fixturesParaProcessar = jogosEncontrados.slice(0, 10);
   const gamesWithOdds: Game[] = [];
   
-  for (const fixture of fixturesParaProcessar) {
+  for (let i = 0; i < fixturesParaProcessar.length; i++) {
+    const fixture = fixturesParaProcessar[i];
+    
     try {
       const fixtureId = fixture.fixture.id;
       
-      // Buscar odds E dados avançados em paralelo
+      // Delay entre jogos para não exceder rate limit (exceto no primeiro)
+      if (i > 0) {
+        await delay(500); // 500ms entre cada jogo
+      }
+      
+      // Buscar odds E dados avançados (já com delay interno)
       const [oddsData, advancedData] = await Promise.all([
         apiFootballRequest('/odds', { fixture: fixtureId.toString(), bookmaker: '8' }).catch(() => null),
         fetchAdvancedData(fixture)
@@ -858,7 +868,7 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
         advancedData
       });
       
-      secureLog('info', 'Jogo processado com dados avançados', { 
+      secureLog('info', `Jogo ${i + 1}/${fixturesParaProcessar.length} processado`, { 
         fixture: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
         hasH2H: !!advancedData.h2h,
         hasStats: !!(advancedData.homeStats && advancedData.awayStats),
@@ -1163,8 +1173,8 @@ serve(async (req) => {
     const filterDataByTier = (data: any, tier: string) => {
       if (!data?.games) return data;
       
-      // Premium: 15 jogos, outros tiers: 5 jogos
-      const maxGames = tier === 'premium' ? 15 : 5;
+      // Premium: 10 jogos, outros tiers: 5 jogos
+      const maxGames = tier === 'premium' ? 10 : 5;
       const limitedGames = data.games.slice(0, maxGames);
       
       const filteredGames = limitedGames.map((game: any) => {
