@@ -105,6 +105,7 @@ serve(async (req) => {
             subscription_status: updates.subscription_status,
             subscription_end_date: updates.subscription_end_date,
             is_active: updates.is_active,
+            phone: updates.phone,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', userId);
