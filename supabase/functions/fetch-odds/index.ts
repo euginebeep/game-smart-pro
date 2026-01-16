@@ -22,21 +22,18 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
   
-  const isLovablePreview = /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/.test(origin) ||
-                           /^https:\/\/[a-z0-9-]+-preview--[a-z0-9-]+\.lovable\.app$/.test(origin);
+  // Allow all Lovable preview and production domains
+  const isLovableDomain = origin.includes('.lovable.app') || 
+                          origin.includes('.lovableproject.com') ||
+                          origin.includes('.lovab'); // Handle truncated origins
   
   const isAllowed = ALLOWED_ORIGINS.includes(origin) || 
-                    isLovablePreview ||
-                    origin === 'http://localhost:5173' ||
-                    origin === 'http://localhost:3000' ||
-                    origin === 'http://127.0.0.1:5173';
-
-  if (!isAllowed && origin) {
-    console.log(`[CORS] Rejected origin: ${origin}`);
-  }
+                    isLovableDomain ||
+                    origin.startsWith('http://localhost:') ||
+                    origin.startsWith('http://127.0.0.1:');
 
   return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : 'null',
+    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
     'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
