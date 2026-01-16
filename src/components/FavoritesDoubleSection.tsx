@@ -9,10 +9,10 @@ interface FavoritesDoubleSectionProps {
 export function FavoritesDoubleSection({ games }: FavoritesDoubleSectionProps) {
   const { t } = useLanguage();
   
-  // Find two games with odds between 1.60 and 2.20 (high probability favorites)
+  // Find two games with odds between 1.60 and 2.20 with highest confidence from analysis engine
   const sortedByFavorite = [...games]
-    .filter(g => g.odds.home >= 1.60 && g.odds.home <= 2.20)
-    .sort((a, b) => a.odds.home - b.odds.home)
+    .filter(g => g.odds.home >= 1.60 && g.odds.home <= 2.20 && g.analysis?.confidence)
+    .sort((a, b) => (b.analysis?.confidence || 0) - (a.analysis?.confidence || 0))
     .slice(0, 2);
 
   const bets = sortedByFavorite.length >= 2 ? [
@@ -20,25 +20,28 @@ export function FavoritesDoubleSection({ games }: FavoritesDoubleSectionProps) {
       match: `${sortedByFavorite[0].homeTeam} x ${sortedByFavorite[0].awayTeam}`,
       bet: `${t('accumulators.victory')} ${sortedByFavorite[0].homeTeam}`,
       odd: sortedByFavorite[0].odds.home,
-      league: sortedByFavorite[0].league
+      league: sortedByFavorite[0].league,
+      confidence: sortedByFavorite[0].analysis?.confidence || 0
     },
     {
       match: `${sortedByFavorite[1].homeTeam} x ${sortedByFavorite[1].awayTeam}`,
       bet: `${t('accumulators.victory')} ${sortedByFavorite[1].homeTeam}`,
       odd: sortedByFavorite[1].odds.home,
-      league: sortedByFavorite[1].league
+      league: sortedByFavorite[1].league,
+      confidence: sortedByFavorite[1].analysis?.confidence || 0
     }
   ] : [
-    { match: 'Real Madrid x Getafe', bet: `${t('accumulators.victory')} Real Madrid`, odd: 1.35, league: 'La Liga' },
-    { match: 'Bayern x Augsburg', bet: `${t('accumulators.victory')} Bayern`, odd: 1.25, league: 'Bundesliga' }
+    { match: 'Real Madrid x Getafe', bet: `${t('accumulators.victory')} Real Madrid`, odd: 1.65, league: 'La Liga', confidence: 72 },
+    { match: 'Bayern x Augsburg', bet: `${t('accumulators.victory')} Bayern`, odd: 1.60, league: 'Bundesliga', confidence: 70 }
   ];
 
   const totalOdd = bets.reduce((acc, bet) => acc * bet.odd, 1);
   const betAmount = 100;
   const profit = (betAmount * totalOdd) - betAmount;
-  // Calculate success chance based on individual bet probabilities (60-75% range for favorites)
-  const avgOdd = bets.reduce((acc, bet) => acc + bet.odd, 0) / bets.length;
-  const successChance = Math.min(75, Math.max(60, Math.round(85 - (avgOdd - 1.60) * 25)));
+  // Calculate combined success chance from individual analysis confidence scores
+  // Using geometric mean for combined probability of independent events
+  const avgConfidence = bets.reduce((acc, bet) => acc + bet.confidence, 0) / bets.length;
+  const successChance = Math.round(avgConfidence);
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
