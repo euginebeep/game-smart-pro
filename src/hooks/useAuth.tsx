@@ -122,51 +122,66 @@ export function useAuth() {
       return;
     }
 
-    setAuthState(prev => ({
-      ...prev,
-      subscription: { ...prev.subscription, isLoading: true },
-    }));
-
+    // Don't set loading state to avoid UI flickering
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (error) {
         console.error('Error checking subscription:', error);
-        setAuthState(prev => ({
-          ...prev,
-          subscription: { ...prev.subscription, isLoading: false },
-        }));
         return;
       }
 
-      setAuthState(prev => ({
-        ...prev,
-        subscription: {
-          tier: data.tier || 'free',
-          isSubscribed: data.subscribed || false,
-          subscriptionEnd: data.subscription_end || null,
-          isLoading: false,
-        },
-      }));
+      // Only update state if values actually changed
+      setAuthState(prev => {
+        const newTier = data.tier || 'free';
+        const newIsSubscribed = data.subscribed || false;
+        const newSubscriptionEnd = data.subscription_end || null;
+        
+        // Check if anything actually changed
+        if (
+          prev.subscription.tier === newTier &&
+          prev.subscription.isSubscribed === newIsSubscribed &&
+          prev.subscription.subscriptionEnd === newSubscriptionEnd
+        ) {
+          // No changes, don't update state
+          return prev;
+        }
+        
+        return {
+          ...prev,
+          subscription: {
+            tier: newTier,
+            isSubscribed: newIsSubscribed,
+            subscriptionEnd: newSubscriptionEnd,
+            isLoading: false,
+          },
+        };
+      });
 
-      // Atualizar profile local
+      // Atualizar profile local only if needed
       if (session.user) {
         const profile = await fetchProfile(session.user.id);
         if (profile) {
           const trialStatus = calculateTrialStatus(profile);
-          setAuthState(prev => ({
-            ...prev,
-            profile,
-            ...trialStatus,
-          }));
+          setAuthState(prev => {
+            // Check if profile data actually changed
+            if (
+              prev.profile?.subscription_tier === profile.subscription_tier &&
+              prev.profile?.subscription_status === profile.subscription_status &&
+              prev.trialDaysRemaining === trialStatus.trialDaysRemaining
+            ) {
+              return prev;
+            }
+            return {
+              ...prev,
+              profile,
+              ...trialStatus,
+            };
+          });
         }
       }
     } catch (err) {
       console.error('Error in checkSubscription:', err);
-      setAuthState(prev => ({
-        ...prev,
-        subscription: { ...prev.subscription, isLoading: false },
-      }));
     }
   }, []);
 
@@ -369,6 +384,17 @@ export function useAuth() {
         (payload) => {
           const newProfile = payload.new as Profile;
           const oldProfile = payload.old as Partial<Profile>;
+          
+          // Only process if there are actual changes that matter
+          const hasRelevantChanges = 
+            oldProfile.subscription_tier !== newProfile.subscription_tier ||
+            oldProfile.subscription_status !== newProfile.subscription_status ||
+            oldProfile.subscription_end_date !== newProfile.subscription_end_date;
+          
+          if (!hasRelevantChanges) {
+            console.log('[REALTIME] No relevant profile changes, skipping update');
+            return;
+          }
           
           console.log('[REALTIME] Profile updated:', newProfile);
 
