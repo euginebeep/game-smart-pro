@@ -72,6 +72,13 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
               <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="truncate max-w-[100px] sm:max-w-none">{game.league}</span>
             </div>
+            {/* Value Badge - Show for premium users when value > 0 */}
+            {hasPremiumAccess && analysis.valuePercentage && analysis.valuePercentage > 0 && (
+              <div className="badge text-[10px] sm:text-xs bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="font-semibold">Value +{analysis.valuePercentage.toFixed(1)}%</span>
+              </div>
+            )}
             {/* Tier Badge */}
             <div className={`badge text-[10px] sm:text-xs ${
               userTier === 'premium' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :

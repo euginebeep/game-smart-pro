@@ -84,6 +84,7 @@ export interface BettingAnalysis {
   reason: string;
   profit: number;
   confidence?: number; // 0-100
+  valuePercentage?: number; // Value edge %
   factors?: AnalysisFactor[];
 }
 
