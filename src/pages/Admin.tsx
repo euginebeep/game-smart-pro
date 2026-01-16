@@ -8,9 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loading } from '@/components/Loading';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TIER_LIMITS = {
   free: 0,
@@ -19,9 +20,20 @@ const TIER_LIMITS = {
   premium: 6
 };
 
+// Brazilian states map
+const BRAZILIAN_STATES: Record<string, string> = {
+  'AC': 'Acre', 'AL': 'Alagoas', 'AP': 'Amapá', 'AM': 'Amazonas', 'BA': 'Bahia',
+  'CE': 'Ceará', 'DF': 'Distrito Federal', 'ES': 'Espírito Santo', 'GO': 'Goiás',
+  'MA': 'Maranhão', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul', 'MG': 'Minas Gerais',
+  'PA': 'Pará', 'PB': 'Paraíba', 'PR': 'Paraná', 'PE': 'Pernambuco', 'PI': 'Piauí',
+  'RJ': 'Rio de Janeiro', 'RN': 'Rio Grande do Norte', 'RS': 'Rio Grande do Sul',
+  'RO': 'Rondônia', 'RR': 'Roraima', 'SC': 'Santa Catarina', 'SP': 'São Paulo',
+  'SE': 'Sergipe', 'TO': 'Tocantins'
+};
+
 export default function Admin() {
   const navigate = useNavigate();
-  const { isAdmin, loading, users, usersLoading, fetchUsers, updateUser, resetSearches, setSearchCount } = useAdmin();
+  const { isAdmin, loading, users, usersLoading, analytics, fetchUsers, fetchAnalytics, updateUser, resetSearches, setSearchCount } = useAdmin();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({
@@ -44,6 +56,7 @@ export default function Admin() {
       fetchUsers().catch(() => {
         toast.error('Erro ao carregar usuários');
       });
+      fetchAnalytics();
     }
   }, [isAdmin]);
 
@@ -157,7 +170,7 @@ export default function Admin() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total de Usuários</CardDescription>
@@ -188,9 +201,132 @@ export default function Admin() {
               </CardTitle>
             </CardHeader>
           </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Buscas Hoje</CardDescription>
+              <CardTitle className="text-3xl text-purple-500">
+                {analytics?.todayApiCalls || 0}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Total de Buscas</CardDescription>
+              <CardTitle className="text-3xl text-cyan-500">
+                {analytics?.totalApiCalls || 0}
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
 
-        {/* Users Table */}
+        <Tabs defaultValue="users" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Usuários
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="analytics" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Top States */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    Top Estados
+                  </CardTitle>
+                  <CardDescription>Estados com mais cadastros</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {analytics?.topStates && analytics.topStates.length > 0 ? (
+                    <div className="space-y-3">
+                      {analytics.topStates.map((item, index) => (
+                        <div key={item.state} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground w-6">{index + 1}.</span>
+                            <span className="font-medium">{BRAZILIAN_STATES[item.state] || item.state}</span>
+                          </div>
+                          <Badge variant="secondary">{item.count} usuários</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Nenhum dado disponível</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Top Cities */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    Top Cidades
+                  </CardTitle>
+                  <CardDescription>Cidades com mais cadastros</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {analytics?.topCities && analytics.topCities.length > 0 ? (
+                    <div className="space-y-3">
+                      {analytics.topCities.map((item, index) => (
+                        <div key={item.city} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground w-6">{index + 1}.</span>
+                            <span className="font-medium">{item.city}</span>
+                          </div>
+                          <Badge variant="secondary">{item.count} usuários</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Nenhum dado disponível</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* API Usage Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-primary" />
+                  Uso da API
+                </CardTitle>
+                <CardDescription>Resumo de consumo de buscas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <p className="text-3xl font-bold text-purple-500">{analytics?.todayApiCalls || 0}</p>
+                    <p className="text-sm text-muted-foreground">Buscas Hoje</p>
+                  </div>
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <p className="text-3xl font-bold text-cyan-500">{analytics?.totalApiCalls || 0}</p>
+                    <p className="text-sm text-muted-foreground">Total de Buscas</p>
+                  </div>
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <p className="text-3xl font-bold text-green-500">
+                      {users.length > 0 ? (analytics?.totalApiCalls || 0 / users.length).toFixed(1) : 0}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Média por Usuário</p>
+                  </div>
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <p className="text-3xl font-bold text-amber-500">
+                      {analytics?.topStates?.length || 0}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Estados Ativos</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -394,6 +530,8 @@ export default function Admin() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
