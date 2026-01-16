@@ -171,6 +171,66 @@ serve(async (req) => {
         );
       }
 
+      case 'get_analytics': {
+        logStep("Fetching analytics");
+
+        // Get total daily searches (as proxy for API usage)
+        const { data: allSearches } = await adminClient
+          .from('daily_searches')
+          .select('search_count');
+        
+        const totalApiCalls = allSearches?.reduce((sum, s) => sum + (s.search_count || 0), 0) || 0;
+
+        // Get today's searches
+        const today = new Date().toISOString().split('T')[0];
+        const { data: todaySearches } = await adminClient
+          .from('daily_searches')
+          .select('search_count')
+          .eq('search_date', today);
+        
+        const todayApiCalls = todaySearches?.reduce((sum, s) => sum + (s.search_count || 0), 0) || 0;
+
+        // Get top cities
+        const { data: profiles } = await adminClient
+          .from('profiles')
+          .select('city, state, country_code');
+
+        const cityCount: Record<string, number> = {};
+        const stateCount: Record<string, number> = {};
+
+        profiles?.forEach(p => {
+          if (p.city) {
+            const cityKey = p.city.trim().toLowerCase();
+            cityCount[cityKey] = (cityCount[cityKey] || 0) + 1;
+          }
+          if (p.state) {
+            stateCount[p.state] = (stateCount[p.state] || 0) + 1;
+          }
+        });
+
+        const topCities = Object.entries(cityCount)
+          .map(([city, count]) => ({ city: city.charAt(0).toUpperCase() + city.slice(1), count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+
+        const topStates = Object.entries(stateCount)
+          .map(([state, count]) => ({ state, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+
+        return new Response(
+          JSON.stringify({ 
+            analytics: {
+              totalApiCalls,
+              todayApiCalls,
+              topCities,
+              topStates
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`);
     }

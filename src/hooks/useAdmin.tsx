@@ -15,6 +15,16 @@ interface AdminUser {
   is_active: boolean;
   created_at: string;
   today_searches: number;
+  city: string | null;
+  state: string | null;
+  country_code: string | null;
+}
+
+interface AdminAnalytics {
+  totalApiCalls: number;
+  todayApiCalls: number;
+  topCities: { city: string; count: number }[];
+  topStates: { state: string; count: number }[];
 }
 
 export function useAdmin() {
@@ -22,6 +32,7 @@ export function useAdmin() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
 
   useEffect(() => {
     checkAdminStatus();
@@ -138,12 +149,33 @@ export function useAdmin() {
     }
   };
 
+  const fetchAnalytics = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: 'get_analytics' }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      setAnalytics(data.analytics);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    }
+  };
+
   return {
     isAdmin,
     loading,
     users,
     usersLoading,
+    analytics,
     fetchUsers,
+    fetchAnalytics,
     updateUser,
     resetSearches,
     setSearchCount
