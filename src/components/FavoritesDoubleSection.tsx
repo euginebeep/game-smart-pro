@@ -36,7 +36,9 @@ export function FavoritesDoubleSection({ games }: FavoritesDoubleSectionProps) {
   const totalOdd = bets.reduce((acc, bet) => acc * bet.odd, 1);
   const betAmount = 100;
   const profit = (betAmount * totalOdd) - betAmount;
-  const successChance = Math.min(95, Math.round((1 / totalOdd) * 100 * 1.3));
+  // Calculate success chance based on individual bet probabilities (60-75% range for favorites)
+  const avgOdd = bets.reduce((acc, bet) => acc + bet.odd, 0) / bets.length;
+  const successChance = Math.min(75, Math.max(60, Math.round(85 - (avgOdd - 1.60) * 25)));
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
