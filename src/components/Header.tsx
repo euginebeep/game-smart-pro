@@ -179,7 +179,7 @@ export function Header({
           <button
             onClick={onFetch}
             disabled={loading || (isTrial && dailySearchesRemaining === 0)}
-            className="btn-primary flex items-center gap-2 text-sm sm:text-base px-4 py-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base px-4 py-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Zap className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>
