@@ -27,7 +27,8 @@ export default function Admin() {
   const [editForm, setEditForm] = useState({
     subscription_tier: '',
     subscription_status: '',
-    is_active: true
+    is_active: true,
+    phone: ''
   });
   const [searchCountInput, setSearchCountInput] = useState<{ userId: string; count: string } | null>(null);
 
@@ -51,7 +52,8 @@ export default function Admin() {
     setEditForm({
       subscription_tier: user.subscription_tier,
       subscription_status: user.subscription_status || 'inactive',
-      is_active: user.is_active
+      is_active: user.is_active,
+      phone: user.phone || ''
     });
   };
 
@@ -62,7 +64,8 @@ export default function Admin() {
       const updates: any = {
         subscription_tier: editForm.subscription_tier,
         subscription_status: editForm.subscription_status,
-        is_active: editForm.is_active
+        is_active: editForm.is_active,
+        phone: editForm.phone.trim() || null
       };
 
       if (editForm.subscription_status === 'active') {
@@ -72,6 +75,7 @@ export default function Admin() {
       await updateUser(editingUser.user_id, updates);
       toast.success('Usuário atualizado com sucesso');
       setEditingUser(null);
+      fetchUsers();
     } catch (error) {
       toast.error('Erro ao atualizar usuário');
     }
@@ -317,6 +321,17 @@ export default function Admin() {
                                   <DialogDescription>{editingUser?.email}</DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium">Telefone</label>
+                                    <Input
+                                      value={editForm.phone}
+                                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                                      placeholder="+55 11999999999"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                      Formato: +DDI DDD + número (ex: +55 11999999999)
+                                    </p>
+                                  </div>
                                   <div className="space-y-2">
                                     <label className="text-sm font-medium">Plano</label>
                                     <Select
