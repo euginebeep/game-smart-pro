@@ -314,20 +314,21 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             </div>
           )}
 
-          {/* API Prediction */}
+          {/* EUGINE Suggestion */}
           {adv.apiPrediction && (
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Target className="w-4 h-4 text-amber-400" />
-                <h4 className="font-bold text-amber-400 text-xs uppercase">Previsão API</h4>
+                <h4 className="font-bold text-amber-400 text-xs uppercase">{t('gameCard.eugineSuggestion')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 {adv.apiPrediction.advice && (
                   <p className="text-foreground/80 font-medium">{adv.apiPrediction.advice}</p>
                 )}
-                {adv.apiPrediction.winner && (
+                {adv.apiPrediction.winnerLabel && (
                   <p className="text-foreground/80">
-                    <span className="text-muted-foreground">Favorito:</span> {adv.apiPrediction.winner}
+                    <span className="text-muted-foreground">{t('gameCard.favorite')}:</span> {adv.apiPrediction.winnerLabel}
+                    {adv.apiPrediction.confidenceLabel && <span className="text-muted-foreground ml-1">({adv.apiPrediction.confidenceLabel})</span>}
                   </p>
                 )}
               </div>

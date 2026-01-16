@@ -223,6 +223,8 @@ const translations: Record<Language, any> = {
       away: "Fora",
       over: "Over 2.5",
       under: "Under 2.5",
+      eugineSuggestion: "Sugestão EUGINE",
+      favorite: "Favorito",
     },
     accumulators: {
       title: "🎯 Apostas Acumuladas",
@@ -736,6 +738,8 @@ const translations: Record<Language, any> = {
       away: "Away",
       over: "Over 2.5",
       under: "Under 2.5",
+      eugineSuggestion: "EUGINE Suggestion",
+      favorite: "Favorite",
     },
     accumulators: {
       title: "🎯 Accumulator Bets",
@@ -1249,6 +1253,8 @@ const translations: Record<Language, any> = {
       away: "Visitante",
       over: "Más de 2.5",
       under: "Menos de 2.5",
+      eugineSuggestion: "Sugerencia EUGINE",
+      favorite: "Favorito",
     },
     accumulators: {
       title: "🎯 Apuestas Combinadas",
@@ -1762,6 +1768,8 @@ const translations: Record<Language, any> = {
       away: "Trasferta",
       over: "Over 2.5",
       under: "Under 2.5",
+      eugineSuggestion: "Suggerimento EUGINE",
+      favorite: "Favorito",
     },
     accumulators: {
       title: "🎯 Scommesse Multiple",

@@ -51,6 +51,9 @@ export interface AdvancedGameData {
     awayGoals?: string;
     advice?: string;
     under_over?: string;
+    // Campos traduzidos adicionados pelo backend
+    winnerLabel?: string;
+    confidenceLabel?: string;
   };
 }
 
