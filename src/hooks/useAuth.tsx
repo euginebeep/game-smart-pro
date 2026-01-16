@@ -463,10 +463,11 @@ export function useAuth() {
   }, [authState.session?.access_token, authState.loading, registerSession]);
 
   // Validar sessão periodicamente (anti-multilogin)
+  // Only validate after profile is loaded to ensure auth is fully ready
   useEffect(() => {
-    if (authState.session?.access_token && !authState.loading && !authState.sessionInvalid) {
-      // Initial validation with delay
-      const initialTimer = setTimeout(validateSession, 2000);
+    if (authState.session?.access_token && !authState.loading && !authState.sessionInvalid && authState.profile) {
+      // Initial validation with longer delay to ensure auth is fully propagated
+      const initialTimer = setTimeout(validateSession, 3000);
       // Validar a cada 30 segundos
       const interval = setInterval(validateSession, 30000);
       return () => {
@@ -474,7 +475,7 @@ export function useAuth() {
         clearInterval(interval);
       };
     }
-  }, [authState.session?.access_token, authState.loading, authState.sessionInvalid, validateSession]);
+  }, [authState.session?.access_token, authState.loading, authState.sessionInvalid, authState.profile, validateSession]);
 
   // Check URL for subscription success
   useEffect(() => {
