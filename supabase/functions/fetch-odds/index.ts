@@ -19,21 +19,25 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
+function isOriginAllowed(origin: string): boolean {
+  if (!origin) return true;
+
+  const isLocalhost = origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:');
+
+  // Lovable preview domains
+  const isLovablePreview =
+    /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/.test(origin) ||
+    /^https:\/\/[a-z0-9-]+-preview--[a-z0-9-]+\.lovable\.app$/.test(origin);
+
+  return ALLOWED_ORIGINS.includes(origin) || isLocalhost || isLovablePreview;
+}
+
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || '';
-  
-  // Allow all Lovable preview and production domains
-  const isLovableDomain = origin.includes('.lovable.app') || 
-                          origin.includes('.lovableproject.com') ||
-                          origin.includes('.lovab'); // Handle truncated origins
-  
-  const isAllowed = ALLOWED_ORIGINS.includes(origin) || 
-                    isLovableDomain ||
-                    origin.startsWith('http://localhost:') ||
-                    origin.startsWith('http://127.0.0.1:');
+  const allowed = isOriginAllowed(origin);
 
   return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
+    'Access-Control-Allow-Origin': allowed ? (origin || '*') : 'null',
     'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -1674,15 +1678,13 @@ serve(async (req) => {
   }
 
   const origin = req.headers.get('Origin') || '';
-  const isAllowedOrigin = ALLOWED_ORIGINS.some(allowed => 
-    origin === allowed || origin.includes('localhost') || origin.includes('127.0.0.1')
-  );
-  
-  if (origin && !isAllowedOrigin) {
-    secureLog('warn', 'Requisição de origem não autorizada', { origin: origin.substring(0, 50) });
+
+  // Enforce Origin allowlist (browser requests), but allow empty origin (server-to-server)
+  if (origin && !isOriginAllowed(origin)) {
+    secureLog('warn', 'Requisição de origem não autorizada', { origin });
     return new Response(
-      JSON.stringify({ error: 'Origem não autorizada' }), 
-      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Origem não autorizada' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 
