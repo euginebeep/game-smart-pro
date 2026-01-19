@@ -154,21 +154,21 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
         {/* Header: Time & League */}
         <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-700/50">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg">
-              <Clock className="w-4 h-4 text-emerald-400" />
-              <span className="text-white font-semibold text-sm">{formatTime(game.startTime)}</span>
+            <div className="flex items-center gap-3 bg-slate-700/50 px-4 py-2.5 rounded-xl">
+              <Clock className="w-6 h-6 text-emerald-400" />
+              <span className="text-white font-bold text-xl">{formatTime(game.startTime)}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {game.leagueLogo && (
               <img
                 src={game.leagueLogo}
                 alt={game.league}
-                className="w-5 h-5 object-contain"
+                className="w-7 h-7 object-contain"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             )}
-            <span className="text-slate-300 text-sm font-medium">{game.league}</span>
+            <span className="text-slate-200 text-lg font-semibold">{game.league}</span>
           </div>
         </div>
 
