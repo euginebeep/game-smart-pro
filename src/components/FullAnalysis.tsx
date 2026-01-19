@@ -456,39 +456,45 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
       </div>
 
       {/* Main Recommendation */}
-      <div className="bg-gradient-to-r from-emerald-900/50 to-slate-900 rounded-2xl p-5 border border-emerald-700/50">
+      <div className="bg-gradient-to-r from-emerald-900/50 to-slate-900 rounded-2xl p-4 sm:p-6 border border-emerald-700/50">
         <h2 className="text-lg font-bold mb-4 text-emerald-400">{l.mainRec}</h2>
-        <p className="text-slate-300 mb-4 text-lg">
-          {l.suggestedBet}: <span className="text-emerald-400 font-bold text-xl">{analysis?.type || `${game.homeTeam}`}</span>
-        </p>
         
-        <div className="flex items-center gap-8 flex-wrap">
+        {/* Bet Suggestion */}
+        <div className="bg-slate-800/50 rounded-xl p-4 mb-5">
+          <p className="text-slate-400 text-sm mb-1">{l.suggestedBet}:</p>
+          <p className="text-emerald-400 font-bold text-xl sm:text-2xl">{analysis?.type || `${game.homeTeam}`}</p>
+        </div>
+        
+        {/* Stats Grid - Responsive */}
+        <div className="grid grid-cols-2 gap-4">
           {/* Confidence Score */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-20 h-20">
-              <svg className="w-20 h-20 transform -rotate-90">
-                <circle cx="40" cy="40" r="35" fill="none" stroke="#334155" strokeWidth="6" />
+          <div className="bg-slate-800/30 rounded-xl p-4 flex flex-col items-center justify-center">
+            <p className="text-slate-400 text-xs sm:text-sm mb-2 text-center">{l.confidenceScore}</p>
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle cx="50%" cy="50%" r="45%" fill="none" stroke="#334155" strokeWidth="6" />
                 <circle 
-                  cx="40" cy="40" r="35" fill="none" 
+                  cx="50%" cy="50%" r="45%" fill="none" 
                   stroke="#10b981" strokeWidth="6"
                   strokeDasharray={`${(parseFloat(confidenceScore) / 10) * 220} 220`}
                   strokeLinecap="round"
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[10px] text-slate-400">{l.confidenceScore}</span>
-                <span className="text-xl font-bold text-emerald-400">{confidenceScore}/10</span>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-lg sm:text-xl font-bold text-emerald-400">{confidenceScore}/10</span>
               </div>
             </div>
           </div>
 
           {/* Value Edge */}
-          <div>
-            <p className="text-slate-400 text-sm">{l.valueEdge}:</p>
-            <p className="text-emerald-400 text-3xl font-bold flex items-center gap-1">
-              +{analysis?.valuePercentage?.toFixed(0) || 12}% 
-              <TrendingUp className="w-5 h-5" />
-            </p>
+          <div className="bg-slate-800/30 rounded-xl p-4 flex flex-col items-center justify-center">
+            <p className="text-slate-400 text-xs sm:text-sm mb-2 text-center">{l.valueEdge}</p>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
+              <span className="text-2xl sm:text-3xl font-bold text-emerald-400">
+                +{analysis?.valuePercentage?.toFixed(0) || 12}%
+              </span>
+            </div>
           </div>
         </div>
       </div>
