@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, BarChart3, TrendingUp, Target, Play, History } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, BarChart3, TrendingUp, Target, Play, History, Ban, ShieldX, ShieldCheck, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loading } from '@/components/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,7 +34,7 @@ const BRAZILIAN_STATES: Record<string, string> = {
 
 export default function Admin() {
   const navigate = useNavigate();
-  const { isAdmin, loading, users, usersLoading, analytics, fetchUsers, fetchAnalytics, updateUser, resetSearches, setSearchCount } = useAdmin();
+  const { isAdmin, loading, users, usersLoading, analytics, fetchUsers, fetchAnalytics, updateUser, resetSearches, setSearchCount, blockUser } = useAdmin();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({
@@ -581,8 +581,11 @@ export default function Admin() {
                     <TableRow>
                       <TableHead>Email</TableHead>
                       <TableHead>Telefone</TableHead>
+                      <TableHead>IP Cadastro</TableHead>
+                      <TableHead>Nascimento</TableHead>
                       <TableHead>Plano</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Bloqueado</TableHead>
                       <TableHead>Origem</TableHead>
                       <TableHead>Buscas Hoje</TableHead>
                       <TableHead>Trial Até</TableHead>
@@ -596,9 +599,20 @@ export default function Admin() {
                         : 3; // trial
 
                       return (
-                        <TableRow key={user.id}>
+                        <TableRow key={user.id} className={user.is_blocked ? 'bg-red-500/10' : ''}>
                           <TableCell className="font-medium">{user.email}</TableCell>
                           <TableCell>{user.phone || '-'}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Globe className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">{user.registration_ip || '-'}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-xs">
+                              {user.birth_date ? new Date(user.birth_date).toLocaleDateString('pt-BR') : '-'}
+                            </span>
+                          </TableCell>
                           <TableCell>
                             <Badge className={getTierBadgeColor(user.subscription_tier)}>
                               {user.subscription_tier}
@@ -608,6 +622,19 @@ export default function Admin() {
                             <Badge variant="outline" className={getStatusBadgeColor(user.subscription_status)}>
                               {user.subscription_status || 'inactive'}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {user.is_blocked ? (
+                              <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                                <ShieldX className="w-3 h-3 mr-1" />
+                                Bloqueado
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
+                                <ShieldCheck className="w-3 h-3 mr-1" />
+                                OK
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Badge 
@@ -671,82 +698,111 @@ export default function Admin() {
                             {new Date(user.trial_end_date).toLocaleDateString('pt-BR')}
                           </TableCell>
                           <TableCell>
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  Editar
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Editar Usuário</DialogTitle>
-                                  <DialogDescription>{editingUser?.email}</DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                  <div className="space-y-2">
-                                    <label className="text-sm font-medium">Telefone</label>
-                                    <Input
-                                      value={editForm.phone}
-                                      onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                                      placeholder="+55 11999999999"
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                      Formato: +DDI DDD + número (ex: +55 11999999999)
-                                    </p>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <label className="text-sm font-medium">Plano</label>
-                                    <Select
-                                      value={editForm.subscription_tier}
-                                      onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_tier: value }))}
-                                    >
-                                      <SelectTrigger>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="free">Free</SelectItem>
-                                        <SelectItem value="basic">Basic</SelectItem>
-                                        <SelectItem value="advanced">Advanced</SelectItem>
-                                        <SelectItem value="premium">Premium</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <label className="text-sm font-medium">Status da Assinatura</label>
-                                    <Select
-                                      value={editForm.subscription_status}
-                                      onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_status: value }))}
-                                    >
-                                      <SelectTrigger>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="inactive">Inativo</SelectItem>
-                                        <SelectItem value="active">Ativo</SelectItem>
-                                        <SelectItem value="past_due">Pagamento Atrasado</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="checkbox"
-                                      id="is_active"
-                                      checked={editForm.is_active}
-                                      onChange={(e) => setEditForm(prev => ({ ...prev, is_active: e.target.checked }))}
-                                      className="rounded"
-                                    />
-                                    <label htmlFor="is_active" className="text-sm">Usuário Ativo</label>
-                                  </div>
-                                </div>
-                                <DialogFooter>
-                                  <Button onClick={handleSaveUser}>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Salvar Alterações
+                            <div className="flex items-center gap-2">
+                              {/* Block/Unblock Button */}
+                              <Button 
+                                variant={user.is_blocked ? "default" : "destructive"}
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await blockUser(user.user_id, !user.is_blocked, user.is_blocked ? undefined : 'Blocked by admin');
+                                    toast.success(user.is_blocked ? 'Usuário desbloqueado' : 'Usuário bloqueado');
+                                  } catch (error) {
+                                    toast.error('Erro ao alterar bloqueio');
+                                  }
+                                }}
+                              >
+                                {user.is_blocked ? (
+                                  <>
+                                    <ShieldCheck className="h-4 w-4 mr-1" />
+                                    Desbloquear
+                                  </>
+                                ) : (
+                                  <>
+                                    <Ban className="h-4 w-4 mr-1" />
+                                    Bloquear
+                                  </>
+                                )}
+                              </Button>
+                              
+                              {/* Edit Dialog */}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Editar
                                   </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Editar Usuário</DialogTitle>
+                                    <DialogDescription>{editingUser?.email}</DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4 py-4">
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Telefone</label>
+                                      <Input
+                                        value={editForm.phone}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                                        placeholder="+55 11999999999"
+                                      />
+                                      <p className="text-xs text-muted-foreground">
+                                        Formato: +DDI DDD + número (ex: +55 11999999999)
+                                      </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Plano</label>
+                                      <Select
+                                        value={editForm.subscription_tier}
+                                        onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_tier: value }))}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="free">Free</SelectItem>
+                                          <SelectItem value="basic">Basic</SelectItem>
+                                          <SelectItem value="advanced">Advanced</SelectItem>
+                                          <SelectItem value="premium">Premium</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-medium">Status da Assinatura</label>
+                                      <Select
+                                        value={editForm.subscription_status}
+                                        onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_status: value }))}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="inactive">Inativo</SelectItem>
+                                          <SelectItem value="active">Ativo</SelectItem>
+                                          <SelectItem value="past_due">Pagamento Atrasado</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        id="is_active"
+                                        checked={editForm.is_active}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, is_active: e.target.checked }))}
+                                        className="rounded"
+                                      />
+                                      <label htmlFor="is_active" className="text-sm">Usuário Ativo</label>
+                                    </div>
+                                  </div>
+                                  <DialogFooter>
+                                    <Button onClick={handleSaveUser}>
+                                      <Save className="h-4 w-4 mr-2" />
+                                      Salvar Alterações
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );

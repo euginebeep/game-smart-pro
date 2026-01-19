@@ -115,11 +115,25 @@ export default function Auth() {
   const [selectedCountry, setSelectedCountry] = useState('BR');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Get selected country data
   const countryData = COUNTRIES.find(c => c.code === selectedCountry) || COUNTRIES[0];
+
+  // Helper function to validate age (must be 18+)
+  const validateAge = (dateString: string): boolean => {
+    if (!dateString) return false;
+    const birthDate = new Date(dateString);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 18;
+  };
 
   const signUpSchema = z.object({
     email: z.string().trim().email({ message: t('auth.errors.invalidEmail') }),
@@ -132,6 +146,9 @@ export default function Auth() {
       }),
     password: z.string().min(6, { message: t('auth.errors.passwordMin') }),
     country: z.string().min(2, { message: t('auth.errors.countryRequired') }),
+    birthDate: z.string()
+      .min(1, { message: t('auth.errors.birthDateRequired') })
+      .refine((val) => validateAge(val), { message: t('auth.errors.mustBe18') }),
   });
 
   const signInSchema = z.object({
@@ -236,7 +253,7 @@ export default function Auth() {
       } else {
         const phoneDigits = phone.replace(/\D/g, '');
         const fullPhone = `${countryData.phoneCode} ${phoneDigits}`;
-        const result = signUpSchema.safeParse({ email, phone: phoneDigits, password, country: selectedCountry });
+        const result = signUpSchema.safeParse({ email, phone: phoneDigits, password, country: selectedCountry, birthDate });
         if (!result.success) {
           const fieldErrors: Record<string, string> = {};
           result.error.errors.forEach((err) => {
@@ -262,6 +279,7 @@ export default function Auth() {
               timezone: countryData.timezone,
               city: city.trim() || null,
               state: state || null,
+              birth_date: birthDate,
             },
           },
         });
@@ -473,6 +491,21 @@ export default function Auth() {
                     className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
                     maxLength={100}
                   />
+                </div>
+
+                {/* Birth Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="birthDate" className="text-slate-300">{t('auth.birthDate')} *</Label>
+                  <Input
+                    id="birthDate"
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                    className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                  />
+                  <p className="text-slate-500 text-xs">{t('auth.birthDateHint')}</p>
+                  {errors.birthDate && <p className="text-red-400 text-sm">{errors.birthDate}</p>}
                 </div>
               </>
             )}
