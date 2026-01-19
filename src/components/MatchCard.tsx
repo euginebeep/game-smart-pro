@@ -37,29 +37,29 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
   const drawProb = calculateProbability(game.odds.draw);
   const awayProb = calculateProbability(game.odds.away);
 
-  // Labels based on language
+  // Labels based on language - Termos simples: Casa, Empate, Visitante
   const labels = {
     pt: {
       suggestedBet: 'Aposta Recomendada',
       confidence: 'Probabilidade',
       value: 'Vantagem Matemática',
       viewAnalysis: 'Ver Análise Completa',
-      home: 'Vitória Casa',
+      home: 'Casa',
       draw: 'Empate',
-      away: 'Vitória Fora',
+      away: 'Visitante',
       victory: 'Vitória',
       homeLabel: '(Casa)',
-      awayLabel: '(Fora)',
+      awayLabel: '(Visitante)',
     },
     en: {
       suggestedBet: 'Recommended Bet',
       confidence: 'Probability',
       value: 'Mathematical Edge',
       viewAnalysis: 'View Full Analysis',
-      home: 'Home Win',
+      home: 'Home',
       draw: 'Draw',
-      away: 'Away Win',
-      victory: 'Victory',
+      away: 'Away',
+      victory: 'Win',
       homeLabel: '(Home)',
       awayLabel: '(Away)',
     },
@@ -68,9 +68,9 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
       confidence: 'Probabilidad',
       value: 'Ventaja Matemática',
       viewAnalysis: 'Ver Análisis Completo',
-      home: 'Victoria Local',
+      home: 'Local',
       draw: 'Empate',
-      away: 'Victoria Visitante',
+      away: 'Visitante',
       victory: 'Victoria',
       homeLabel: '(Local)',
       awayLabel: '(Visitante)',
@@ -80,12 +80,12 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
       confidence: 'Probabilità',
       value: 'Vantaggio Matematico',
       viewAnalysis: 'Vedi Analisi Completa',
-      home: 'Vittoria Casa',
+      home: 'Casa',
       draw: 'Pareggio',
-      away: 'Vittoria Trasferta',
+      away: 'Ospite',
       victory: 'Vittoria',
       homeLabel: '(Casa)',
-      awayLabel: '(Trasferta)',
+      awayLabel: '(Ospite)',
     },
   };
 
@@ -236,7 +236,7 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
             {/* Odds Row */}
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center p-3 rounded-xl bg-slate-700/40 border border-slate-600/30">
-                <p className="text-slate-400 text-[10px] uppercase tracking-wider mb-1">{l.home.split(' ')[0]}</p>
+                <p className="text-slate-400 text-[10px] uppercase tracking-wider mb-1">{l.home}</p>
                 <p className="text-white font-bold text-xl">{game.odds.home.toFixed(2)}</p>
                 <p className="text-emerald-400 text-xs font-medium">{homeProb}%</p>
               </div>
@@ -246,7 +246,7 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                 <p className="text-yellow-400 text-xs font-medium">{drawProb}%</p>
               </div>
               <div className="text-center p-3 rounded-xl bg-slate-700/40 border border-slate-600/30">
-                <p className="text-slate-400 text-[10px] uppercase tracking-wider mb-1">{l.away.split(' ')[0]}</p>
+                <p className="text-slate-400 text-[10px] uppercase tracking-wider mb-1">{l.away}</p>
                 <p className="text-white font-bold text-xl">{game.odds.away.toFixed(2)}</p>
                 <p className="text-blue-400 text-xs font-medium">{awayProb}%</p>
               </div>
