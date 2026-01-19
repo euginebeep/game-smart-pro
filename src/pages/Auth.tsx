@@ -10,6 +10,7 @@ import eugineLogo from '@/assets/eugine-logo-new.png';
 import { z } from 'zod';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ParticlesBackground from '@/components/ParticlesBackground';
 import {
   Select,
   SelectContent,
@@ -354,10 +355,13 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+      {/* Animated Particles Background */}
+      <ParticlesBackground />
+      
       {/* Background Effects - Cyan Theme */}
-      <div className="absolute inset-0 circuit-pattern pointer-events-none opacity-50" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute inset-0 circuit-pattern pointer-events-none opacity-30" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
       
       <div className="w-full max-w-md relative z-10">
         {/* Language Selector - Centered at Top */}
