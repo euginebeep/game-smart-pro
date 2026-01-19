@@ -4,10 +4,7 @@ import { Game } from '@/types/game';
 import { analyzeBet } from '@/services/oddsAPI';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { GameCard } from '@/components/GameCard';
-
-interface MatchCardProps {
-  game: Game;
+import { FullAnalysis } from '@/components/FullAnalysis';
   delay: number;
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
 }
