@@ -13,6 +13,7 @@ import { TrialBanner } from '@/components/TrialBanner';
 import { PricingSection } from '@/components/PricingSection';
 import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
 import { ReportExportSection } from '@/components/ReportExportSection';
+import { GameFilters } from '@/components/GameFilters';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,11 +21,18 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Search } from 'lucide-react';
 
+/**
+ * Index Page - Main dashboard displaying games and analysis
+ * Features: Game fetching, filtering, tier-based content access, 
+ * accumulators, and special betting sections
+ */
+
 const Index = () => {
   const { trialDaysRemaining, isTrialExpired, signOut, subscription } = useAuth();
   const { isAdmin } = useAdmin();
   const { t, language, isTransitioning } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
+  const [filteredGames, setFilteredGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dailyLimitReached, setDailyLimitReached] = useState(false);
@@ -38,6 +46,14 @@ const Index = () => {
   const [userTier, setUserTier] = useState<'free' | 'basic' | 'advanced' | 'premium'>('free');
   const previousLanguage = useRef(language);
   const gamesContentRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Handles filtered games callback from GameFilters component
+   * Updates the filteredGames state which is used for rendering
+   */
+  const handleFilteredGames = useCallback((filtered: Game[]) => {
+    setFilteredGames(filtered);
+  }, []);
 
   const handleFetchGames = useCallback(async () => {
     setLoading(true);
@@ -187,18 +203,30 @@ const Index = () => {
                 contentRef={gamesContentRef}
               />
               
+              {/* Game Filters */}
+              <GameFilters 
+                games={games} 
+                onFilteredGames={handleFilteredGames}
+                userTier={userTier}
+              />
+              
               {/* Games Content for Export - Full Report */}
               <div ref={gamesContentRef} className="space-y-6" id="eugine-report-content">
                 {/* Section Title */}
                 <div className="mb-6">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white italic">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground italic">
                     {t('matchCard.gamesOfDay')}
+                    {filteredGames.length !== games.length && (
+                      <span className="text-muted-foreground text-lg font-normal ml-2">
+                        ({filteredGames.length}/{games.length})
+                      </span>
+                    )}
                   </h2>
                 </div>
 
                 {/* Match Cards - New Compact Design */}
                 <div className="space-y-4">
-                  {games.map((game, index) => (
+                  {filteredGames.map((game, index) => (
                     <MatchCard 
                       key={game.id} 
                       game={game} 
