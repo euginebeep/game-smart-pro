@@ -101,8 +101,8 @@ export function Header({
           </div>
           
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black gradient-text tracking-tight whitespace-nowrap">
-              EUGINE v3.0
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black gradient-text tracking-tight whitespace-nowrap font-display">
+              EUGINE v4.0
             </h1>
             <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-0.5">
               {t('main.subtitle')}
