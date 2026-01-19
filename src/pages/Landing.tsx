@@ -23,6 +23,11 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 
+// Import step images
+import step1Image from '@/assets/step1-escolha-jogo.png';
+import step2Image from '@/assets/step2-receba-analise.png';
+import step3Image from '@/assets/step3-decida-confianca.png';
+
 export default function Landing() {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -542,45 +547,35 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Steps Section */}
-      <section id="how-it-works" className="relative px-6 lg:px-12 py-20 bg-card/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-12 italic">
-            {l.steps.title}
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
-            {/* Step 1 */}
-            <div className="group relative glass-card p-6 text-center hover:neon-border transition-all duration-300">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Target className="w-8 h-8 text-primary" />
-              </div>
-              <h3 className="text-foreground font-bold text-lg mb-2">{l.steps.step1.title}</h3>
-              <p className="text-muted-foreground text-sm">{l.steps.step1.desc}</p>
-            </div>
-
-            {/* Step 2 - Highlighted */}
-            <div className="group relative glass-card p-6 text-center neon-border">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-8 h-8 text-background" />
-              </div>
-              <h3 className="text-foreground font-bold text-lg mb-2">{l.steps.step2.title}</h3>
-              <p className="text-muted-foreground text-sm">{l.steps.step2.desc}</p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="group relative glass-card p-6 text-center hover:neon-border transition-all duration-300">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-success/20 to-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <CheckCircle className="w-8 h-8 text-success" />
-              </div>
-              <h3 className="text-foreground font-bold text-lg mb-2">{l.steps.step3.title}</h3>
-              <p className="text-muted-foreground text-sm">{l.steps.step3.desc}</p>
-            </div>
+      {/* Steps Section - Full Width Images */}
+      <section id="how-it-works" className="relative py-0">
+        <div className="w-full">
+          {/* Step 1 */}
+          <div className="relative w-full">
+            <img 
+              src={step1Image} 
+              alt={l.steps.step1.title}
+              className="w-full h-auto object-cover"
+            />
           </div>
 
-          <p className="text-center text-muted-foreground text-sm max-w-2xl mx-auto">
-            {l.steps.bottomText}
-          </p>
+          {/* Step 2 */}
+          <div className="relative w-full">
+            <img 
+              src={step2Image} 
+              alt={l.steps.step2.title}
+              className="w-full h-auto object-cover"
+            />
+          </div>
+
+          {/* Step 3 */}
+          <div className="relative w-full">
+            <img 
+              src={step3Image} 
+              alt={l.steps.step3.title}
+              className="w-full h-auto object-cover"
+            />
+          </div>
         </div>
       </section>
 
