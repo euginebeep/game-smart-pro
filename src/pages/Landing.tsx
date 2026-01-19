@@ -59,9 +59,22 @@ export default function Landing() {
       },
       pricing: {
         title: 'Escolha o Plano Perfeito para Você',
+        dayUse: {
+          name: 'DAY USE',
+          badge: 'Acesso Premium 24h',
+          price: 'R$7,77',
+          period: '/dia',
+          features: [
+            'Acesso Premium Completo',
+            'Válido por 24 Horas',
+            'Pagamento Único (PIX)',
+            'Sem Recorrência',
+          ],
+          cta: 'Comprar Day Use',
+        },
         basic: {
           name: 'BASIC',
-          price: 'R$49',
+          price: 'R$29,90',
           period: '/mês',
           features: [
             'Análise Básica de 10 Jogos/Dia',
@@ -73,7 +86,7 @@ export default function Landing() {
         advanced: {
           name: 'ADVANCED',
           badge: 'Mais Popular',
-          price: 'R$99',
+          price: 'R$49,90',
           period: '/mês',
           features: [
             'Análise Completa de Todos os Jogos',
@@ -85,7 +98,9 @@ export default function Landing() {
         },
         premium: {
           name: 'PREMIUM',
-          price: 'R$199',
+          badge: 'Promoção',
+          originalPrice: 'R$199,00',
+          price: 'R$79,99',
           period: '/mês',
           features: [
             'Tudo do Advanced +',
@@ -134,9 +149,22 @@ export default function Landing() {
       },
       pricing: {
         title: 'Choose the Perfect Plan for You',
+        dayUse: {
+          name: 'DAY USE',
+          badge: '24h Premium Access',
+          price: '$7.77',
+          period: '/day',
+          features: [
+            'Full Premium Access',
+            'Valid for 24 Hours',
+            'One-Time Payment (PIX)',
+            'No Recurring Charges',
+          ],
+          cta: 'Buy Day Use',
+        },
         basic: {
           name: 'BASIC',
-          price: '$49',
+          price: '$29.90',
           period: '/month',
           features: [
             'Basic Analysis of 10 Games/Day',
@@ -148,7 +176,7 @@ export default function Landing() {
         advanced: {
           name: 'ADVANCED',
           badge: 'Most Popular',
-          price: '$99',
+          price: '$49.90',
           period: '/month',
           features: [
             'Complete Analysis of All Games',
@@ -160,7 +188,9 @@ export default function Landing() {
         },
         premium: {
           name: 'PREMIUM',
-          price: '$199',
+          badge: 'Promo',
+          originalPrice: '$199.00',
+          price: '$79.99',
           period: '/month',
           features: [
             'Everything from Advanced +',
@@ -209,9 +239,22 @@ export default function Landing() {
       },
       pricing: {
         title: 'Elige el Plan Perfecto para Ti',
+        dayUse: {
+          name: 'DAY USE',
+          badge: 'Acceso Premium 24h',
+          price: '$7,77',
+          period: '/día',
+          features: [
+            'Acceso Premium Completo',
+            'Válido por 24 Horas',
+            'Pago Único (PIX)',
+            'Sin Recurrencia',
+          ],
+          cta: 'Comprar Day Use',
+        },
         basic: {
           name: 'BASIC',
-          price: '$49',
+          price: '$29,90',
           period: '/mes',
           features: [
             'Análisis Básico de 10 Juegos/Día',
@@ -223,7 +266,7 @@ export default function Landing() {
         advanced: {
           name: 'ADVANCED',
           badge: 'Más Popular',
-          price: '$99',
+          price: '$49,90',
           period: '/mes',
           features: [
             'Análisis Completo de Todos los Juegos',
@@ -235,7 +278,9 @@ export default function Landing() {
         },
         premium: {
           name: 'PREMIUM',
-          price: '$199',
+          badge: 'Promo',
+          originalPrice: '$199,00',
+          price: '$79,99',
           period: '/mes',
           features: [
             'Todo del Advanced +',
@@ -284,9 +329,22 @@ export default function Landing() {
       },
       pricing: {
         title: 'Scegli il Piano Perfetto per Te',
+        dayUse: {
+          name: 'DAY USE',
+          badge: 'Accesso Premium 24h',
+          price: '€7,77',
+          period: '/giorno',
+          features: [
+            'Accesso Premium Completo',
+            'Valido per 24 Ore',
+            'Pagamento Unico (PIX)',
+            'Senza Ricorrenza',
+          ],
+          cta: 'Acquista Day Use',
+        },
         basic: {
           name: 'BASIC',
-          price: '€49',
+          price: '€29,90',
           period: '/mese',
           features: [
             'Analisi Base di 10 Partite/Giorno',
@@ -298,7 +356,7 @@ export default function Landing() {
         advanced: {
           name: 'ADVANCED',
           badge: 'Più Popolare',
-          price: '€99',
+          price: '€49,90',
           period: '/mese',
           features: [
             'Analisi Completa di Tutte le Partite',
@@ -310,7 +368,9 @@ export default function Landing() {
         },
         premium: {
           name: 'PREMIUM',
-          price: '€199',
+          badge: 'Promo',
+          originalPrice: '€199,00',
+          price: '€79,99',
           period: '/mese',
           features: [
             'Tutto dell\'Advanced +',
@@ -531,7 +591,37 @@ export default function Landing() {
             {l.pricing.title}
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Day Use - Special */}
+            <div className="relative glass-card p-6 flex flex-col border-2 border-success/50">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-success text-background text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
+                  {l.pricing.dayUse.badge}
+                </span>
+              </div>
+              <div className="text-center mb-6 pt-2">
+                <span className="text-success font-display font-bold text-sm tracking-widest">{l.pricing.dayUse.name}</span>
+                <div className="mt-2">
+                  <span className="text-4xl font-black text-foreground">{l.pricing.dayUse.price}</span>
+                  <span className="text-muted-foreground">{l.pricing.dayUse.period}</span>
+                </div>
+              </div>
+              <ul className="space-y-3 flex-grow mb-6">
+                {l.pricing.dayUse.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <Zap className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <button 
+                onClick={() => navigate('/auth')}
+                className="w-full py-3 text-sm mt-auto rounded-lg font-semibold bg-success text-background hover:bg-success/90 transition-colors"
+              >
+                {l.pricing.dayUse.cta}
+              </button>
+            </div>
+
             {/* Basic */}
             <div className="glass-card p-6 flex flex-col">
               <div className="text-center mb-6">
@@ -587,12 +677,18 @@ export default function Landing() {
               </button>
             </div>
 
-            {/* Premium */}
-            <div className="glass-card p-6 flex flex-col">
-              <div className="text-center mb-6">
+            {/* Premium - Promo */}
+            <div className="relative glass-card p-6 flex flex-col border-2 border-warning/50">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-warning text-background text-xs font-bold px-4 py-1 rounded-full animate-pulse">
+                  {l.pricing.premium.badge}
+                </span>
+              </div>
+              <div className="text-center mb-6 pt-2">
                 <span className="text-warning font-display font-bold text-sm tracking-widest">{l.pricing.premium.name}</span>
                 <div className="mt-2">
-                  <span className="text-4xl font-black text-foreground">{l.pricing.premium.price}</span>
+                  <span className="text-lg text-muted-foreground line-through mr-2">{l.pricing.premium.originalPrice}</span>
+                  <span className="text-4xl font-black text-warning">{l.pricing.premium.price}</span>
                   <span className="text-muted-foreground">{l.pricing.premium.period}</span>
                 </div>
               </div>
@@ -606,7 +702,7 @@ export default function Landing() {
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="btn-outline w-full py-3 text-sm mt-auto border-warning text-warning hover:bg-warning hover:text-background"
+                className="w-full py-3 text-sm mt-auto rounded-lg font-semibold bg-warning text-background hover:bg-warning/90 transition-colors"
               >
                 {l.pricing.premium.cta}
               </button>
