@@ -25,7 +25,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public Landing Page */}
+          {/* Public Landing Page - First page users see */}
+          <Route path="/" element={<Landing />} />
           <Route path="/landing" element={<Landing />} />
           <Route path="/home" element={<Landing />} />
           
@@ -40,14 +41,6 @@ const App = () => (
           <Route path="/sobre" element={<About />} />
           
           {/* Protected Routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/dashboard"
             element={
