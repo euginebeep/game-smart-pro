@@ -633,7 +633,7 @@ export default function Landing() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Day Use - Special */}
-            <div className="relative glass-card p-8 flex flex-col border-2 border-success/50">
+            <div className="relative glass-card p-8 flex flex-col border-2 border-success/50 transition-all duration-300 hover:-translate-y-2.5 hover:border-primary hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.2)]">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-success text-success-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
                   {l.pricing.dayUse.badge}
@@ -641,9 +641,9 @@ export default function Landing() {
               </div>
               <div className="text-center mb-6 pt-4">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.dayUse.name}</h3>
-                <div className="text-primary text-5xl font-black">
-                  {l.pricing.dayUse.price}
-                  <span className="text-muted-foreground text-lg font-semibold">{l.pricing.dayUse.period}</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.dayUse.price}</span>
+                  <span className="text-muted-foreground text-base font-semibold">{l.pricing.dayUse.period}</span>
                 </div>
               </div>
               <ul className="space-y-4 flex-grow mb-8">
@@ -663,12 +663,12 @@ export default function Landing() {
             </div>
 
             {/* Basic */}
-            <div className="glass-card p-8 flex flex-col border-2 border-transparent">
+            <div className="glass-card p-8 flex flex-col border-2 border-transparent transition-all duration-300 hover:-translate-y-2.5 hover:border-primary hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.2)]">
               <div className="text-center mb-6">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.basic.name}</h3>
-                <div className="text-primary text-5xl font-black">
-                  {l.pricing.basic.price}
-                  <span className="text-muted-foreground text-lg font-semibold">{l.pricing.basic.period}</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.basic.price}</span>
+                  <span className="text-muted-foreground text-base font-semibold">{l.pricing.basic.period}</span>
                 </div>
               </div>
               <ul className="space-y-4 flex-grow mb-8">
@@ -688,17 +688,20 @@ export default function Landing() {
             </div>
 
             {/* Advanced - Featured */}
-            <div className="relative glass-card p-8 flex flex-col price-card-highlighted">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full">
+            <div className="relative glass-card p-8 flex flex-col price-card-highlighted transition-all duration-300 hover:-translate-y-2.5 hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.3)]">
+              <div className="absolute -top-3 right-5 z-10">
+                <span 
+                  className="bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full inline-block"
+                  style={{ transform: 'rotate(15deg)' }}
+                >
                   {l.pricing.advanced.badge}
                 </span>
               </div>
               <div className="text-center mb-6 pt-4">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.advanced.name}</h3>
-                <div className="text-primary text-5xl font-black">
-                  {l.pricing.advanced.price}
-                  <span className="text-muted-foreground text-lg font-semibold">{l.pricing.advanced.period}</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.advanced.price}</span>
+                  <span className="text-muted-foreground text-base font-semibold">{l.pricing.advanced.period}</span>
                 </div>
               </div>
               <ul className="space-y-4 flex-grow mb-8">
@@ -718,12 +721,12 @@ export default function Landing() {
             </div>
 
             {/* Premium */}
-            <div className="glass-card p-8 flex flex-col border-2 border-transparent">
+            <div className="glass-card p-8 flex flex-col border-2 border-transparent transition-all duration-300 hover:-translate-y-2.5 hover:border-primary hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.2)]">
               <div className="text-center mb-6">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.premium.name}</h3>
-                <div className="text-primary text-5xl font-black">
-                  {l.pricing.premium.price}
-                  <span className="text-muted-foreground text-lg font-semibold">{l.pricing.premium.period}</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.premium.price}</span>
+                  <span className="text-muted-foreground text-base font-semibold">{l.pricing.premium.period}</span>
                 </div>
               </div>
               <ul className="space-y-4 flex-grow mb-8">
