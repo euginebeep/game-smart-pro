@@ -11,6 +11,7 @@ import { ZebraSection } from '@/components/ZebraSection';
 import { TrialBanner } from '@/components/TrialBanner';
 import { PricingSection } from '@/components/PricingSection';
 import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
+import { ReportExportSection } from '@/components/ReportExportSection';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,6 +36,7 @@ const Index = () => {
   const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
   const [userTier, setUserTier] = useState<'free' | 'basic' | 'advanced' | 'premium'>('free');
   const previousLanguage = useRef(language);
+  const gamesContentRef = useRef<HTMLDivElement>(null);
 
   const handleFetchGames = useCallback(async () => {
     setLoading(true);
@@ -177,6 +179,16 @@ const Index = () => {
                 message={isToday ? t('main.showingToday') : t('main.showingNext')} 
               />
               
+              {/* Export Section - Premium Only */}
+              <ReportExportSection 
+                games={games} 
+                userTier={userTier} 
+                contentRef={gamesContentRef}
+              />
+              
+              {/* Games Content for Export */}
+              <div ref={gamesContentRef}>
+              
               {/* Game Cards */}
               {games.map((game, index) => (
                 <GameCard 
@@ -200,6 +212,7 @@ const Index = () => {
 
               {/* Section 3: Zebra of the Day */}
               <ZebraSection games={games} userTier={userTier} />
+              </div>
 
               {/* Pricing Section */}
               <PricingSection />

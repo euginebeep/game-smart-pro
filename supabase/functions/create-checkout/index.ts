@@ -14,23 +14,26 @@ const logStep = (step: string, details?: any) => {
 
 // Mapeamento de tiers e moedas para price IDs
 type Currency = 'brl' | 'usd' | 'eur';
-type Tier = 'basic' | 'advanced' | 'premium';
+type Tier = 'basic' | 'advanced' | 'premium' | 'dayuse';
 
 const TIER_PRICES: Record<Currency, Record<Tier, string>> = {
   brl: {
     basic: 'price_1SprZDBQSLreveKU8QmxRF80',
     advanced: 'price_1Spry1BQSLreveKU7NcHTNVx',
     premium: 'price_1SpryWBQSLreveKU7x6v5S9f',
+    dayuse: 'price_dayuse_brl', // Will be created in Stripe
   },
   usd: {
     basic: 'price_1SptWYBQSLreveKUetIBcgIW',
     advanced: 'price_1SpttwBQSLreveKUGOKhunsn',
     premium: 'price_1SptvkBQSLreveKUNeLpNdBJ',
+    dayuse: 'price_dayuse_usd',
   },
   eur: {
     basic: 'price_1SptvxBQSLreveKUCrsr9k8q',
     advanced: 'price_1SpuHlBQSLreveKUJvXZgTEv',
     premium: 'price_1SpuaxBQSLreveKUKskrtfH8',
+    dayuse: 'price_dayuse_eur',
   },
 };
 
@@ -59,10 +62,13 @@ serve(async (req) => {
     const currency: Currency = LANGUAGE_TO_CURRENCY[language] || 'brl';
     
     // Validar tier
-    const validTiers: Tier[] = ['basic', 'advanced', 'premium'];
+    const validTiers: Tier[] = ['basic', 'advanced', 'premium', 'dayuse'];
     if (!tier || !validTiers.includes(tier)) {
-      throw new Error(`Invalid tier: ${tier}. Valid options: basic, advanced, premium`);
+      throw new Error(`Invalid tier: ${tier}. Valid options: basic, advanced, premium, dayuse`);
     }
+    
+    // Day Use is a one-time payment
+    const isDayUse = tier === 'dayuse';
     
     const priceId = TIER_PRICES[currency][tier];
     logStep("Tier and currency selected", { tier, currency, language, priceId });
@@ -128,12 +134,14 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      mode: "subscription",
+      mode: isDayUse ? "payment" : "subscription",
+      payment_method_types: isDayUse ? ['card', 'pix'] : ['card'],
       success_url: `${origin}/?subscription=success`,
       cancel_url: `${origin}/?subscription=canceled`,
       metadata: {
         user_id: user.id,
         tier: tier,
+        is_dayuse: isDayUse ? 'true' : 'false',
       },
     });
 
