@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Phone, Lock, Loader2, ArrowLeft, Crown, Globe } from 'lucide-react';
+import { Eye, EyeOff, Mail, Phone, Lock, Loader2, ArrowLeft, Sparkles, Globe, Brain, Shield, TrendingUp } from 'lucide-react';
 import eugineLogo from '@/assets/eugine-logo-new.png';
 import { z } from 'zod';
 import LanguageSelector from '@/components/LanguageSelector';
@@ -326,50 +326,60 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 circuit-pattern pointer-events-none opacity-30" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      
+      <div className="w-full max-w-md relative z-10">
         {/* Language Selector */}
-        <div className="mb-4">
+        <div className="mb-4 flex justify-end">
           <LanguageSelector />
         </div>
 
         {/* Logo/Brand */}
-        <div className="text-center mb-2 sm:mb-3">
-          <div className="inline-flex items-center justify-center">
-            <img 
-              src={eugineLogo} 
-              alt="EUGINE Logo" 
-              loading="eager"
-              decoding="async"
-              className="w-72 h-72 sm:w-96 md:w-[480px] sm:h-96 md:h-[480px] object-contain drop-shadow-2xl"
-            />
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center mb-4">
+            <div 
+              className="w-16 h-16 rounded-2xl flex items-center justify-center animate-glow"
+              style={{
+                background: 'linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 45%) 100%)',
+              }}
+            >
+              <Brain className="w-8 h-8 text-background" />
+            </div>
           </div>
-          <p className="text-slate-400 text-sm sm:text-base -mt-4 sm:-mt-6">{t('auth.systemName')}</p>
+          <h1 className="font-display text-3xl font-bold">
+            <span className="gradient-text">EUGINE</span>
+            <span className="text-muted-foreground text-lg ml-2">v4.0</span>
+          </h1>
+          <p className="text-muted-foreground text-sm mt-2">{t('auth.systemName')}</p>
         </div>
 
         {/* Auth Card */}
-        <div className="glass-card p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl">
+        <div className="glass-card p-6 sm:p-8 rounded-xl border border-border">
           {mode === 'reset' ? (
             <>
               <button
                 type="button"
                 onClick={() => setMode('login')}
-                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
               >
                 <ArrowLeft className="w-4 h-4" />
                 {t('auth.backToLogin')}
               </button>
-              <h2 className="text-xl font-bold text-white mb-2">{t('auth.resetPassword')}</h2>
+              <h2 className="text-xl font-bold text-foreground mb-2">{t('auth.resetPassword')}</h2>
             </>
           ) : (
             <div className="flex gap-2 mb-6">
               <button
                 type="button"
                 onClick={() => setMode('login')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
                   mode === 'login'
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {t('auth.login')}
@@ -377,10 +387,10 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => setMode('register')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
                   mode === 'register'
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {t('auth.register')}
@@ -390,59 +400,59 @@ export default function Auth() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">{t('auth.email')}</Label>
+              <Label htmlFor="email" className="text-foreground">{t('auth.email')}</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t('auth.emailPlaceholder')}
-                  className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                  className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
                 />
               </div>
-              {errors.email && <p className="text-red-400 text-sm">{errors.email}</p>}
+              {errors.email && <p className="text-destructive text-sm">{errors.email}</p>}
             </div>
 
             {mode === 'register' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="country" className="text-slate-300">{t('auth.country')}</Label>
+                  <Label htmlFor="country" className="text-foreground">{t('auth.country')}</Label>
                   <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                    <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                    <SelectTrigger className="bg-input border-border text-foreground">
                       <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-slate-500" />
+                        <Globe className="w-4 h-4 text-muted-foreground" />
                         <SelectValue placeholder={t('auth.selectCountry')} />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700 max-h-60">
+                    <SelectContent className="bg-card border-border max-h-60">
                       {COUNTRIES.map((country) => (
                         <SelectItem 
                           key={country.code} 
                           value={country.code}
-                          className="text-white hover:bg-slate-700 focus:bg-slate-700"
+                          className="text-foreground hover:bg-secondary focus:bg-secondary"
                         >
                           <span className="flex items-center gap-2">
                             <span>{country.flag}</span>
                             <span>{country.name}</span>
-                            <span className="text-slate-400 text-sm">({country.phoneCode})</span>
+                            <span className="text-muted-foreground text-sm">({country.phoneCode})</span>
                           </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.country && <p className="text-red-400 text-sm">{errors.country}</p>}
+                  {errors.country && <p className="text-destructive text-sm">{errors.country}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-slate-300">{t('auth.phone')}</Label>
+                  <Label htmlFor="phone" className="text-foreground">{t('auth.phone')}</Label>
                   <div className="relative flex gap-2">
-                    <div className="flex items-center bg-slate-800/50 border border-slate-700 rounded-md px-3 text-slate-400 text-sm min-w-[70px] justify-center">
+                    <div className="flex items-center bg-input border border-border rounded-md px-3 text-muted-foreground text-sm min-w-[70px] justify-center">
                       {countryData.phoneCode}
                     </div>
                     <div className="relative flex-1">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <Input
                         id="phone"
                         type="tel"
@@ -452,33 +462,33 @@ export default function Auth() {
                           setPhone(masked);
                         }}
                         placeholder={selectedCountry === 'BR' ? '(11) 99999-9999' : countryData.phoneExample}
-                        className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                        className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
-                  <p className="text-slate-500 text-xs">
+                  <p className="text-muted-foreground text-xs">
                     {countryData.phoneDigits.min === countryData.phoneDigits.max 
                       ? `${countryData.phoneDigits.min} ${t('auth.phoneDigitsRequired')}`
                       : `${countryData.phoneDigits.min}-${countryData.phoneDigits.max} ${t('auth.phoneDigitsRequired')}`
                     }
                   </p>
-                  {errors.phone && <p className="text-red-400 text-sm">{errors.phone}</p>}
+                  {errors.phone && <p className="text-destructive text-sm">{errors.phone}</p>}
                 </div>
 
                 {/* State (for Brazil) */}
                 {selectedCountry === 'BR' && (
                   <div className="space-y-2">
-                    <Label htmlFor="state" className="text-slate-300">{t('profile.state')}</Label>
+                    <Label htmlFor="state" className="text-foreground">{t('profile.state')}</Label>
                     <Select value={state} onValueChange={setState}>
-                      <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                      <SelectTrigger className="bg-input border-border text-foreground">
                         <SelectValue placeholder={t('profile.selectState')} />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700 max-h-60">
+                      <SelectContent className="bg-card border-border max-h-60">
                         {BRAZILIAN_STATES.map((s) => (
                           <SelectItem 
                             key={s.code} 
                             value={s.code}
-                            className="text-white hover:bg-slate-700 focus:bg-slate-700"
+                            className="text-foreground hover:bg-secondary focus:bg-secondary"
                           >
                             {s.name}
                           </SelectItem>
@@ -490,21 +500,21 @@ export default function Auth() {
 
                 {/* City */}
                 <div className="space-y-2">
-                  <Label htmlFor="city" className="text-slate-300">{t('profile.city')}</Label>
+                  <Label htmlFor="city" className="text-foreground">{t('profile.city')}</Label>
                   <Input
                     id="city"
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder={t('profile.cityPlaceholder')}
-                    className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                    className="bg-input border-border text-foreground placeholder:text-muted-foreground"
                     maxLength={100}
                   />
                 </div>
 
                 {/* Birth Date */}
                 <div className="space-y-2">
-                  <Label htmlFor="birthDate" className="text-slate-300">{t('auth.birthDate')} *</Label>
+                  <Label htmlFor="birthDate" className="text-foreground">{t('auth.birthDate')} *</Label>
                   <Input
                     id="birthDate"
                     type="date"
@@ -519,19 +529,17 @@ export default function Auth() {
                       }
                     }}
                     max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-                    className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                    className="bg-input border-border text-foreground placeholder:text-muted-foreground"
                   />
-                  <p className="text-slate-500 text-xs">{t('auth.birthDateHint')}</p>
-                  {errors.birthDate && <p className="text-red-400 text-sm">{errors.birthDate}</p>}
+                  <p className="text-muted-foreground text-xs">{t('auth.birthDateHint')}</p>
+                  {errors.birthDate && <p className="text-destructive text-sm">{errors.birthDate}</p>}
                   
                   {/* Underage Warning Alert */}
                   {underageError && (
-                    <div className="mt-3 p-4 bg-red-900/50 border-2 border-red-500 rounded-lg animate-pulse">
+                    <div className="mt-3 p-4 bg-destructive/20 border-2 border-destructive rounded-lg animate-pulse">
                       <div className="flex items-center gap-2">
-                        <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <span className="text-red-400 font-bold text-sm">
+                        <Shield className="w-6 h-6 text-destructive" />
+                        <span className="text-destructive font-bold text-sm">
                           {t('auth.underageNotAllowed')}
                         </span>
                       </div>
@@ -543,26 +551,26 @@ export default function Auth() {
 
             {mode !== 'reset' && (
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300">{t('auth.password')}</Label>
+                <Label htmlFor="password" className="text-foreground">{t('auth.password')}</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t('auth.passwordPlaceholder')}
-                    className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
+                    className="pl-10 pr-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                {errors.password && <p className="text-red-400 text-sm">{errors.password}</p>}
+                {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
               </div>
             )}
 
@@ -570,7 +578,7 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => setMode('reset')}
-                className="text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+                className="text-primary hover:text-primary/80 text-sm transition-colors"
               >
                 {t('auth.forgotPassword')}
               </button>
@@ -579,7 +587,7 @@ export default function Auth() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold py-3"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
             >
               {loading ? (
                 <>
@@ -597,25 +605,25 @@ export default function Auth() {
           </form>
 
           {mode === 'register' && (
-            <div className="text-center mt-4 p-3 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+            <div className="text-center mt-4 p-3 rounded-lg bg-primary/10 border border-primary/30">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <Crown className="w-4 h-4 text-amber-400" />
-                <span className="text-amber-400 font-semibold text-sm">PREMIUM</span>
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="text-primary font-semibold text-sm">PREMIUM</span>
               </div>
-              <p className="text-slate-300 text-sm">
-                ✨ {t('auth.trialMessage')} <span className="text-emerald-400 font-semibold">{t('auth.trialDays')}</span> {t('auth.trialSuffix')}
+              <p className="text-muted-foreground text-sm">
+                ✨ {t('auth.trialMessage')} <span className="text-primary font-semibold">{t('auth.trialDays')}</span> {t('auth.trialSuffix')}
               </p>
             </div>
           )}
         </div>
 
-        <p className="text-center text-slate-500 text-xs mt-4 sm:mt-6">
+        <p className="text-center text-muted-foreground text-xs mt-4 sm:mt-6">
           {t('auth.termsPrefix')}{' '}
-          <Link to="/termos-de-uso" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
+          <Link to="/termos-de-uso" className="text-primary hover:text-primary/80 underline transition-colors">
             {t('auth.termsOfUse')}
           </Link>{' '}
           {t('auth.and')}{' '}
-          <Link to="/politica-de-privacidade" className="text-emerald-400 hover:text-emerald-300 underline transition-colors">
+          <Link to="/politica-de-privacidade" className="text-primary hover:text-primary/80 underline transition-colors">
             {t('auth.privacyPolicy')}
           </Link>
         </p>
