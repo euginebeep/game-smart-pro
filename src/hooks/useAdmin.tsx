@@ -13,6 +13,11 @@ interface AdminUser {
   trial_start_date: string;
   trial_end_date: string;
   is_active: boolean;
+  is_blocked: boolean;
+  blocked_at: string | null;
+  blocked_reason: string | null;
+  registration_ip: string | null;
+  birth_date: string | null;
   created_at: string;
   today_searches: number;
   city: string | null;
@@ -149,6 +154,27 @@ export function useAdmin() {
     }
   };
 
+  const blockUser = async (userId: string, blocked: boolean, reason?: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: 'block_user', userId, blocked, reason }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      await fetchUsers();
+      return true;
+    } catch (error) {
+      console.error('Error blocking user:', error);
+      throw error;
+    }
+  };
+
   const fetchAnalytics = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -178,6 +204,7 @@ export function useAdmin() {
     fetchAnalytics,
     updateUser,
     resetSearches,
-    setSearchCount
+    setSearchCount,
+    blockUser
   };
 }

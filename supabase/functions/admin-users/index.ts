@@ -108,14 +108,55 @@ serve(async (req) => {
 
         logStep("Updating user", { userId: targetUserId.substring(0, 8), updates });
 
+        const updateData: any = {
+          updated_at: new Date().toISOString()
+        };
+
+        // Only include fields that are explicitly provided
+        if (updates.subscription_tier !== undefined) updateData.subscription_tier = updates.subscription_tier;
+        if (updates.subscription_status !== undefined) updateData.subscription_status = updates.subscription_status;
+        if (updates.subscription_end_date !== undefined) updateData.subscription_end_date = updates.subscription_end_date;
+        if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+        if (updates.phone !== undefined) updateData.phone = updates.phone;
+        if (updates.is_blocked !== undefined) {
+          updateData.is_blocked = updates.is_blocked;
+          if (updates.is_blocked) {
+            updateData.blocked_at = new Date().toISOString();
+            updateData.blocked_reason = updates.blocked_reason || 'Blocked by admin';
+          } else {
+            updateData.blocked_at = null;
+            updateData.blocked_reason = null;
+          }
+        }
+
+        const { error } = await adminClient
+          .from('profiles')
+          .update(updateData)
+          .eq('user_id', targetUserId);
+
+        if (error) throw error;
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      case 'block_user': {
+        const { userId: targetUserId, blocked, reason } = params;
+        
+        if (!targetUserId) {
+          throw new Error('userId is required');
+        }
+
+        logStep("Blocking/unblocking user", { userId: targetUserId.substring(0, 8), blocked });
+
         const { error } = await adminClient
           .from('profiles')
           .update({
-            subscription_tier: updates.subscription_tier,
-            subscription_status: updates.subscription_status,
-            subscription_end_date: updates.subscription_end_date,
-            is_active: updates.is_active,
-            phone: updates.phone,
+            is_blocked: blocked,
+            blocked_at: blocked ? new Date().toISOString() : null,
+            blocked_reason: blocked ? (reason || 'Blocked by admin') : null,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', targetUserId);
