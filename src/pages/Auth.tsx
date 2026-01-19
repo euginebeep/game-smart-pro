@@ -165,14 +165,14 @@ export default function Auth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session?.user) {
-          navigate('/');
+          navigate('/dashboard');
         }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        navigate('/');
+        navigate('/dashboard');
       }
     });
 
