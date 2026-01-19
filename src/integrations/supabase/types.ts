@@ -292,13 +292,18 @@ export type Database = {
       }
       profiles: {
         Row: {
+          birth_date: string | null
+          blocked_at: string | null
+          blocked_reason: string | null
           city: string | null
           country_code: string | null
           created_at: string
           email: string
           id: string
           is_active: boolean
+          is_blocked: boolean | null
           phone: string | null
+          registration_ip: string | null
           state: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -312,13 +317,18 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          birth_date?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           city?: string | null
           country_code?: string | null
           created_at?: string
           email: string
           id?: string
           is_active?: boolean
+          is_blocked?: boolean | null
           phone?: string | null
+          registration_ip?: string | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -332,13 +342,18 @@ export type Database = {
           user_id: string
         }
         Update: {
+          birth_date?: string | null
+          blocked_at?: string | null
+          blocked_reason?: string | null
           city?: string | null
           country_code?: string | null
           created_at?: string
           email?: string
           id?: string
           is_active?: boolean
+          is_blocked?: boolean | null
           phone?: string | null
+          registration_ip?: string | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
