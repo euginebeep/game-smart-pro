@@ -137,6 +137,8 @@ const translations: Record<Language, any> = {
       confirmPassword: "Confirmar Senha",
       confirmPasswordPlaceholder: "••••••••",
       updatePassword: "Atualizar Senha",
+      orContinueWith: "ou continue com",
+      facebookComingSoon: "Login com Facebook disponível em breve!",
     },
     common: {
       back: "Voltar",
@@ -144,6 +146,7 @@ const translations: Record<Language, any> = {
       error: "Erro",
       signOut: "Sair",
       premiumExclusive: "Exclusivo Premium",
+      comingSoon: "Em breve",
     },
     profile: {
       title: "Meu Perfil",
@@ -707,6 +710,8 @@ const translations: Record<Language, any> = {
       confirmPassword: "Confirm Password",
       confirmPasswordPlaceholder: "••••••••",
       updatePassword: "Update Password",
+      orContinueWith: "or continue with",
+      facebookComingSoon: "Facebook login coming soon!",
     },
     common: {
       back: "Back",
@@ -714,6 +719,7 @@ const translations: Record<Language, any> = {
       error: "Error",
       signOut: "Sign Out",
       premiumExclusive: "Premium Exclusive",
+      comingSoon: "Coming soon",
     },
     profile: {
       title: "My Profile",
@@ -1277,6 +1283,8 @@ const translations: Record<Language, any> = {
       confirmPassword: "Confirmar Contraseña",
       confirmPasswordPlaceholder: "••••••••",
       updatePassword: "Actualizar Contraseña",
+      orContinueWith: "o continúa con",
+      facebookComingSoon: "¡Inicio de sesión con Facebook disponible pronto!",
     },
     common: {
       back: "Volver",
@@ -1284,6 +1292,7 @@ const translations: Record<Language, any> = {
       error: "Error",
       signOut: "Cerrar sesión",
       premiumExclusive: "Exclusivo Premium",
+      comingSoon: "Próximamente",
     },
     profile: {
       title: "Mi Perfil",
@@ -1847,6 +1856,8 @@ const translations: Record<Language, any> = {
       confirmPassword: "Conferma Password",
       confirmPasswordPlaceholder: "••••••••",
       updatePassword: "Aggiorna Password",
+      orContinueWith: "o continua con",
+      facebookComingSoon: "Accesso con Facebook disponibile a breve!",
     },
     common: {
       back: "Indietro",
@@ -1854,6 +1865,7 @@ const translations: Record<Language, any> = {
       error: "Errore",
       signOut: "Esci",
       premiumExclusive: "Esclusivo Premium",
+      comingSoon: "Prossimamente",
     },
     profile: {
       title: "Il Mio Profilo",
