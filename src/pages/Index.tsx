@@ -186,35 +186,38 @@ const Index = () => {
                 contentRef={gamesContentRef}
               />
               
-              {/* Games Content for Export */}
-              <div ref={gamesContentRef}>
-              
-              {/* Game Cards */}
-              {games.map((game, index) => (
-                <GameCard 
-                  key={game.id} 
-                  game={game} 
-                  delay={index}
-                  userTier={userTier}
-                />
-              ))}
+              {/* Games Content for Export - Full Report */}
+              <div ref={gamesContentRef} className="space-y-6" id="eugine-report-content">
+                {/* Report Header for Export */}
+                <div className="hidden print:block report-export-header text-center py-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-xl mb-6" data-export-header>
+                  <h1 className="text-3xl font-bold text-amber-400">🎯 EUGINE Analytics</h1>
+                  <p className="text-slate-400 text-sm mt-2">Premium Report • {new Date().toLocaleDateString()}</p>
+                </div>
 
-              {/* NEW SECTIONS */}
-              
-              {/* Section 1: Accumulators */}
-              <AccumulatorsSection games={games} userTier={userTier} />
+                {/* Game Cards */}
+                {games.map((game, index) => (
+                  <GameCard 
+                    key={game.id} 
+                    game={game} 
+                    delay={index}
+                    userTier={userTier}
+                  />
+                ))}
 
-              {/* Section 2: Premium Double */}
-              <PremiumDoubleSection games={games} />
+                {/* Section 1: Accumulators */}
+                <AccumulatorsSection games={games} userTier={userTier} />
 
-              {/* Section 3: Favorites Double (Premium Only) */}
-              {userTier === 'premium' && <FavoritesDoubleSection games={games} />}
+                {/* Section 2: Premium Double */}
+                <PremiumDoubleSection games={games} />
 
-              {/* Section 3: Zebra of the Day */}
-              <ZebraSection games={games} userTier={userTier} />
+                {/* Section 3: Favorites Double (Premium Only) */}
+                {userTier === 'premium' && <FavoritesDoubleSection games={games} />}
+
+                {/* Section 4: Zebra of the Day */}
+                <ZebraSection games={games} userTier={userTier} />
               </div>
 
-              {/* Pricing Section */}
+              {/* Pricing Section - Outside export area */}
               <PricingSection />
             </div>
           )}
