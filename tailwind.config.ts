@@ -91,8 +91,9 @@ export default {
         "pulse-slow": "pulse-slow 2s ease-in-out infinite",
       },
       boxShadow: {
-        glow: "0 0 40px hsla(160, 84%, 39%, 0.15)",
-        "glow-lg": "0 0 60px hsla(160, 84%, 39%, 0.25)",
+        glow: "0 0 40px hsla(45, 100%, 50%, 0.15)",
+        "glow-lg": "0 0 60px hsla(45, 100%, 50%, 0.25)",
+        gold: "0 4px 30px hsla(45, 100%, 50%, 0.2)",
       },
     },
   },
