@@ -128,8 +128,11 @@ interface Game {
   awayTeam: string;
   homeTeamId?: number;
   awayTeamId?: number;
+  homeTeamLogo?: string;
+  awayTeamLogo?: string;
   league: string;
   leagueId?: number;
+  leagueLogo?: string;
   season?: number;
   startTime: string;
   bookmaker: string;
@@ -1575,8 +1578,11 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
           awayTeam: fixture.teams.away.name,
           homeTeamId: fixture.teams.home.id,
           awayTeamId: fixture.teams.away.id,
+          homeTeamLogo: fixture.teams.home.logo || `https://media.api-sports.io/football/teams/${fixture.teams.home.id}.png`,
+          awayTeamLogo: fixture.teams.away.logo || `https://media.api-sports.io/football/teams/${fixture.teams.away.id}.png`,
           league: fixture.league.name,
           leagueId: fixture.league.id,
+          leagueLogo: fixture.league.logo,
           season: fixture.league.season,
           startTime: startTime.toISOString(),
           bookmaker: bookmakerName,

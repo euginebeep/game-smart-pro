@@ -4,8 +4,11 @@ export interface Game {
   awayTeam: string;
   homeTeamId?: number;
   awayTeamId?: number;
+  homeTeamLogo?: string;
+  awayTeamLogo?: string;
   league: string;
   leagueId?: number;
+  leagueLogo?: string;
   season?: number;
   startTime: Date;
   bookmaker: string;
