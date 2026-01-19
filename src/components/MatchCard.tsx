@@ -5,6 +5,9 @@ import { analyzeBet } from '@/services/oddsAPI';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { FullAnalysis } from '@/components/FullAnalysis';
+
+interface MatchCardProps {
+  game: Game;
   delay: number;
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
 }
@@ -301,8 +304,8 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
-                <GameCard game={game} delay={0} userTier={userTier} />
+              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-950 border-slate-700 p-0">
+                <FullAnalysis game={game} userTier={userTier} />
               </DialogContent>
             </Dialog>
           </div>
