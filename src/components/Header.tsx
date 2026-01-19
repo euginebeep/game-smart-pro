@@ -1,6 +1,6 @@
-import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield, Clock } from 'lucide-react';
+import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield, Clock, Info } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
 
 interface HeaderProps {
@@ -108,6 +108,15 @@ export function Header({
               {t('main.subtitle')}
             </p>
           </div>
+
+          {/* About Link - Desktop Only */}
+          <Link 
+            to="/about"
+            className="hidden lg:flex items-center gap-1.5 ml-4 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors text-sm"
+          >
+            <Info className="w-4 h-4" />
+            <span>{language === 'pt' ? 'Sobre' : language === 'es' ? 'Acerca' : language === 'it' ? 'Chi siamo' : 'About'}</span>
+          </Link>
         </div>
 
         {/* Right Side Actions */}
