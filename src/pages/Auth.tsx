@@ -327,10 +327,10 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 circuit-pattern pointer-events-none opacity-30" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      {/* Background Effects - Cyan Theme */}
+      <div className="absolute inset-0 circuit-pattern pointer-events-none opacity-50" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
       
       <div className="w-full max-w-md relative z-10">
         {/* Language Selector */}
@@ -338,21 +338,21 @@ export default function Auth() {
           <LanguageSelector />
         </div>
 
-        {/* Logo/Brand */}
+        {/* Logo/Brand - Cyan Theme */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center mb-4">
             <div 
               className="w-16 h-16 rounded-2xl flex items-center justify-center animate-glow"
               style={{
-                background: 'linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 45%) 100%)',
+                background: 'linear-gradient(135deg, hsl(185 100% 50%) 0%, hsl(260 80% 60%) 100%)',
               }}
             >
-              <Brain className="w-8 h-8 text-background" />
+              <Brain className="w-8 h-8 text-primary-foreground" />
             </div>
           </div>
           <h1 className="font-display text-3xl font-bold">
-            <span className="gradient-text">EUGINE</span>
-            <span className="text-muted-foreground text-lg ml-2">v4.0</span>
+            <span className="text-foreground">EUGINE</span>
+            <span className="text-primary text-lg ml-2">v4.0</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-2">{t('auth.systemName')}</p>
         </div>

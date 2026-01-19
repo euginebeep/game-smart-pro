@@ -7,57 +7,57 @@
 
 @layer base {
   :root {
-    /* EUGINE v4.0 - Dark Theme with Gold/Yellow Accents */
-    --background: 0 0% 7%;
-    --foreground: 0 0% 98%;
+    /* EUGINE v4.0 - Dark Blue Theme with Cyan Accents */
+    --background: 230 60% 10%;
+    --foreground: 0 0% 100%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 230 45% 12%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 230 45% 12%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Primary - Gold/Yellow */
-    --primary: 45 100% 50%;
-    --primary-foreground: 0 0% 5%;
+    /* Primary - Cyan/Electric Blue */
+    --primary: 185 100% 50%;
+    --primary-foreground: 230 60% 10%;
 
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 230 40% 18%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 230 30% 22%;
+    --muted-foreground: 220 15% 65%;
 
-    /* Accent - Bright Gold */
-    --accent: 45 100% 55%;
-    --accent-foreground: 0 0% 5%;
+    /* Accent - Bright Cyan */
+    --accent: 185 100% 55%;
+    --accent-foreground: 230 60% 10%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
     --warning: 35 100% 50%;
-    --warning-foreground: 0 0% 5%;
+    --warning-foreground: 230 60% 10%;
 
     --success: 142 76% 45%;
-    --success-foreground: 0 0% 5%;
+    --success-foreground: 230 60% 10%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 15%;
-    --ring: 45 100% 50%;
+    --border: 230 30% 20%;
+    --input: 230 40% 15%;
+    --ring: 185 100% 50%;
 
     --radius: 0.75rem;
 
-    /* EUGINE v4.0 Custom Gradients - Gold Theme */
-    --gradient-main: linear-gradient(180deg, hsl(0 0% 7%) 0%, hsl(0 0% 4%) 100%);
-    --gradient-card: linear-gradient(180deg, hsla(0, 0%, 12%, 0.8) 0%, hsla(0, 0%, 8%, 0.8) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 45%) 50%, hsl(45 100% 55%) 100%);
+    /* EUGINE v4.0 Custom Gradients - Cyan Theme */
+    --gradient-main: linear-gradient(180deg, hsl(230 60% 10%) 0%, hsl(230 70% 5%) 100%);
+    --gradient-card: linear-gradient(180deg, hsla(230, 45%, 14%, 0.9) 0%, hsla(230, 50%, 10%, 0.9) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(185 100% 50%) 0%, hsl(260 80% 60%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(160 70% 45%) 100%);
-    --gradient-glow: linear-gradient(135deg, hsla(45, 100%, 50%, 0.3) 0%, hsla(35, 100%, 45%, 0.1) 100%);
+    --gradient-glow: linear-gradient(135deg, hsla(185, 100%, 50%, 0.3) 0%, hsla(260, 80%, 60%, 0.1) 100%);
     
-    /* Shadows - Gold Theme */
-    --shadow-glow: 0 0 40px hsla(45, 100%, 50%, 0.15);
-    --shadow-glow-lg: 0 0 80px hsla(45, 100%, 50%, 0.25);
+    /* Shadows - Cyan Theme */
+    --shadow-glow: 0 0 40px hsla(185, 100%, 50%, 0.2);
+    --shadow-glow-lg: 0 0 80px hsla(185, 100%, 50%, 0.3);
     --shadow-card: 0 25px 50px -12px hsla(0, 0%, 0%, 0.6);
-    --shadow-gold: 0 4px 30px hsla(45, 100%, 50%, 0.2);
+    --shadow-cyan: 0 4px 30px hsla(185, 100%, 50%, 0.25);
   }
 
   * {
@@ -79,7 +79,7 @@
   }
 
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border rounded-xl;
+    @apply bg-card/90 backdrop-blur-xl border border-border rounded-2xl;
     transition: all 0.3s ease;
   }
 
@@ -102,14 +102,14 @@
     background-clip: text;
   }
 
-  /* EUGINE v4.0 Primary Button - Gold Theme */
+  /* EUGINE v4.0 Primary Button - Cyan Theme */
   .btn-primary {
     @apply bg-primary text-primary-foreground font-bold py-4 px-8 rounded-lg;
     @apply transition-all duration-300 ease-out;
     @apply hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-gold);
+    box-shadow: var(--shadow-cyan);
   }
 
   .btn-primary::before {
@@ -168,26 +168,26 @@
     animation: spin 1s linear infinite;
   }
 
-  /* Neon Glow Effects - Gold Theme */
+  /* Neon Glow Effects - Cyan Theme */
   .neon-border {
-    border: 1px solid hsl(var(--primary));
+    border: 2px solid hsl(var(--primary));
     box-shadow: 
-      0 0 5px hsla(45, 100%, 50%, 0.3),
-      0 0 20px hsla(45, 100%, 50%, 0.2),
-      inset 0 0 30px hsla(45, 100%, 50%, 0.05);
+      0 0 10px hsla(185, 100%, 50%, 0.4),
+      0 0 30px hsla(185, 100%, 50%, 0.2),
+      inset 0 0 30px hsla(185, 100%, 50%, 0.05);
   }
 
   .neon-text {
     text-shadow: 
-      0 0 10px hsla(45, 100%, 50%, 0.5),
-      0 0 20px hsla(45, 100%, 50%, 0.3);
+      0 0 10px hsla(185, 100%, 50%, 0.5),
+      0 0 20px hsla(185, 100%, 50%, 0.3);
   }
 
   /* Subtle grid pattern background */
   .circuit-pattern {
     background-image: 
-      radial-gradient(circle at 25% 25%, hsla(0, 0%, 100%, 0.02) 1px, transparent 1px),
-      radial-gradient(circle at 75% 75%, hsla(0, 0%, 100%, 0.02) 1px, transparent 1px);
+      radial-gradient(circle at 25% 25%, hsla(185, 100%, 50%, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, hsla(260, 80%, 60%, 0.02) 1px, transparent 1px);
     background-size: 50px 50px;
   }
 
@@ -209,14 +209,20 @@
     @apply text-muted-foreground text-sm;
   }
 
-  /* Tab styles matching reference */
+  /* Tab styles - Interactive Tabs */
   .tab-button {
-    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all;
-    @apply text-muted-foreground hover:text-foreground;
+    @apply px-6 py-4 text-lg font-bold rounded-xl transition-all duration-300;
+    @apply text-muted-foreground border-2 border-transparent;
+    background: hsl(var(--card));
+  }
+
+  .tab-button:hover {
+    @apply text-foreground border-primary/30;
   }
 
   .tab-button.active {
     @apply bg-primary text-primary-foreground;
+    box-shadow: 0 0 20px hsla(185, 100%, 50%, 0.5);
   }
 
   /* Confidence indicator styles */
@@ -242,6 +248,27 @@
   /* Chart placeholder styling */
   .chart-container {
     @apply bg-card/40 rounded-lg p-4 border border-border/50;
+  }
+
+  /* Tab Content */
+  .tab-content {
+    @apply bg-card rounded-2xl p-8;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Price Card Highlighted */
+  .price-card-highlighted {
+    @apply border-primary scale-[1.05];
+    box-shadow: 0 0 30px hsla(185, 100%, 50%, 0.3);
   }
 }
 
@@ -336,10 +363,10 @@
 
 @keyframes glowPulse {
   0%, 100% {
-    box-shadow: 0 0 20px hsla(45, 100%, 50%, 0.3);
+    box-shadow: 0 0 20px hsla(185, 100%, 50%, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px hsla(45, 100%, 50%, 0.5);
+    box-shadow: 0 0 40px hsla(185, 100%, 50%, 0.5);
   }
 }
 
