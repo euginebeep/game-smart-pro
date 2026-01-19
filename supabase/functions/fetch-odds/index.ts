@@ -1443,11 +1443,14 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
       
       if (fixturesData.response && fixturesData.response.length > 0) {
         const agora = new Date();
-        const limiteMinimo = new Date(agora.getTime() + 10 * 60 * 1000);
+        // Filtro: jogos entre 10 e 50 minutos antes do início
+        const limiteMinimo = new Date(agora.getTime() + 10 * 60 * 1000); // +10 min
+        const limiteMaximo = new Date(agora.getTime() + 50 * 60 * 1000); // +50 min
         
         const jogosValidos = fixturesData.response.filter((fixture: any) => {
           const dataJogo = new Date(fixture.fixture.date);
-          return dataJogo > limiteMinimo;
+          // Jogo deve começar entre 10 e 50 minutos a partir de agora
+          return dataJogo >= limiteMinimo && dataJogo <= limiteMaximo;
         });
         
         if (jogosValidos.length > 0) {
