@@ -46,9 +46,21 @@ export default function Landing() {
       },
       steps: {
         title: 'Entenda a Análise em 3 Passos Simples',
-        step1: { title: '1. Escolha o Jogo' },
-        step2: { title: '2. Receba a Análise' },
-        step3: { title: '3. Decida com Confiança' },
+        step1: { 
+          title: '1. Escolha o Jogo',
+          heading: '1. Escolha o Jogo',
+          description: 'Explore nossa extensa lista de eventos esportivos. Selecione o jogo de futebol que você deseja analisar com base nos times, data e hora. Sua análise começa aqui.',
+        },
+        step2: { 
+          title: '2. Receba a Análise',
+          heading: 'Insights Estratégicos',
+          description: 'Receba análises baseadas em dados e algoritmos avançados para prever resultados com alta precisão. Nossas recomendações te dão a vantagem que você precisa.',
+        },
+        step3: { 
+          title: '3. Decida com Confiança',
+          heading: 'Decida com Confiança e Maximize seus Lucros',
+          description: 'Use nossos dados e análises de especialistas para tomar decisões informadas. Veja seu histórico de sucesso, acompanhe o crescimento da sua banca e aposte com a certeza de quem sabe o que faz.',
+        },
       },
       pricing: {
         title: 'Escolha o Plano Perfeito para Você',
@@ -124,9 +136,21 @@ export default function Landing() {
       },
       steps: {
         title: 'Understand the Analysis in 3 Simple Steps',
-        step1: { title: '1. Choose the Game' },
-        step2: { title: '2. Receive the Analysis' },
-        step3: { title: '3. Decide with Confidence' },
+        step1: { 
+          title: '1. Choose the Game',
+          heading: '1. Choose the Game',
+          description: 'Explore our extensive list of sporting events. Select the football game you want to analyze based on teams, date and time. Your analysis starts here.',
+        },
+        step2: { 
+          title: '2. Receive the Analysis',
+          heading: 'Strategic Insights',
+          description: 'Receive analysis based on data and advanced algorithms to predict results with high accuracy. Our recommendations give you the edge you need.',
+        },
+        step3: { 
+          title: '3. Decide with Confidence',
+          heading: 'Decide with Confidence and Maximize Your Profits',
+          description: 'Use our data and expert analysis to make informed decisions. See your success history, track your bankroll growth and bet with confidence.',
+        },
       },
       pricing: {
         title: 'Choose the Perfect Plan for You',
@@ -202,9 +226,21 @@ export default function Landing() {
       },
       steps: {
         title: 'Entiende el Análisis en 3 Pasos Simples',
-        step1: { title: '1. Elige el Juego' },
-        step2: { title: '2. Recibe el Análisis' },
-        step3: { title: '3. Decide con Confianza' },
+        step1: { 
+          title: '1. Elige el Juego',
+          heading: '1. Elige el Juego',
+          description: 'Explora nuestra extensa lista de eventos deportivos. Selecciona el partido de fútbol que deseas analizar según los equipos, fecha y hora. Tu análisis comienza aquí.',
+        },
+        step2: { 
+          title: '2. Recibe el Análisis',
+          heading: 'Insights Estratégicos',
+          description: 'Recibe análisis basados en datos y algoritmos avanzados para predecir resultados con alta precisión. Nuestras recomendaciones te dan la ventaja que necesitas.',
+        },
+        step3: { 
+          title: '3. Decide con Confianza',
+          heading: 'Decide con Confianza y Maximiza tus Ganancias',
+          description: 'Usa nuestros datos y análisis de expertos para tomar decisiones informadas. Ve tu historial de éxito, sigue el crecimiento de tu banca y apuesta con seguridad.',
+        },
       },
       pricing: {
         title: 'Elige el Plan Perfecto para Ti',
@@ -280,9 +316,21 @@ export default function Landing() {
       },
       steps: {
         title: "Comprendi l'Analisi in 3 Semplici Passi",
-        step1: { title: '1. Scegli la Partita' },
-        step2: { title: "2. Ricevi l'Analisi" },
-        step3: { title: '3. Decidi con Fiducia' },
+        step1: { 
+          title: '1. Scegli la Partita',
+          heading: '1. Scegli la Partita',
+          description: "Esplora la nostra ampia lista di eventi sportivi. Seleziona la partita di calcio che vuoi analizzare in base a squadre, data e ora. La tua analisi inizia qui.",
+        },
+        step2: { 
+          title: "2. Ricevi l'Analisi",
+          heading: 'Insights Strategici',
+          description: "Ricevi analisi basate su dati e algoritmi avanzati per prevedere i risultati con alta precisione. Le nostre raccomandazioni ti danno il vantaggio che ti serve.",
+        },
+        step3: { 
+          title: '3. Decidi con Fiducia',
+          heading: 'Decidi con Fiducia e Massimizza i Tuoi Profitti',
+          description: 'Usa i nostri dati e le analisi degli esperti per prendere decisioni informate. Visualizza la tua storia di successo, monitora la crescita del tuo bankroll e scommetti con sicurezza.',
+        },
       },
       pricing: {
         title: 'Scegli il Piano Perfetto per Te',
@@ -353,6 +401,11 @@ export default function Landing() {
 
   const stepImages = [step1Image, step2Image, step3Image];
   const stepTitles = [l.steps.step1.title, l.steps.step2.title, l.steps.step3.title];
+  const stepData = [
+    { heading: l.steps.step1.heading, description: l.steps.step1.description },
+    { heading: l.steps.step2.heading, description: l.steps.step2.description },
+    { heading: l.steps.step3.heading, description: l.steps.step3.description },
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -479,36 +532,92 @@ export default function Landing() {
 
       {/* Interactive Manual Section */}
       <section id="how-it-works" className="relative px-5 py-20">
-        <div className="max-w-5xl mx-auto">
+        <div 
+          className="max-w-6xl mx-auto p-8 lg:p-16 rounded-3xl"
+          style={{
+            background: 'linear-gradient(180deg, hsl(230 45% 12%) 0%, hsl(230 50% 10%) 100%)',
+            border: '1px solid hsla(185, 100%, 50%, 0.2)',
+          }}
+        >
           <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-10">
             {l.steps.title}
           </h2>
 
           {/* Tab Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-5 mb-10">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-12">
             {stepTitles.map((title, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveTab(idx + 1)}
-                className={`tab-button ${activeTab === idx + 1 ? 'active' : ''}`}
+                className={`flex-1 px-4 py-4 text-base lg:text-lg font-semibold rounded-xl transition-all duration-300 ${
+                  activeTab === idx + 1 
+                    ? 'bg-primary text-primary-foreground shadow-[0_0_25px_hsla(185,100%,50%,0.7)]' 
+                    : 'bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/30'
+                }`}
+                style={{
+                  boxShadow: activeTab === idx + 1 ? '0 4px 15px rgba(0, 0, 0, 0.2)' : undefined,
+                }}
               >
                 {title}
               </button>
             ))}
           </div>
 
-          {/* Tab Content */}
+          {/* Tab Content - Two Column Layout */}
           <div className="relative">
-            {stepImages.map((img, idx) => (
+            {stepData.map((step, idx) => (
               <div 
                 key={idx}
-                className={`tab-content ${activeTab === idx + 1 ? 'active' : ''}`}
+                className={`grid md:grid-cols-2 gap-10 lg:gap-16 items-center transition-all duration-500 ${
+                  activeTab === idx + 1 
+                    ? 'opacity-100 translate-y-0' 
+                    : 'hidden opacity-0 translate-y-5'
+                }`}
               >
-                <img 
-                  src={img} 
-                  alt={stepTitles[idx]}
-                  className="w-full h-auto rounded-lg"
-                />
+                {/* Text Column */}
+                <div className="order-2 md:order-1">
+                  <h3 
+                    className="text-2xl sm:text-3xl lg:text-[42px] font-black leading-tight mb-6"
+                    style={{
+                      background: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {step.heading}
+                  </h3>
+                  <p className="text-base lg:text-lg text-muted-foreground leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+                
+                {/* Phone Mockup Column */}
+                <div 
+                  className="order-1 md:order-2 flex justify-center items-center"
+                  style={{ perspective: '1000px' }}
+                >
+                  <div 
+                    className="relative w-[280px] h-[560px] lg:w-[300px] lg:h-[615px] transition-transform duration-500 hover:scale-105"
+                    style={{
+                      transform: 'rotateY(-15deg) rotateX(5deg)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'rotateY(-15deg) rotateX(5deg)';
+                    }}
+                  >
+                    <img 
+                      src={stepImages[idx]} 
+                      alt={stepTitles[idx]}
+                      className="w-full h-full object-contain"
+                      style={{
+                        filter: 'drop-shadow(0 0 30px hsla(185, 100%, 50%, 0.4))',
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
