@@ -3,54 +3,61 @@
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
-    --background: 222 47% 5%;
-    --foreground: 210 40% 98%;
+    /* EUGINE v4.0 - Dark Cyan Theme */
+    --background: 210 35% 5%;
+    --foreground: 180 100% 98%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 210 40% 8%;
+    --card-foreground: 180 100% 98%;
 
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 210 40% 8%;
+    --popover-foreground: 180 100% 98%;
 
-    --primary: 160 84% 39%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary Cyan/Teal */
+    --primary: 185 80% 50%;
+    --primary-foreground: 210 40% 5%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 40% 15%;
+    --secondary-foreground: 180 100% 98%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 210 30% 18%;
+    --muted-foreground: 210 20% 60%;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent - Bright Cyan */
+    --accent: 185 90% 55%;
+    --accent-foreground: 210 40% 5%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
     --warning: 43 96% 56%;
-    --warning-foreground: 222 47% 11%;
+    --warning-foreground: 210 40% 5%;
 
-    --success: 160 84% 39%;
-    --success-foreground: 210 40% 98%;
+    --success: 160 84% 45%;
+    --success-foreground: 210 40% 5%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 160 84% 39%;
+    --border: 210 30% 20%;
+    --input: 210 30% 18%;
+    --ring: 185 80% 50%;
 
     --radius: 1rem;
 
-    /* Custom gradients */
-    --gradient-main: linear-gradient(135deg, hsl(222 47% 5%) 0%, hsl(217 91% 10%) 100%);
-    --gradient-card: linear-gradient(180deg, hsla(222, 47%, 12%, 0.6) 0%, hsla(222, 47%, 8%, 0.6) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(185 96% 45%) 50%, hsl(160 84% 39%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(160 70% 50%) 100%);
+    /* EUGINE v4.0 Custom Gradients */
+    --gradient-main: linear-gradient(180deg, hsl(210 35% 5%) 0%, hsl(210 40% 3%) 100%);
+    --gradient-card: linear-gradient(180deg, hsla(210, 40%, 12%, 0.7) 0%, hsla(210, 40%, 8%, 0.7) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(185 90% 55%) 0%, hsl(195 100% 45%) 50%, hsl(185 80% 50%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(160 84% 45%) 0%, hsl(175 80% 50%) 100%);
+    --gradient-glow: linear-gradient(135deg, hsla(185, 90%, 55%, 0.3) 0%, hsla(195, 100%, 45%, 0.1) 100%);
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsla(160, 84%, 39%, 0.15);
-    --shadow-card: 0 25px 50px -12px hsla(222, 47%, 5%, 0.5);
+    --shadow-glow: 0 0 40px hsla(185, 90%, 55%, 0.2);
+    --shadow-glow-lg: 0 0 80px hsla(185, 90%, 55%, 0.3);
+    --shadow-card: 0 25px 50px -12px hsla(210, 40%, 5%, 0.6);
+    --shadow-cyan: 0 4px 30px hsla(185, 90%, 55%, 0.25);
   }
 
   * {
@@ -66,13 +73,18 @@
 }
 
 @layer components {
+  /* Futuristic font for headings */
+  .font-display {
+    font-family: 'Orbitron', 'Inter', sans-serif;
+  }
+
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-accent/20 rounded-3xl;
+    @apply bg-card/60 backdrop-blur-xl border border-primary/20 rounded-2xl;
     transition: all 0.3s ease;
   }
 
   .glass-card:hover {
-    @apply border-accent/50 -translate-y-2;
+    @apply border-primary/40 -translate-y-1;
     box-shadow: var(--shadow-glow), var(--shadow-card);
   }
 
@@ -90,12 +102,14 @@
     background-clip: text;
   }
 
+  /* EUGINE v4.0 Primary Button */
   .btn-primary {
     @apply bg-primary text-primary-foreground font-bold py-4 px-8 rounded-xl;
     @apply transition-all duration-300 ease-out;
     @apply hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-cyan);
   }
 
   .btn-primary::before {
@@ -105,12 +119,20 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, hsla(0, 0%, 100%, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, hsla(0, 0%, 100%, 0.3), transparent);
     transition: left 0.5s ease;
   }
 
   .btn-primary:hover::before {
     left: 100%;
+  }
+
+  /* Outline Button */
+  .btn-outline {
+    @apply border-2 border-primary text-primary font-bold py-4 px-8 rounded-xl;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:bg-primary hover:text-primary-foreground hover:shadow-lg;
+    background: transparent;
   }
 
   .badge {
@@ -122,11 +144,11 @@
   }
 
   .badge-info {
-    @apply bg-accent/20 text-accent border border-accent/30;
+    @apply bg-primary/20 text-primary border border-primary/30;
   }
 
   .badge-success {
-    @apply bg-primary/20 text-primary border border-primary/30;
+    @apply bg-success/20 text-success border border-success/30;
   }
 
   .analysis-box {
@@ -134,7 +156,7 @@
   }
 
   .analysis-box-success {
-    @apply bg-primary/10 border-primary/30;
+    @apply bg-success/10 border-success/30;
   }
 
   .analysis-box-warning {
@@ -144,6 +166,29 @@
   .spinner {
     @apply w-6 h-6 border-4 border-primary/30 border-t-primary rounded-full;
     animation: spin 1s linear infinite;
+  }
+
+  /* Neon Glow Effects */
+  .neon-border {
+    border: 1px solid hsl(var(--primary));
+    box-shadow: 
+      0 0 5px hsla(185, 90%, 55%, 0.3),
+      0 0 20px hsla(185, 90%, 55%, 0.2),
+      inset 0 0 30px hsla(185, 90%, 55%, 0.05);
+  }
+
+  .neon-text {
+    text-shadow: 
+      0 0 10px hsla(185, 90%, 55%, 0.5),
+      0 0 20px hsla(185, 90%, 55%, 0.3);
+  }
+
+  /* Circuit pattern background */
+  .circuit-pattern {
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsla(185, 90%, 55%, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, hsla(185, 90%, 55%, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
   }
 }
 
@@ -162,6 +207,14 @@
 
   .animate-language-change {
     animation: languageChange 0.4s ease-out forwards;
+  }
+
+  .animate-glow {
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
   }
 
   .language-transition {
@@ -225,5 +278,23 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px hsla(185, 90%, 55%, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px hsla(185, 90%, 55%, 0.5);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }

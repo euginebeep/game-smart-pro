@@ -258,7 +258,7 @@ const Index = () => {
         {/* Footer */}
         <footer className="mt-8 sm:mt-12 lg:mt-16 text-center px-2">
           <p className="text-muted-foreground text-xs sm:text-sm">
-            EUGINE v3.0 • {t('main.footer')} <span className="text-accent font-semibold">GS ITALYINVESTMENTS</span>
+            EUGINE v4.0 • {t('main.footer')} <span className="text-primary font-semibold">GS ITALYINVESTMENTS</span>
           </p>
           <p className="text-muted-foreground/60 text-[10px] sm:text-xs mt-1 sm:mt-2">
             {t('main.disclaimer')}

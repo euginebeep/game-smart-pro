@@ -10,7 +10,7 @@ const planConfigs = [
     price: '$ 29.90',
     priceValue: 29.90,
     icon: Zap,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-primary to-accent',
     tier: 'basic' as const,
   },
   {
@@ -18,7 +18,7 @@ const planConfigs = [
     price: '$ 49.90',
     priceValue: 49.90,
     icon: Star,
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-primary to-success',
     popular: true,
     tier: 'advanced' as const,
   },
@@ -27,7 +27,7 @@ const planConfigs = [
     price: '$ 79.90',
     priceValue: 79.90,
     icon: Crown,
-    color: 'from-amber-500 to-orange-500',
+    color: 'from-warning to-destructive',
     tier: 'premium' as const,
   },
 ];
@@ -106,13 +106,13 @@ export function PricingSection() {
               key={planConfig.id}
               className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col ${
                 planConfig.popular
-                  ? 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/50 scale-[1.02]'
+                  ? 'bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/50 scale-[1.02] neon-border'
                   : 'glass-card'
               } ${isCurrentPlan ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
             >
               {planConfig.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="bg-gradient-to-r from-primary to-accent text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
                     {t('pricing.popular')}
                   </span>
                 </div>
@@ -166,7 +166,7 @@ export function PricingSection() {
                     disabled={loadingTier === planConfig.tier}
                     className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
                       planConfig.popular
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90'
+                        ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90'
                     }`}
                   >
