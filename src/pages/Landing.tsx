@@ -673,7 +673,7 @@ export default function Landing() {
             </div>
 
             {/* Premium - Promo */}
-            <div className="relative glass-card p-6 flex flex-col border-2 border-warning/50">
+            <div className="relative glass-card p-6 flex flex-col border-2 border-warning/50 overflow-hidden">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-warning text-background text-xs font-bold px-4 py-1 rounded-full animate-pulse">
                   {l.pricing.premium.badge}
@@ -681,10 +681,10 @@ export default function Landing() {
               </div>
               <div className="text-center mb-6 pt-2">
                 <span className="text-warning font-display font-bold text-sm tracking-widest">{l.pricing.premium.name}</span>
-                <div className="mt-2">
-                  <span className="text-lg text-muted-foreground line-through mr-2">{l.pricing.premium.originalPrice}</span>
-                  <span className="text-4xl font-black text-warning">{l.pricing.premium.price}</span>
-                  <span className="text-muted-foreground">{l.pricing.premium.period}</span>
+                <div className="mt-2 flex flex-col items-center">
+                  <span className="text-sm text-muted-foreground line-through">{l.pricing.premium.originalPrice}</span>
+                  <span className="text-3xl font-black text-warning">{l.pricing.premium.price}</span>
+                  <span className="text-muted-foreground text-sm">{l.pricing.premium.period}</span>
                 </div>
               </div>
               <ul className="space-y-3 flex-grow mb-6">
