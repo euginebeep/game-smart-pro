@@ -13,8 +13,10 @@ import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, 
   BarChart3, TrendingUp, Target, Play, History, Ban, ShieldX, ShieldCheck, Globe, Mail, 
-  Send, DollarSign, CreditCard, Repeat, Calendar, Gauge, Zap, AlertCircle, Trash2, CheckSquare, Square
+  Send, DollarSign, CreditCard, Repeat, Calendar, Gauge, Zap, AlertCircle, Trash2, CheckSquare, Square,
+  BookOpen
 } from 'lucide-react';
+import { TechnicalDocsTab } from '@/components/admin/TechnicalDocsTab';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Loading } from '@/components/Loading';
@@ -561,6 +563,10 @@ export default function Admin() {
             <TabsTrigger value="backtest" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Backtest
+            </TabsTrigger>
+            <TabsTrigger value="docs" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Documentação
             </TabsTrigger>
           </TabsList>
 
@@ -1526,6 +1532,11 @@ export default function Admin() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Technical Documentation Tab */}
+          <TabsContent value="docs" className="space-y-4">
+            <TechnicalDocsTab />
           </TabsContent>
         </Tabs>
       </div>
