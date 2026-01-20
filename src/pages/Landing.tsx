@@ -20,6 +20,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import MoneyExplosion from '@/components/MoneyExplosion';
+import ParticlesBackground from '@/components/ParticlesBackground';
 
 // Import step images
 import step1Image from '@/assets/step1-escolha-jogo.png';
@@ -426,9 +427,12 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
+      {/* Animated Particles Background */}
+      <ParticlesBackground />
+      
       {/* Circuit Pattern Background */}
-      <div className="fixed inset-0 circuit-pattern pointer-events-none opacity-50" />
+      <div className="fixed inset-0 circuit-pattern pointer-events-none opacity-30" />
       
       {/* Navigation */}
       <nav className="relative z-50 max-w-7xl mx-auto flex items-center justify-between px-5 py-5">
@@ -618,9 +622,9 @@ export default function Landing() {
                 }`}
               >
                 {/* Text Column */}
-                <div className="order-2 md:order-1 relative z-10 flex flex-col justify-center">
+                <div className="order-2 md:order-1 relative z-20 flex flex-col justify-center">
                   <h3 
-                    className="text-xl sm:text-2xl lg:text-3xl xl:text-[38px] font-black leading-tight mb-4 lg:mb-6"
+                    className="text-xl sm:text-2xl lg:text-3xl xl:text-[38px] font-black leading-tight mb-4 lg:mb-6 relative z-20"
                     style={{
                       background: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)',
                       WebkitBackgroundClip: 'text',
@@ -629,7 +633,7 @@ export default function Landing() {
                   >
                     {step.heading}
                   </h3>
-                  <div className="bg-card/90 p-4 sm:p-5 lg:p-6 rounded-xl border border-border/50 backdrop-blur-sm">
+                  <div className="bg-card/95 p-4 sm:p-5 lg:p-6 rounded-xl border border-border/50 backdrop-blur-sm relative z-20">
                     <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
                       {step.description}
                     </p>
@@ -638,11 +642,11 @@ export default function Landing() {
                 
                 {/* Phone Mockup Column */}
                 <div 
-                  className="order-1 md:order-2 flex justify-center items-center py-4"
+                  className="order-1 md:order-2 flex justify-center items-center py-4 relative z-10"
                   style={{ perspective: '1000px' }}
                 >
                   <div 
-                    className="relative w-[220px] h-[440px] sm:w-[260px] sm:h-[520px] lg:w-[280px] lg:h-[560px] transition-transform duration-500 hover:scale-105"
+                    className="relative w-[160px] h-[320px] sm:w-[180px] sm:h-[360px] lg:w-[200px] lg:h-[400px] transition-transform duration-500 hover:scale-105"
                     style={{
                       transform: 'rotateY(-10deg) rotateX(3deg)',
                     }}
@@ -658,7 +662,7 @@ export default function Landing() {
                       alt={stepTitles[idx]}
                       className="w-full h-full object-contain"
                       style={{
-                        filter: 'drop-shadow(0 0 25px hsla(185, 100%, 50%, 0.35))',
+                        filter: 'drop-shadow(0 0 20px hsla(185, 100%, 50%, 0.3))',
                       }}
                     />
                   </div>
