@@ -304,6 +304,7 @@ export type Database = {
           is_blocked: boolean | null
           phone: string | null
           registration_ip: string | null
+          registration_source: string | null
           state: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -329,6 +330,7 @@ export type Database = {
           is_blocked?: boolean | null
           phone?: string | null
           registration_ip?: string | null
+          registration_source?: string | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -354,6 +356,7 @@ export type Database = {
           is_blocked?: boolean | null
           phone?: string | null
           registration_ip?: string | null
+          registration_source?: string | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
