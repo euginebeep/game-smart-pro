@@ -520,29 +520,111 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
           ))}
         </div>
 
-        {/* Options List */}
+        {/* Options List - Dynamic based on activeTab */}
         <div className="space-y-3">
-          <div className="flex justify-between items-center py-2 border-b border-slate-800">
-            <span className="text-white font-medium">{l.over25}</span>
-            <span className="text-slate-300">
-              {l.prob}: <span className="text-emerald-400 font-bold">{calcProb(game.odds.over)}%</span> | 
-              {l.odds}: <span className="font-bold">{game.odds.over?.toFixed(2) || '1.75'}</span>
-            </span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-slate-800">
-            <span className="text-white font-medium">{l.btts}</span>
-            <span className="text-slate-300">
-              {l.prob}: <span className="text-emerald-400 font-bold">{adv?.homeStats?.bttsPercentage?.toFixed(0) || 58}%</span> | 
-              {l.odds}: <span className="font-bold">1.68</span>
-            </span>
-          </div>
-          <div className="flex justify-between items-center py-2">
-            <span className="text-white font-medium">{l.over35}</span>
-            <span className="text-slate-300">
-              {l.prob}: <span className="text-slate-400">35%</span> | 
-              {l.odds}: <span className="font-bold">2.90</span>
-            </span>
-          </div>
+          {activeTab === 'goals' && (
+            <>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{l.over25}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">{calcProb(game.odds.over)}%</span> | 
+                  {l.odds}: <span className="font-bold">{game.odds.over?.toFixed(2) || '1.75'}</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{l.btts}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">{adv?.homeStats?.bttsPercentage?.toFixed(0) || 58}%</span> | 
+                  {l.odds}: <span className="font-bold">1.68</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white font-medium">{l.over35}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-slate-400">35%</span> | 
+                  {l.odds}: <span className="font-bold">2.90</span>
+                </span>
+              </div>
+            </>
+          )}
+          
+          {activeTab === 'corners' && (
+            <>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{language === 'pt' ? 'Mais de 9.5 escanteios' : language === 'es' ? 'Más de 9.5 córners' : language === 'it' ? 'Più di 9.5 angoli' : 'Over 9.5 corners'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">62%</span> | 
+                  {l.odds}: <span className="font-bold">1.85</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{language === 'pt' ? 'Time da casa +4.5 escanteios' : language === 'es' ? 'Local +4.5 córners' : language === 'it' ? 'Casa +4.5 angoli' : 'Home team +4.5 corners'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">55%</span> | 
+                  {l.odds}: <span className="font-bold">1.72</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white font-medium">{language === 'pt' ? 'Mais de 11.5 escanteios' : language === 'es' ? 'Más de 11.5 córners' : language === 'it' ? 'Più di 11.5 angoli' : 'Over 11.5 corners'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-slate-400">38%</span> | 
+                  {l.odds}: <span className="font-bold">2.45</span>
+                </span>
+              </div>
+            </>
+          )}
+          
+          {activeTab === 'cards' && (
+            <>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{language === 'pt' ? 'Mais de 3.5 cartões' : language === 'es' ? 'Más de 3.5 tarjetas' : language === 'it' ? 'Più di 3.5 cartellini' : 'Over 3.5 cards'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">68%</span> | 
+                  {l.odds}: <span className="font-bold">1.65</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{language === 'pt' ? 'Mais de 4.5 cartões' : language === 'es' ? 'Más de 4.5 tarjetas' : language === 'it' ? 'Più di 4.5 cartellini' : 'Over 4.5 cards'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">52%</span> | 
+                  {l.odds}: <span className="font-bold">1.95</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white font-medium">{language === 'pt' ? 'Cartão vermelho no jogo' : language === 'es' ? 'Tarjeta roja en el partido' : language === 'it' ? 'Cartellino rosso nella partita' : 'Red card in the match'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-slate-400">18%</span> | 
+                  {l.odds}: <span className="font-bold">4.50</span>
+                </span>
+              </div>
+            </>
+          )}
+          
+          {activeTab === 'props' && (
+            <>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{language === 'pt' ? 'Artilheiro marca a qualquer momento' : language === 'es' ? 'Goleador marca en cualquier momento' : language === 'it' ? 'Capocannoniere segna in qualsiasi momento' : 'Top scorer to score anytime'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">45%</span> | 
+                  {l.odds}: <span className="font-bold">2.10</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800">
+                <span className="text-white font-medium">{language === 'pt' ? 'Primeiro gol antes dos 30min' : language === 'es' ? 'Primer gol antes de los 30min' : language === 'it' ? 'Primo gol prima dei 30min' : 'First goal before 30min'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-emerald-400 font-bold">58%</span> | 
+                  {l.odds}: <span className="font-bold">1.75</span>
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white font-medium">{language === 'pt' ? 'Jogador recebe cartão' : language === 'es' ? 'Jugador recibe tarjeta' : language === 'it' ? 'Giocatore riceve cartellino' : 'Player to be booked'}</span>
+                <span className="text-slate-300">
+                  {l.prob}: <span className="text-slate-400">35%</span> | 
+                  {l.odds}: <span className="font-bold">2.80</span>
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
