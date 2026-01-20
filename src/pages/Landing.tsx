@@ -506,7 +506,7 @@ export default function Landing() {
           </p>
 
           {/* Hero Phone Mockup Preview */}
-          <div className="relative max-w-sm mx-auto mb-10" style={{ perspective: '1000px' }}>
+          <div className="relative max-w-xs mx-auto mb-10" style={{ perspective: '1000px' }}>
             <div 
               className="relative transition-transform duration-500 hover:scale-105"
               style={{
@@ -521,7 +521,7 @@ export default function Landing() {
             >
               {/* Phone Frame */}
               <div 
-                className="relative w-[280px] h-[560px] sm:w-[300px] sm:h-[600px] mx-auto rounded-[40px] p-3 overflow-hidden"
+                className="relative w-[200px] h-[400px] sm:w-[220px] sm:h-[440px] mx-auto rounded-[32px] p-2 overflow-hidden"
                 style={{ 
                   background: 'linear-gradient(145deg, hsla(230, 50%, 20%, 1), hsla(230, 50%, 15%, 1))',
                   boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), 0 0 40px hsla(185, 100%, 50%, 0.2)',
@@ -529,10 +529,10 @@ export default function Landing() {
                 }}
               >
                 {/* Notch */}
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-background/80 rounded-full z-20" />
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-background/80 rounded-full z-20" />
                 
                 {/* Screen Content */}
-                <div className="relative w-full h-full rounded-[28px] overflow-hidden bg-card">
+                <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-card">
                   <img 
                     src={step1Image} 
                     alt="EUGINE Dashboard" 
