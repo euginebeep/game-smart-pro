@@ -25,11 +25,41 @@ interface AdminUser {
   country_code: string | null;
 }
 
+interface SalesData {
+  date: string;
+  plan: string;
+  type: 'recurring' | 'day_use';
+  amount: number;
+  customer_email: string;
+}
+
+interface ApiUsageData {
+  apiFootballUsed: number;
+  apiFootballLimit: number;
+  apiFootballPercentage: number;
+  oddsApiUsed: number;
+  lastReset: string;
+}
+
 interface AdminAnalytics {
   totalApiCalls: number;
   todayApiCalls: number;
   topCities: { city: string; count: number }[];
   topStates: { state: string; count: number }[];
+  topCountries: { country: string; count: number }[];
+  todaySales: SalesData[];
+  totalRevenueToday: number;
+  recurringCount: number;
+  dayUseCount: number;
+  planBreakdown: { plan: string; count: number; revenue: number }[];
+  apiUsage: ApiUsageData;
+}
+
+interface EmailFilters {
+  city?: string;
+  state?: string;
+  country_code?: string;
+  subscription_tier?: string;
 }
 
 export function useAdmin() {
@@ -38,6 +68,7 @@ export function useAdmin() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
+  const [emailLoading, setEmailLoading] = useState(false);
 
   useEffect(() => {
     checkAdminStatus();
@@ -194,17 +225,63 @@ export function useAdmin() {
     }
   };
 
+  const sendMassEmail = async (filters: EmailFilters, subject: string, htmlContent: string) => {
+    setEmailLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: 'send_mass_email', filters, subject, htmlContent }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      return data;
+    } catch (error) {
+      console.error('Error sending mass email:', error);
+      throw error;
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const getFilteredUserCount = async (filters: EmailFilters) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: 'get_filtered_users_count', filters }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      return data.count || 0;
+    } catch (error) {
+      console.error('Error getting filtered user count:', error);
+      return 0;
+    }
+  };
+
   return {
     isAdmin,
     loading,
     users,
     usersLoading,
     analytics,
+    emailLoading,
     fetchUsers,
     fetchAnalytics,
     updateUser,
     resetSearches,
     setSearchCount,
-    blockUser
+    blockUser,
+    sendMassEmail,
+    getFilteredUserCount
   };
 }
