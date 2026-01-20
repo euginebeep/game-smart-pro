@@ -1926,6 +1926,25 @@ serve(async (req) => {
 
     const cachedData = await getFromCache(supabaseAdmin);
     
+    // Função para filtrar jogos que já passaram do limite de 50 minutos
+    const filterByTime = (data: any) => {
+      if (!data?.games) return data;
+      
+      const agora = new Date();
+      const limiteMinimo = new Date(agora.getTime() + 50 * 60 * 1000); // +50 min
+      
+      const jogosValidos = data.games.filter((game: any) => {
+        const dataJogo = new Date(game.startTime);
+        return dataJogo >= limiteMinimo;
+      });
+      
+      if (jogosValidos.length === 0) {
+        return { ...data, games: [], noGamesAvailable: true };
+      }
+      
+      return { ...data, games: jogosValidos };
+    };
+    
     const filterDataByTier = (data: any, tier: string) => {
       if (!data?.games) return data;
       
@@ -1960,7 +1979,8 @@ serve(async (req) => {
     
     if (cachedData) {
       const translatedData = translateCachedData(cachedData, validLang);
-      const filteredData = filterDataByTier(translatedData, userTier);
+      const timeFilteredData = filterByTime(translatedData); // Aplica filtro de 50 min
+      const filteredData = filterDataByTier(timeFilteredData, userTier);
       filteredData.fromCache = true;
       filteredData.dailySearchesRemaining = dailySearchInfo.remaining;
       filteredData.isTrial = dailySearchInfo.is_trial;
