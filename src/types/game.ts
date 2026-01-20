@@ -11,6 +11,9 @@ export interface Game {
   leagueLogo?: string;
   season?: number;
   startTime: Date;
+  startTimeUTC?: string; // Horário original UTC
+  brazilTime?: string; // Horário de Brasília formatado (HH:mm)
+  localTime?: string; // Horário local do evento
   bookmaker: string;
   odds: {
     home: number;
