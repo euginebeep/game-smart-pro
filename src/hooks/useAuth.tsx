@@ -201,6 +201,22 @@ export function useAuth() {
     }
   };
 
+  const createDayUseCheckout = async (language?: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { tier: 'dayuse', language: language || 'pt' },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err) {
+      console.error('Error creating Day Use checkout:', err);
+      throw err;
+    }
+  };
+
   const openCustomerPortal = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
@@ -540,6 +556,7 @@ export function useAuth() {
     signOut,
     checkSubscription,
     createCheckout,
+    createDayUseCheckout,
     openCustomerPortal,
   };
 }
