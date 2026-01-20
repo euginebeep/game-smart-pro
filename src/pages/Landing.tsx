@@ -66,12 +66,12 @@ export default function Landing() {
         title: 'Escolha o Plano Perfeito para Você',
         dayUse: {
           name: 'DAY USE',
-          badge: 'Acesso 24h',
+          badge: 'Premium 24h',
           price: 'R$7,77',
           period: '/dia',
           features: [
-            'Acesso Premium Completo',
-            'Válido por 24 Horas',
+            'Acesso Premium Completo por 24h',
+            'Análises Avançadas Ilimitadas',
             'Pagamento Único (PIX)',
             'Sem Recorrência',
           ],
@@ -79,37 +79,41 @@ export default function Landing() {
         },
         basic: {
           name: 'BASIC',
-          price: 'R$49',
+          price: 'R$29,90',
           period: '/mês',
           features: [
-            'Análise Básica de 10 Jogos/Dia',
-            'Acesso a Mercados Populares',
-            'Suporte por E-mail',
+            '5 Jogos por Dia',
+            'Análise Simples',
+            '1 Dupla Diária',
           ],
           cta: 'Assinar Basic',
         },
         advanced: {
           name: 'ADVANCED',
           badge: 'Mais Popular',
-          price: 'R$99',
+          price: 'R$49,90',
           period: '/mês',
           features: [
-            'Análise Completa de Todos os Jogos',
-            'Mais de 40 Mercados',
-            'Insights Exclusivos de IA',
-            'Suporte Prioritário',
+            '10 Jogos por Dia',
+            'Análise Completa',
+            '3 Duplas Diárias',
+            'Acumuladores',
           ],
           cta: 'Assinar Advanced',
         },
         premium: {
           name: 'PREMIUM',
-          price: 'R$199',
+          badge: 'Melhor Valor',
+          originalPrice: 'R$199,00',
+          price: 'R$79,90',
           period: '/mês',
           features: [
-            'Tudo do Advanced +',
-            'Análise em Tempo Real',
-            'Alertas Personalizados',
-            'Consultoria com Especialista',
+            'Jogos Ilimitados',
+            'Análise Premium Completa',
+            'Todas as Duplas e Zebras',
+            'Acumuladores Premium',
+            'Exportação de Relatórios',
+            'Suporte Prioritário',
           ],
           cta: 'Assinar Premium',
         },
@@ -156,12 +160,12 @@ export default function Landing() {
         title: 'Choose the Perfect Plan for You',
         dayUse: {
           name: 'DAY USE',
-          badge: '24h Access',
+          badge: 'Premium 24h',
           price: '$7.77',
           period: '/day',
           features: [
-            'Full Premium Access',
-            'Valid for 24 Hours',
+            'Full Premium Access for 24h',
+            'Unlimited Advanced Analysis',
             'One-Time Payment (PIX)',
             'No Recurring Charges',
           ],
@@ -169,37 +173,41 @@ export default function Landing() {
         },
         basic: {
           name: 'BASIC',
-          price: '$49',
+          price: '$29.90',
           period: '/month',
           features: [
-            'Basic Analysis of 10 Games/Day',
-            'Access to Popular Markets',
-            'Email Support',
+            '5 Games per Day',
+            'Simple Analysis',
+            '1 Daily Double',
           ],
           cta: 'Subscribe Basic',
         },
         advanced: {
           name: 'ADVANCED',
           badge: 'Most Popular',
-          price: '$99',
+          price: '$49.90',
           period: '/month',
           features: [
-            'Complete Analysis of All Games',
-            'More than 40 Markets',
-            'Exclusive AI Insights',
-            'Priority Support',
+            '10 Games per Day',
+            'Complete Analysis',
+            '3 Daily Doubles',
+            'Accumulators',
           ],
           cta: 'Subscribe Advanced',
         },
         premium: {
           name: 'PREMIUM',
-          price: '$199',
+          badge: 'Best Value',
+          originalPrice: '$199.00',
+          price: '$79.90',
           period: '/month',
           features: [
-            'Everything from Advanced +',
-            'Real-Time Analysis',
-            'Custom Alerts',
-            'Expert Consultation',
+            'Unlimited Games',
+            'Full Premium Analysis',
+            'All Doubles and Zebras',
+            'Premium Accumulators',
+            'Report Export',
+            'Priority Support',
           ],
           cta: 'Subscribe Premium',
         },
@@ -246,12 +254,12 @@ export default function Landing() {
         title: 'Elige el Plan Perfecto para Ti',
         dayUse: {
           name: 'DAY USE',
-          badge: 'Acceso 24h',
+          badge: 'Premium 24h',
           price: '$7,77',
           period: '/día',
           features: [
-            'Acceso Premium Completo',
-            'Válido por 24 Horas',
+            'Acceso Premium Completo por 24h',
+            'Análisis Avanzados Ilimitados',
             'Pago Único (PIX)',
             'Sin Recurrencia',
           ],
@@ -259,37 +267,41 @@ export default function Landing() {
         },
         basic: {
           name: 'BASIC',
-          price: '$49',
+          price: '$29,90',
           period: '/mes',
           features: [
-            'Análisis Básico de 10 Juegos/Día',
-            'Acceso a Mercados Populares',
-            'Soporte por Email',
+            '5 Juegos por Día',
+            'Análisis Simple',
+            '1 Doble Diario',
           ],
           cta: 'Suscribir Basic',
         },
         advanced: {
           name: 'ADVANCED',
           badge: 'Más Popular',
-          price: '$99',
+          price: '$49,90',
           period: '/mes',
           features: [
-            'Análisis Completo de Todos los Juegos',
-            'Más de 40 Mercados',
-            'Insights Exclusivos de IA',
-            'Soporte Prioritario',
+            '10 Juegos por Día',
+            'Análisis Completo',
+            '3 Dobles Diarios',
+            'Acumuladores',
           ],
           cta: 'Suscribir Advanced',
         },
         premium: {
           name: 'PREMIUM',
-          price: '$199',
+          badge: 'Mejor Valor',
+          originalPrice: '$199,00',
+          price: '$79,90',
           period: '/mes',
           features: [
-            'Todo del Advanced +',
-            'Análisis en Tiempo Real',
-            'Alertas Personalizadas',
-            'Consultoría con Especialista',
+            'Juegos Ilimitados',
+            'Análisis Premium Completo',
+            'Todas las Dobles y Zebras',
+            'Acumuladores Premium',
+            'Exportación de Informes',
+            'Soporte Prioritario',
           ],
           cta: 'Suscribir Premium',
         },
@@ -336,12 +348,12 @@ export default function Landing() {
         title: 'Scegli il Piano Perfetto per Te',
         dayUse: {
           name: 'DAY USE',
-          badge: 'Accesso 24h',
+          badge: 'Premium 24h',
           price: '€7,77',
           period: '/giorno',
           features: [
-            'Accesso Premium Completo',
-            'Valido per 24 Ore',
+            'Accesso Premium Completo per 24h',
+            'Analisi Avanzate Illimitate',
             'Pagamento Unico (PIX)',
             'Senza Ricorrenza',
           ],
@@ -349,37 +361,41 @@ export default function Landing() {
         },
         basic: {
           name: 'BASIC',
-          price: '€49',
+          price: '€29,90',
           period: '/mese',
           features: [
-            'Analisi Base di 10 Partite/Giorno',
-            'Accesso ai Mercati Popolari',
-            'Supporto via Email',
+            '5 Partite al Giorno',
+            'Analisi Semplice',
+            '1 Doppia Giornaliera',
           ],
           cta: 'Abbonati Basic',
         },
         advanced: {
           name: 'ADVANCED',
           badge: 'Più Popolare',
-          price: '€99',
+          price: '€49,90',
           period: '/mese',
           features: [
-            'Analisi Completa di Tutte le Partite',
-            'Più di 40 Mercati',
-            "Insights Esclusivi dell'IA",
-            'Supporto Prioritario',
+            '10 Partite al Giorno',
+            'Analisi Completa',
+            '3 Doppie Giornaliere',
+            'Accumulatori',
           ],
           cta: 'Abbonati Advanced',
         },
         premium: {
           name: 'PREMIUM',
-          price: '€199',
+          badge: 'Miglior Valore',
+          originalPrice: '€199,00',
+          price: '€79,90',
           period: '/mese',
           features: [
-            "Tutto dell'Advanced +",
-            'Analisi in Tempo Reale',
-            'Avvisi Personalizzati',
-            'Consulenza con Esperto',
+            'Partite Illimitate',
+            'Analisi Premium Completa',
+            'Tutte le Doppie e Zebra',
+            'Accumulatori Premium',
+            'Esportazione Report',
+            'Supporto Prioritario',
           ],
           cta: 'Abbonati Premium',
         },
@@ -488,35 +504,61 @@ export default function Landing() {
             {l.hero.subtitle}
           </p>
 
-          {/* Hero Video/Dashboard Preview */}
-          <div className="relative max-w-3xl mx-auto mb-10">
+          {/* Hero Phone Mockup Preview */}
+          <div className="relative max-w-sm mx-auto mb-10" style={{ perspective: '1000px' }}>
             <div 
-              className="relative rounded-2xl overflow-hidden p-2.5"
-              style={{ 
-                background: 'linear-gradient(145deg, hsla(185, 100%, 50%, 0.2), hsla(260, 80%, 60%, 0.2))',
-                boxShadow: '0 0 30px hsla(185, 100%, 50%, 0.1)'
+              className="relative transition-transform duration-500 hover:scale-105"
+              style={{
+                transform: 'rotateY(-5deg) rotateX(5deg)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'rotateY(-5deg) rotateX(5deg)';
               }}
             >
-              <div className="bg-card rounded-xl overflow-hidden relative aspect-video flex items-center justify-center">
-                {/* Dashboard Preview Image */}
-                <img 
-                  src={step1Image} 
-                  alt="EUGINE Dashboard" 
-                  className="w-full h-full object-cover opacity-80"
-                />
+              {/* Phone Frame */}
+              <div 
+                className="relative w-[280px] h-[560px] sm:w-[300px] sm:h-[600px] mx-auto rounded-[40px] p-3 overflow-hidden"
+                style={{ 
+                  background: 'linear-gradient(145deg, hsla(230, 50%, 20%, 1), hsla(230, 50%, 15%, 1))',
+                  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), 0 0 40px hsla(185, 100%, 50%, 0.2)',
+                  border: '3px solid hsla(185, 100%, 50%, 0.3)'
+                }}
+              >
+                {/* Notch */}
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-background/80 rounded-full z-20" />
                 
-                {/* Play Button Overlay */}
-                <button 
-                  onClick={() => navigate('/auth')}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <div 
-                    className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center animate-glow cursor-pointer hover:scale-110 transition-transform"
+                {/* Screen Content */}
+                <div className="relative w-full h-full rounded-[28px] overflow-hidden bg-card">
+                  <img 
+                    src={step1Image} 
+                    alt="EUGINE Dashboard" 
+                    className="w-full h-full object-cover"
+                  />
+                  
+                  {/* Play Button Overlay */}
+                  <button 
+                    onClick={() => navigate('/auth')}
+                    className="absolute inset-0 flex items-center justify-center bg-black/20"
                   >
-                    <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
-                  </div>
-                </button>
+                    <div 
+                      className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center animate-glow cursor-pointer hover:scale-110 transition-transform"
+                    >
+                      <Play className="w-6 h-6 text-primary-foreground ml-1" fill="currentColor" />
+                    </div>
+                  </button>
+                </div>
               </div>
+              
+              {/* Glow Effect */}
+              <div 
+                className="absolute inset-0 -z-10 blur-3xl opacity-40"
+                style={{
+                  background: 'linear-gradient(180deg, hsla(185, 100%, 50%, 0.3) 0%, hsla(260, 80%, 60%, 0.3) 100%)',
+                }}
+              />
             </div>
           </div>
 
@@ -720,26 +762,32 @@ export default function Landing() {
               </button>
             </div>
 
-            {/* Premium */}
-            <div className="glass-card p-8 flex flex-col border-2 border-transparent transition-all duration-300 hover:-translate-y-2.5 hover:border-primary hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.2)]">
-              <div className="text-center mb-6">
+            {/* Premium - Featured with Discount */}
+            <div className="relative glass-card p-8 flex flex-col border-2 border-accent/50 transition-all duration-300 hover:-translate-y-2.5 hover:border-accent hover:shadow-[0_20px_40px_hsla(260,80%,60%,0.3)]" style={{ background: 'linear-gradient(180deg, hsla(260, 80%, 60%, 0.1) 0%, hsla(230, 45%, 12%, 1) 100%)' }}>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-accent text-accent-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
+                  {(l.pricing.premium as any).badge}
+                </span>
+              </div>
+              <div className="text-center mb-6 pt-4">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.premium.name}</h3>
                 <div className="flex flex-col items-center">
-                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.premium.price}</span>
+                  <span className="text-muted-foreground text-lg line-through">{(l.pricing.premium as any).originalPrice}</span>
+                  <span className="text-accent text-4xl sm:text-5xl font-black">{l.pricing.premium.price}</span>
                   <span className="text-muted-foreground text-base font-semibold">{l.pricing.premium.period}</span>
                 </div>
               </div>
-              <ul className="space-y-4 flex-grow mb-8">
+              <ul className="space-y-3 flex-grow mb-8">
                 {l.pricing.premium.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-3 text-muted-foreground">
-                    <CheckCircle className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                  <li key={i} className="flex items-start gap-3 text-foreground">
+                    <CheckCircle className="w-5 h-5 text-accent mt-0.5 shrink-0" />
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="btn-outline w-full py-4 mt-auto"
+                className="w-full py-4 mt-auto rounded-lg font-bold bg-accent text-accent-foreground hover:bg-accent/90 transition-all hover:shadow-lg"
               >
                 {l.pricing.premium.cta}
               </button>
