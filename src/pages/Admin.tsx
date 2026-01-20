@@ -565,43 +565,64 @@ export default function Admin() {
           {/* API Usage Tab */}
           <TabsContent value="api" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* API-Football Usage */}
+              {/* API-Football Usage - REAL DATA */}
               <Card className="border-blue-500/30">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Zap className="h-5 w-5 text-blue-500" />
                     API-Football
                   </CardTitle>
-                  <CardDescription>Consumo estimado da API de estatísticas</CardDescription>
+                  <CardDescription>
+                    Consumo real da sua conta API-Football
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex justify-between text-sm">
-                    <span>Chamadas estimadas</span>
-                    <span className="font-medium">{analytics?.apiUsage?.apiFootballUsed || 0} / {analytics?.apiUsage?.apiFootballLimit || 100}</span>
-                  </div>
-                  <Progress 
-                    value={analytics?.apiUsage?.apiFootballPercentage || 0} 
-                    className="h-3"
-                  />
-                  <div className="flex items-center gap-2">
-                    {(analytics?.apiUsage?.apiFootballPercentage || 0) >= 80 ? (
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                    ) : (analytics?.apiUsage?.apiFootballPercentage || 0) >= 50 ? (
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
-                    ) : (
-                      <ShieldCheck className="h-4 w-4 text-green-500" />
-                    )}
-                    <span className={`text-sm ${
-                      (analytics?.apiUsage?.apiFootballPercentage || 0) >= 80 ? 'text-red-500' :
-                      (analytics?.apiUsage?.apiFootballPercentage || 0) >= 50 ? 'text-amber-500' :
-                      'text-green-500'
-                    }`}>
-                      {(analytics?.apiUsage?.apiFootballPercentage || 0).toFixed(1)}% utilizado
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Estimativa baseada em ~3 chamadas por busca. Limite do plano free: 100/dia
-                  </p>
+                  {analytics?.apiUsage?.apiFootballError ? (
+                    <div className="flex items-center gap-2 p-3 bg-red-500/10 rounded-lg border border-red-500/30">
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                      <span className="text-sm text-red-400">{analytics.apiUsage.apiFootballError}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Plano</span>
+                        <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                          {analytics?.apiUsage?.apiFootballPlan || 'Carregando...'}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Chamadas Hoje</span>
+                        <span className="font-medium">
+                          {analytics?.apiUsage?.apiFootballUsed || 0} / {analytics?.apiUsage?.apiFootballLimit || 0}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={analytics?.apiUsage?.apiFootballPercentage || 0} 
+                        className="h-3"
+                      />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {(analytics?.apiUsage?.apiFootballPercentage || 0) >= 80 ? (
+                            <AlertCircle className="h-4 w-4 text-red-500" />
+                          ) : (analytics?.apiUsage?.apiFootballPercentage || 0) >= 50 ? (
+                            <AlertCircle className="h-4 w-4 text-amber-500" />
+                          ) : (
+                            <ShieldCheck className="h-4 w-4 text-green-500" />
+                          )}
+                          <span className={`text-sm ${
+                            (analytics?.apiUsage?.apiFootballPercentage || 0) >= 80 ? 'text-red-500' :
+                            (analytics?.apiUsage?.apiFootballPercentage || 0) >= 50 ? 'text-amber-500' :
+                            'text-green-500'
+                          }`}>
+                            {(analytics?.apiUsage?.apiFootballPercentage || 0).toFixed(1)}% utilizado
+                          </span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {analytics?.apiUsage?.apiFootballRemaining || 0} restantes
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
