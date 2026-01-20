@@ -145,6 +145,12 @@ export interface OddsResponse {
   dailySearchesRemaining?: number;
   isTrial?: boolean;
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
+  registrationSource?: string;
+  isFreeReport?: boolean;
+  maxAccumulators?: number;
+  maxZebras?: number;
+  maxDoubles?: number;
+  fullAnalysisCached?: boolean;
 }
 
 export interface BettingAnalysis {

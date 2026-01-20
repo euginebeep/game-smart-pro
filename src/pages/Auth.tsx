@@ -120,6 +120,10 @@ export default function Auth() {
   const [underageError, setUnderageError] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Capture registration source from URL params
+  const searchParams = new URLSearchParams(window.location.search);
+  const registrationSource = searchParams.get('source') || 'organic';
 
   // Get selected country data
   const countryData = COUNTRIES.find(c => c.code === selectedCountry) || COUNTRIES[0];
@@ -290,6 +294,7 @@ export default function Auth() {
               city: city.trim() || null,
               state: state || null,
               birth_date: birthDate,
+              registration_source: registrationSource,
             },
           },
         });

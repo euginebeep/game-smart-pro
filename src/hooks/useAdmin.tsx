@@ -17,6 +17,7 @@ interface AdminUser {
   blocked_at: string | null;
   blocked_reason: string | null;
   registration_ip: string | null;
+  registration_source: string | null;
   birth_date: string | null;
   created_at: string;
   today_searches: number;
