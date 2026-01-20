@@ -519,6 +519,7 @@ serve(async (req) => {
         }
 
         const resend = new Resend(resendKey);
+        logStep("Resend initialized with key", { keyPrefix: resendKey.substring(0, 8) });
 
         let users: any[] = [];
 
@@ -570,16 +571,19 @@ serve(async (req) => {
           
           for (const user of batch) {
             try {
-              await resend.emails.send({
-                from: 'Eugine <noreply@resend.dev>',
+              logStep("Sending email to", { email: user.email });
+              const emailResult = await resend.emails.send({
+                from: 'Eugine <onboarding@resend.dev>',
                 to: [user.email],
                 subject: subject,
                 html: htmlContent
               });
+              logStep("Email sent successfully", { email: user.email, result: emailResult });
               sentCount++;
             } catch (emailError: unknown) {
               const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error';
-              logStep("Email send error", { email: user.email, error: errorMessage });
+              const errorDetails = emailError instanceof Error ? (emailError as any).response : null;
+              logStep("Email send error", { email: user.email, error: errorMessage, details: errorDetails });
               failedCount++;
             }
           }
