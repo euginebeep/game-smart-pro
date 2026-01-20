@@ -68,6 +68,172 @@ export default function Admin() {
   });
   const [emailSubject, setEmailSubject] = useState('');
   const [emailContent, setEmailContent] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Professional HTML Email Template
+  const generateEmailTemplate = (title: string, bodyContent: string) => {
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0f1a;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: linear-gradient(135deg, #0a0f1a 0%, #1a1f2e 100%);">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background: linear-gradient(180deg, #1a2035 0%, #141824 100%); border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 255, 255, 0.1); border: 1px solid rgba(0, 255, 255, 0.2);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 40px 40px 20px 40px; text-align: center; border-bottom: 1px solid rgba(0, 255, 255, 0.1);">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <div style="display: inline-block; background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 180, 200, 0.1)); padding: 16px 32px; border-radius: 12px; border: 1px solid rgba(0, 255, 255, 0.3);">
+                      <span style="font-size: 28px; font-weight: 800; background: linear-gradient(90deg, #00ffff, #00b4c8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 2px;">⚡ EUGINE</span>
+                    </div>
+                    <p style="color: #64748b; font-size: 12px; margin-top: 12px; letter-spacing: 1px;">INTELIGÊNCIA ESPORTIVA AVANÇADA</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 24px 0; line-height: 1.4;">${title}</h1>
+              <div style="color: #cbd5e1; font-size: 16px; line-height: 1.8;">
+                ${bodyContent}
+              </div>
+            </td>
+          </tr>
+          
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding: 0 40px 40px 40px; text-align: center;">
+              <a href="https://game-smart-pro.lovable.app" style="display: inline-block; background: linear-gradient(135deg, #00ffff 0%, #00b4c8 100%); color: #0a0f1a; font-weight: 700; font-size: 16px; text-decoration: none; padding: 16px 40px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 255, 255, 0.3);">
+                Acessar Eugine →
+              </a>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; background: rgba(0, 0, 0, 0.3); border-radius: 0 0 16px 16px; border-top: 1px solid rgba(0, 255, 255, 0.1);">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <p style="color: #64748b; font-size: 14px; margin: 0 0 16px 0;">
+                      <strong style="color: #00ffff;">Eugine</strong> - Análise esportiva com Inteligência Artificial
+                    </p>
+                    <p style="color: #475569; font-size: 12px; margin: 0 0 8px 0;">
+                      © ${new Date().getFullYear()} Eugine. Todos os direitos reservados.
+                    </p>
+                    <p style="color: #475569; font-size: 11px; margin: 0;">
+                      Este email foi enviado para você porque você é um usuário registrado do Eugine.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+        </table>
+        
+        <!-- Unsubscribe Link -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 20px auto 0 auto;">
+          <tr>
+            <td style="text-align: center;">
+              <p style="color: #475569; font-size: 11px; margin: 0;">
+                Se você não deseja mais receber emails, entre em contato conosco.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  };
+
+  // Quick template presets
+  const emailTemplates = [
+    {
+      name: 'Novidade/Atualização',
+      subject: '🚀 Nova funcionalidade no Eugine!',
+      body: `<p>Temos uma novidade incrível para você!</p>
+<p>[Descreva a novidade aqui]</p>
+<p>Esta atualização foi pensada para melhorar ainda mais sua experiência de análise esportiva.</p>
+<p><strong>Principais melhorias:</strong></p>
+<ul>
+  <li style="color: #00ffff; margin-bottom: 8px;">✅ Melhoria 1</li>
+  <li style="color: #00ffff; margin-bottom: 8px;">✅ Melhoria 2</li>
+  <li style="color: #00ffff; margin-bottom: 8px;">✅ Melhoria 3</li>
+</ul>`
+    },
+    {
+      name: 'Promoção',
+      subject: '🔥 Oferta Especial - Tempo Limitado!',
+      body: `<p style="font-size: 18px; color: #00ffff; font-weight: bold;">Aproveite nossa oferta exclusiva!</p>
+<p>Por tempo limitado, estamos oferecendo condições especiais para você:</p>
+<div style="background: rgba(0, 255, 255, 0.1); border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 12px; padding: 24px; margin: 20px 0; text-align: center;">
+  <p style="font-size: 32px; color: #00ffff; font-weight: 800; margin: 0;">XX% OFF</p>
+  <p style="color: #94a3b8; margin: 8px 0 0 0;">em todos os planos</p>
+</div>
+<p>Não perca essa oportunidade de turbinar suas análises com Eugine!</p>`
+    },
+    {
+      name: 'Lembrete Trial',
+      subject: '⏰ Seu período de teste está acabando!',
+      body: `<p>Olá!</p>
+<p>Seu período de teste gratuito do Eugine está chegando ao fim.</p>
+<p>Durante estes dias, você teve acesso a:</p>
+<ul>
+  <li style="color: #00ffff; margin-bottom: 8px;">✅ Análises Premium com IA avançada</li>
+  <li style="color: #00ffff; margin-bottom: 8px;">✅ Estatísticas detalhadas de times</li>
+  <li style="color: #00ffff; margin-bottom: 8px;">✅ Recomendações baseadas em dados</li>
+</ul>
+<p><strong>Não deixe de aproveitar!</strong> Assine agora e continue com acesso completo.</p>`
+    },
+    {
+      name: 'Relatório Semanal',
+      subject: '📊 Seu Relatório Semanal Eugine',
+      body: `<p>Confira o resumo da semana no Eugine:</p>
+<div style="background: rgba(0, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin: 20px 0;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 12px; border-bottom: 1px solid rgba(0, 255, 255, 0.2);">
+        <span style="color: #94a3b8;">Jogos analisados:</span>
+        <span style="color: #00ffff; font-weight: bold; float: right;">XX</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 12px; border-bottom: 1px solid rgba(0, 255, 255, 0.2);">
+        <span style="color: #94a3b8;">Taxa de acerto:</span>
+        <span style="color: #22c55e; font-weight: bold; float: right;">XX%</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 12px;">
+        <span style="color: #94a3b8;">Melhores ligas:</span>
+        <span style="color: #ffffff; font-weight: bold; float: right;">Liga A, Liga B</span>
+      </td>
+    </tr>
+  </table>
+</div>
+<p>Continue acompanhando suas análises para melhores resultados!</p>`
+    }
+  ];
+
+  const applyTemplate = (template: typeof emailTemplates[0]) => {
+    setEmailSubject(template.subject);
+    setEmailContent(generateEmailTemplate(template.subject.replace(/^[^\s]+ /, ''), template.body));
+  };
   const [filteredUsersCount, setFilteredUsersCount] = useState(0);
   
   // Backtest state
@@ -819,6 +985,24 @@ export default function Admin() {
                   </div>
                 )}
 
+                {/* Quick Templates */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Templates Rápidos</label>
+                  <div className="flex flex-wrap gap-2">
+                    {emailTemplates.map((template, idx) => (
+                      <Button
+                        key={idx}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => applyTemplate(template)}
+                        className="text-xs"
+                      >
+                        {template.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Email Content */}
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -830,14 +1014,30 @@ export default function Admin() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Conteúdo (HTML)</label>
-                    <Textarea
-                      placeholder="<h1>Olá!</h1><p>Conteúdo do email...</p>"
-                      value={emailContent}
-                      onChange={(e) => setEmailContent(e.target.value)}
-                      rows={8}
-                      className="font-mono text-sm"
-                    />
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Conteúdo (HTML)</label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowPreview(!showPreview)}
+                      >
+                        {showPreview ? 'Editar' : 'Preview'}
+                      </Button>
+                    </div>
+                    {showPreview ? (
+                      <div 
+                        className="border rounded-lg overflow-hidden bg-[#0a0f1a] min-h-[400px]"
+                        dangerouslySetInnerHTML={{ __html: emailContent }}
+                      />
+                    ) : (
+                      <Textarea
+                        placeholder="Cole seu HTML aqui ou use um template rápido acima..."
+                        value={emailContent}
+                        onChange={(e) => setEmailContent(e.target.value)}
+                        rows={12}
+                        className="font-mono text-sm"
+                      />
+                    )}
                   </div>
                 </div>
 
