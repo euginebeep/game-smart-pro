@@ -17,9 +17,14 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
 
   const analysis = useMemo(() => analyzeBet(game), [game]);
 
-  // Format time
-  const formatTime = (date: Date) => {
-    const d = new Date(date);
+  // Format time - prefer brazilTime if available
+  const formatTime = (game: Game) => {
+    // Se temos o horário do Brasil pré-formatado, usa ele
+    if (game.brazilTime) {
+      return game.brazilTime;
+    }
+    // Fallback para formatação local
+    const d = new Date(game.startTime);
     return d.toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', {
       hour: '2-digit',
       minute: '2-digit',
@@ -162,7 +167,8 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-3 bg-muted/50 px-4 py-2.5 rounded-xl">
               <Clock className="w-6 h-6 text-primary" />
-              <span className="text-foreground font-bold text-xl">{formatTime(game.startTime)}</span>
+              <span className="text-foreground font-bold text-xl">{formatTime(game)}</span>
+              <span className="text-muted-foreground text-xs">(BRT)</span>
             </div>
           </div>
           <div className="flex items-center gap-3">

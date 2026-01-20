@@ -135,6 +135,9 @@ interface Game {
   leagueLogo?: string;
   season?: number;
   startTime: string;
+  startTimeUTC: string; // Horário original UTC
+  brazilTime: string; // Horário de Brasília formatado (HH:mm)
+  localTime: string; // Horário local do evento (se diferente)
   bookmaker: string;
   odds: {
     home: number;
@@ -1422,17 +1425,30 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   const alerts = alertTranslations[lang] || alertTranslations['pt'];
   const locale = lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : lang === 'it' ? 'it-IT' : 'en-US';
   
-  const hoje = new Date();
+  // Horário atual em UTC
+  const nowUTC = new Date();
+  
+  // Horário atual em Brasília (UTC-3)
+  const brazilOffsetMs = -3 * 60 * 60 * 1000; // -3 horas em ms
+  const nowBrazil = new Date(nowUTC.getTime() + brazilOffsetMs);
+  
+  secureLog('info', 'Horário atual', { 
+    utc: nowUTC.toISOString(),
+    brazil: nowBrazil.toISOString(),
+    brazilHour: nowBrazil.getUTCHours() + ':' + String(nowBrazil.getUTCMinutes()).padStart(2, '0')
+  });
+  
   let jogosEncontrados: any[] = [];
   let diaEncontrado = 0;
-  let dataAlvo = hoje;
+  let dataAlvo = nowBrazil;
   
   for (let diasNoFuturo = 0; diasNoFuturo <= 7; diasNoFuturo++) {
-    const targetDate = new Date(hoje);
-    targetDate.setDate(targetDate.getDate() + diasNoFuturo);
+    // Data alvo baseada no horário de Brasília
+    const targetDate = new Date(nowBrazil);
+    targetDate.setUTCDate(targetDate.getUTCDate() + diasNoFuturo);
     const dateStr = targetDate.toISOString().split('T')[0];
     
-    secureLog('info', `Buscando fixtures para ${dateStr}`);
+    secureLog('info', `Buscando fixtures para ${dateStr} (dia +${diasNoFuturo})`);
     
     try {
       const fixturesData = await apiFootballRequest('/fixtures', {
@@ -1442,14 +1458,23 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
       });
       
       if (fixturesData.response && fixturesData.response.length > 0) {
-        const agora = new Date();
-        // Filtro: jogos que faltam no mínimo 50 minutos para começar
-        const limiteMinimo = new Date(agora.getTime() + 50 * 60 * 1000); // +50 min
+        // Limite mínimo: 50 minutos a partir de agora (em UTC)
+        const limiteMinimo = new Date(nowUTC.getTime() + 50 * 60 * 1000);
         
         const jogosValidos = fixturesData.response.filter((fixture: any) => {
-          const dataJogo = new Date(fixture.fixture.date);
-          // Jogo deve começar em pelo menos 50 minutos a partir de agora
-          return dataJogo >= limiteMinimo;
+          // fixture.fixture.date vem em ISO UTC
+          const dataJogoUTC = new Date(fixture.fixture.date);
+          const valido = dataJogoUTC >= limiteMinimo;
+          
+          if (!valido) {
+            secureLog('info', 'Jogo filtrado (começa em menos de 50min)', {
+              jogo: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+              horarioUTC: dataJogoUTC.toISOString(),
+              limite: limiteMinimo.toISOString()
+            });
+          }
+          
+          return valido;
         });
         
         if (jogosValidos.length > 0) {
@@ -1463,7 +1488,7 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
           jogosEncontrados = jogosValidos;
           diaEncontrado = diasNoFuturo;
           dataAlvo = targetDate;
-          secureLog('info', `Encontrados ${jogosValidos.length} jogos para dia +${diasNoFuturo}`);
+          secureLog('info', `Encontrados ${jogosValidos.length} jogos válidos para dia +${diasNoFuturo}`);
           break;
         }
       }
@@ -1570,8 +1595,18 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
         hasOdds: hasValidOdds
       });
       
-      const startTime = new Date(fixture.fixture.date);
+      const startTimeUTC = new Date(fixture.fixture.date);
       const dayType = getDayType(diaEncontrado);
+      
+      // Converter para horário de Brasília (UTC-3)
+      const brazilOffset = -3 * 60; // -3 horas em minutos
+      const brazilTime = new Date(startTimeUTC.getTime() + (brazilOffset * 60 * 1000) + (startTimeUTC.getTimezoneOffset() * 60 * 1000));
+      const brazilTimeStr = brazilTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+      
+      // Horário local do evento (do timezone da API)
+      const localTimeStr = fixture.fixture.timestamp 
+        ? new Date(fixture.fixture.timestamp * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false })
+        : brazilTimeStr;
       
       if (hasValidOdds && homeOdd > 0) {
         allGamesWithData.push({
@@ -1586,7 +1621,10 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
           leagueId: fixture.league.id,
           leagueLogo: fixture.league.logo,
           season: fixture.league.season,
-          startTime: startTime.toISOString(),
+          startTime: startTimeUTC.toISOString(),
+          startTimeUTC: startTimeUTC.toISOString(),
+          brazilTime: brazilTimeStr,
+          localTime: localTimeStr,
           bookmaker: bookmakerName,
           odds: { home: homeOdd, draw: drawOdd, away: awayOdd, over: overOdd, under: underOdd },
           dayType,
