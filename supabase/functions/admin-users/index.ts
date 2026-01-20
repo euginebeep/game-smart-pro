@@ -510,8 +510,8 @@ serve(async (req) => {
       }
 
       case 'send_mass_email': {
-        const { filters, subject, htmlContent } = params;
-        logStep("Sending mass email", { filters, subject: subject?.substring(0, 30) });
+        const { filters, subject, htmlContent, selectedUserIds } = params;
+        logStep("Sending mass email", { filters, subject: subject?.substring(0, 30), selectedCount: selectedUserIds?.length });
 
         const resendKey = Deno.env.get('RESEND_API_KEY');
         if (!resendKey) {
@@ -520,25 +520,38 @@ serve(async (req) => {
 
         const resend = new Resend(resendKey);
 
-        // Build query with filters
-        let query = adminClient.from('profiles').select('email, city, state, country_code, subscription_tier');
+        let users: any[] = [];
 
-        if (filters?.city) {
-          query = query.ilike('city', `%${filters.city}%`);
-        }
-        if (filters?.state) {
-          query = query.eq('state', filters.state);
-        }
-        if (filters?.country_code) {
-          query = query.eq('country_code', filters.country_code);
-        }
-        if (filters?.subscription_tier) {
-          query = query.eq('subscription_tier', filters.subscription_tier);
-        }
+        // If specific users are selected, use those
+        if (selectedUserIds && selectedUserIds.length > 0) {
+          const { data, error } = await adminClient
+            .from('profiles')
+            .select('email, city, state, country_code, subscription_tier')
+            .in('user_id', selectedUserIds);
+          
+          if (error) throw error;
+          users = data || [];
+        } else {
+          // Build query with filters
+          let query = adminClient.from('profiles').select('email, city, state, country_code, subscription_tier');
 
-        const { data: users, error } = await query;
+          if (filters?.city) {
+            query = query.ilike('city', `%${filters.city}%`);
+          }
+          if (filters?.state) {
+            query = query.eq('state', filters.state);
+          }
+          if (filters?.country_code) {
+            query = query.eq('country_code', filters.country_code);
+          }
+          if (filters?.subscription_tier) {
+            query = query.eq('subscription_tier', filters.subscription_tier);
+          }
 
-        if (error) throw error;
+          const { data, error } = await query;
+          if (error) throw error;
+          users = data || [];
+        }
 
         if (!users || users.length === 0) {
           return new Response(
@@ -586,6 +599,44 @@ serve(async (req) => {
             failed: failedCount,
             total: users.length 
           }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      case 'delete_user': {
+        const { userId: targetUserId } = params;
+        
+        if (!targetUserId) {
+          throw new Error('userId is required');
+        }
+
+        logStep("Deleting user", { userId: targetUserId.substring(0, 8) });
+
+        // Delete related data first
+        await adminClient.from('daily_searches').delete().eq('user_id', targetUserId);
+        await adminClient.from('api_usage').delete().eq('user_id', targetUserId);
+        await adminClient.from('active_sessions').delete().eq('user_id', targetUserId);
+        await adminClient.from('user_roles').delete().eq('user_id', targetUserId);
+        
+        // Delete profile
+        const { error: profileError } = await adminClient
+          .from('profiles')
+          .delete()
+          .eq('user_id', targetUserId);
+
+        if (profileError) throw profileError;
+
+        // Delete auth user using admin API
+        const { error: authError } = await adminClient.auth.admin.deleteUser(targetUserId);
+        
+        if (authError) {
+          logStep("Warning: Could not delete auth user", { error: authError.message });
+        }
+
+        logStep("User deleted successfully", { userId: targetUserId.substring(0, 8) });
+
+        return new Response(
+          JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }

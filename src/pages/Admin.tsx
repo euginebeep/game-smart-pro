@@ -13,8 +13,9 @@ import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, 
   BarChart3, TrendingUp, Target, Play, History, Ban, ShieldX, ShieldCheck, Globe, Mail, 
-  Send, DollarSign, CreditCard, Repeat, Calendar, Gauge, Zap, AlertCircle
+  Send, DollarSign, CreditCard, Repeat, Calendar, Gauge, Zap, AlertCircle, Trash2, CheckSquare, Square
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Loading } from '@/components/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,8 +44,10 @@ export default function Admin() {
   const { 
     isAdmin, loading, users, usersLoading, analytics, emailLoading,
     fetchUsers, fetchAnalytics, updateUser, resetSearches, setSearchCount, 
-    blockUser, sendMassEmail, getFilteredUserCount 
+    blockUser, sendMassEmail, getFilteredUserCount, deleteUser 
   } = useAdmin();
+  
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -215,18 +218,55 @@ export default function Admin() {
       return;
     }
 
-    if (filteredUsersCount === 0) {
-      toast.error('Nenhum usuário corresponde aos filtros');
+    const targetCount = selectedUsers.length > 0 ? selectedUsers.length : filteredUsersCount;
+    if (targetCount === 0) {
+      toast.error('Nenhum usuário selecionado ou corresponde aos filtros');
       return;
     }
 
     try {
-      const result = await sendMassEmail(emailFilters, emailSubject, emailContent);
+      const result = await sendMassEmail(
+        emailFilters, 
+        emailSubject, 
+        emailContent, 
+        selectedUsers.length > 0 ? selectedUsers : undefined
+      );
       toast.success(`Email enviado para ${result.sent} usuários (${result.failed} falhas)`);
       setEmailSubject('');
       setEmailContent('');
+      setSelectedUsers([]);
     } catch (error) {
       toast.error('Erro ao enviar emails');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, email: string) => {
+    if (!confirm(`Tem certeza que deseja DELETAR permanentemente o usuário ${email}? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      await deleteUser(userId);
+      toast.success('Usuário deletado com sucesso');
+      setSelectedUsers(prev => prev.filter(id => id !== userId));
+    } catch (error) {
+      toast.error('Erro ao deletar usuário');
+    }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const toggleAllUsers = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(filteredUsers.map(u => u.user_id));
     }
   };
 
@@ -756,11 +796,28 @@ export default function Admin() {
                 </div>
 
                 {/* User Count */}
-                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                  <Users className="h-5 w-5 text-primary" />
-                  <span className="font-medium">{filteredUsersCount}</span>
-                  <span className="text-muted-foreground">usuários serão notificados</span>
-                </div>
+                {selectedUsers.length > 0 ? (
+                  <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg border border-primary/30">
+                    <div className="flex items-center gap-2">
+                      <CheckSquare className="h-5 w-5 text-primary" />
+                      <span className="font-medium">{selectedUsers.length}</span>
+                      <span className="text-muted-foreground">usuários selecionados manualmente</span>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setSelectedUsers([])}
+                    >
+                      Limpar seleção
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                    <Users className="h-5 w-5 text-primary" />
+                    <span className="font-medium">{filteredUsersCount}</span>
+                    <span className="text-muted-foreground">usuários serão notificados (baseado nos filtros)</span>
+                  </div>
+                )}
 
                 {/* Email Content */}
                 <div className="space-y-4">
@@ -787,7 +844,7 @@ export default function Admin() {
                 {/* Send Button */}
                 <Button 
                   onClick={handleSendEmail} 
-                  disabled={emailLoading || !emailSubject.trim() || !emailContent.trim() || filteredUsersCount === 0}
+                  disabled={emailLoading || !emailSubject.trim() || !emailContent.trim() || (selectedUsers.length === 0 && filteredUsersCount === 0)}
                   className="w-full"
                 >
                   {emailLoading ? (
@@ -798,7 +855,7 @@ export default function Admin() {
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
-                      Enviar para {filteredUsersCount} usuários
+                      Enviar para {selectedUsers.length > 0 ? selectedUsers.length : filteredUsersCount} usuários
                     </>
                   )}
                 </Button>
@@ -987,6 +1044,36 @@ export default function Admin() {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Selected users action bar */}
+                {selectedUsers.length > 0 && (
+                  <div className="flex items-center gap-4 p-3 mb-4 bg-muted rounded-lg border">
+                    <div className="flex items-center gap-2">
+                      <CheckSquare className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{selectedUsers.length}</span>
+                      <span className="text-muted-foreground">usuários selecionados</span>
+                    </div>
+                    <div className="flex-1" />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setSelectedUsers([])}
+                    >
+                      Limpar Seleção
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        // Switch to email tab with selected users
+                        const tabsTrigger = document.querySelector('[value="email"]') as HTMLButtonElement;
+                        if (tabsTrigger) tabsTrigger.click();
+                      }}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Enviar Email
+                    </Button>
+                  </div>
+                )}
+                
                 {usersLoading ? (
                   <div className="flex justify-center py-8">
                     <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -996,6 +1083,12 @@ export default function Admin() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-10">
+                            <Checkbox
+                              checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                              onCheckedChange={toggleAllUsers}
+                            />
+                          </TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Telefone</TableHead>
                           <TableHead>IP Cadastro</TableHead>
@@ -1016,7 +1109,13 @@ export default function Admin() {
                             : 3;
 
                           return (
-                            <TableRow key={user.id} className={user.is_blocked ? 'bg-red-500/10' : ''}>
+                            <TableRow key={user.id} className={user.is_blocked ? 'bg-destructive/10' : ''}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedUsers.includes(user.user_id)}
+                                  onCheckedChange={() => toggleUserSelection(user.user_id)}
+                                />
+                              </TableCell>
                               <TableCell className="font-medium">{user.email}</TableCell>
                               <TableCell>{user.phone || '-'}</TableCell>
                               <TableCell>
@@ -1204,6 +1303,15 @@ export default function Admin() {
                                       </DialogFooter>
                                     </DialogContent>
                                   </Dialog>
+                                  
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => handleDeleteUser(user.user_id, user.email)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
                                 </div>
                               </TableCell>
                             </TableRow>
