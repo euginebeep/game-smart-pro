@@ -2253,16 +2253,54 @@ serve(async (req) => {
     const trialEndDate = profileData?.trial_end_date ? new Date(profileData.trial_end_date) : null;
     const isInTrial = trialEndDate ? trialEndDate >= new Date() : false;
     
+    // Handle user tier based on registration source and subscription
+    // FREE registration source users never get trial benefits
+    const isFreeSource = registrationSource === 'free';
+    
     let userTier = profileData?.subscription_tier || 'free';
-    if (isInTrial && !isSubscribed) {
-      userTier = 'premium';
+    if (isFreeSource && !isSubscribed) {
+      userTier = 'free'; // Free source users always stay as 'free' tier
+    } else if (isInTrial && !isSubscribed) {
+      userTier = 'premium'; // Organic trial users get premium features
     }
     
-    secureLog('info', 'User tier', { tier: userTier, isSubscribed, isInTrial });
+    secureLog('info', 'User tier', { tier: userTier, isSubscribed, isInTrial, isFreeSource, registrationSource });
 
-    let dailySearchInfo = { remaining: -1, is_trial: false };
+    let dailySearchInfo = { remaining: -1, is_trial: false, registration_source: registrationSource };
     
-    if (isInTrial && !isSubscribed) {
+    // FREE source users: 1 search/day, no trial benefits
+    if (isFreeSource && !isSubscribed) {
+      const { data: searchLimitData, error: searchLimitError } = await supabaseAdmin
+        .rpc('increment_search_count', { p_user_id: userId });
+      
+      if (searchLimitError) {
+        secureLog('error', 'Erro ao verificar limite de buscas (free)', { error: searchLimitError.message });
+      } else if (searchLimitData && !searchLimitData.allowed) {
+        secureLog('warn', 'Limite diário de buscas atingido (free user)', { userId: userId.substring(0, 8) + '...' });
+        return new Response(
+          JSON.stringify({ 
+            error: 'Usuários grátis: apenas 1 relatório por dia. Assine um plano para acesso ilimitado.',
+            dailyLimitReached: true,
+            remaining: 0,
+            isTrial: false,
+            userTier: 'free',
+            registrationSource: 'free',
+            isFreeSource: true
+          }), 
+          { 
+            status: 200, 
+            headers: { 
+              ...corsHeaders, 
+              ...rateLimitHeaders,
+              'Content-Type': 'application/json'
+            } 
+          }
+        );
+      }
+      dailySearchInfo = searchLimitData || { remaining: 0, is_trial: false, registration_source: 'free' };
+    }
+    // Organic trial users: 3 searches/day with premium access
+    else if (isInTrial && !isSubscribed) {
       const { data: searchLimitData, error: searchLimitError } = await supabaseAdmin
         .rpc('increment_search_count', { p_user_id: userId });
       
@@ -2289,7 +2327,9 @@ serve(async (req) => {
         );
       }
       dailySearchInfo = searchLimitData || { remaining: -1, is_trial: true };
-    } else if (!isSubscribed && !isInTrial) {
+    } 
+    // No subscription, no trial, not free source = blocked (expired trial)
+    else if (!isSubscribed && !isInTrial && !isFreeSource) {
       return new Response(
         JSON.stringify({ 
           error: 'Período de trial expirado. Assine um plano para continuar.',
@@ -2341,9 +2381,26 @@ serve(async (req) => {
       if (!data?.games) return data;
       
       // Free users (from "Receber Análise Grátis" button) get limited report
+      // 3 best games, 1 combined odds bet, 1 zebra, games with odds > 1.8 and high win chance
       if (tier === 'free' && registrationSource === 'free') {
-        // Only 2 games for free users
-        const limitedGames = data.games.slice(0, 2).map((game: any) => {
+        // Sort games by confidence/win probability (best first)
+        const sortedGames = [...data.games].sort((a: any, b: any) => {
+          const aConf = a.analysis?.confidence || 0;
+          const bConf = b.analysis?.confidence || 0;
+          return bConf - aConf;
+        });
+        
+        // Filter games with odds > 1.8 for better value
+        const highValueGames = sortedGames.filter((g: any) => {
+          const maxOdd = Math.max(g.odds?.home || 0, g.odds?.away || 0);
+          return maxOdd >= 1.8;
+        });
+        
+        // Take top 3 games (prefer high value, fallback to sorted)
+        const selectedGames = (highValueGames.length >= 3 ? highValueGames : sortedGames).slice(0, 3);
+        
+        // Remove detailed analysis for free users
+        const limitedGames = selectedGames.map((game: any) => {
           const filteredGame = { ...game };
           delete filteredGame.advancedData;
           if (filteredGame.analysis) {
@@ -2359,10 +2416,11 @@ serve(async (req) => {
           games: limitedGames, 
           userTier: tier,
           isFreeReport: true,
-          // Limit accumulators and zebras for free users
+          isFreeSource: true,
+          // 1 accumulator (combined odds), 1 zebra, 0 premium doubles
           maxAccumulators: 1,
           maxZebras: 1,
-          maxDoubles: 1
+          maxDoubles: 0
         };
       }
       

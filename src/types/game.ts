@@ -147,6 +147,7 @@ export interface OddsResponse {
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
   registrationSource?: string;
   isFreeReport?: boolean;
+  isFreeSource?: boolean;
   maxAccumulators?: number;
   maxZebras?: number;
   maxDoubles?: number;

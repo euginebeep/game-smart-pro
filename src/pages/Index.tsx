@@ -14,6 +14,7 @@ import { PricingSection } from '@/components/PricingSection';
 import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
 import { ReportExportSection } from '@/components/ReportExportSection';
 import { GameFilters } from '@/components/GameFilters';
+import { FreeUserBanner } from '@/components/FreeUserBanner';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,6 +46,7 @@ const Index = () => {
   const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
   const [userTier, setUserTier] = useState<'free' | 'basic' | 'advanced' | 'premium'>('free');
   const [isFreeReport, setIsFreeReport] = useState(false);
+  const [isFreeSource, setIsFreeSource] = useState(false);
   const [limitConfig, setLimitConfig] = useState<{ maxAccumulators?: number; maxZebras?: number; maxDoubles?: number }>({});
   const previousLanguage = useRef(language);
   const gamesContentRef = useRef<HTMLDivElement>(null);
@@ -108,6 +110,9 @@ const Index = () => {
       }
       if (result.isFreeReport !== undefined) {
         setIsFreeReport(result.isFreeReport);
+      }
+      if (result.isFreeSource !== undefined) {
+        setIsFreeSource(result.isFreeSource);
       }
       if (result.maxAccumulators !== undefined || result.maxZebras !== undefined || result.maxDoubles !== undefined) {
         setLimitConfig({
@@ -194,18 +199,23 @@ const Index = () => {
 
         {/* Content */}
         <main>
-          {/* Daily Limit Reached Error with Pricing Cards */}
-          {dailyLimitReached && error && (
-            <div className="bg-gradient-to-br from-slate-900/95 via-slate-800/90 to-slate-900/95 border border-amber-500/30 rounded-2xl p-6 sm:p-8 mb-6 backdrop-blur-xl shadow-2xl">
+          {/* Free User Daily Limit Reached Banner */}
+          {dailyLimitReached && error && isFreeSource && (
+            <FreeUserBanner type="limit-reached" />
+          )}
+
+          {/* Regular Daily Limit Reached Error with Pricing Cards (for trial users) */}
+          {dailyLimitReached && error && !isFreeSource && (
+            <div className="bg-gradient-to-br from-background/95 via-muted/90 to-background/95 border border-warning/30 rounded-2xl p-6 sm:p-8 mb-6 backdrop-blur-xl shadow-2xl">
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/30 to-orange-500/30 flex items-center justify-center animate-pulse">
-                  <Search className="w-10 h-10 text-amber-400" />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-warning/30 to-destructive/30 flex items-center justify-center animate-pulse">
+                  <Search className="w-10 h-10 text-warning" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-xl sm:text-2xl">{t('main.dailyLimitTitle')}</h3>
-                  <p className="text-slate-400 text-sm sm:text-base mt-2 max-w-md">{t('main.dailyLimitDesc')}</p>
+                  <h3 className="text-foreground font-bold text-xl sm:text-2xl">{t('main.dailyLimitTitle')}</h3>
+                  <p className="text-muted-foreground text-sm sm:text-base mt-2 max-w-md">{t('main.dailyLimitDesc')}</p>
                 </div>
-                <p className="text-amber-400 font-semibold text-lg mt-2">
+                <p className="text-warning font-semibold text-lg mt-2">
                   {t('main.dailyLimitUpgrade')}
                 </p>
                 
@@ -244,6 +254,11 @@ const Index = () => {
           {/* Games List */}
           {!loading && games.length > 0 && (
             <div className="space-y-6">
+              {/* Free User Partial Report Banner */}
+              {isFreeReport && isFreeSource && (
+                <FreeUserBanner type="partial-report" />
+              )}
+              
               {/* Day Alert */}
               <Alert 
                 type={isToday ? "success" : "info"} 
