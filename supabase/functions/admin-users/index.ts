@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Stripe from "https://esm.sh/stripe@14.21.0";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +11,22 @@ const corsHeaders = {
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[ADMIN-USERS] ${step}${detailsStr}`);
+};
+
+// Country code to name mapping
+const COUNTRY_NAMES: Record<string, string> = {
+  'BR': 'Brasil',
+  'PT': 'Portugal',
+  'US': 'Estados Unidos',
+  'AR': 'Argentina',
+  'CL': 'Chile',
+  'CO': 'Colômbia',
+  'MX': 'México',
+  'ES': 'Espanha',
+  'UK': 'Reino Unido',
+  'DE': 'Alemanha',
+  'FR': 'França',
+  'IT': 'Itália',
 };
 
 serve(async (req) => {
@@ -241,13 +259,14 @@ serve(async (req) => {
         
         const todayApiCalls = todaySearches?.reduce((sum, s) => sum + (s.search_count || 0), 0) || 0;
 
-        // Get top cities
+        // Get profiles for geographic analytics
         const { data: profiles } = await adminClient
           .from('profiles')
-          .select('city, state, country_code');
+          .select('city, state, country_code, subscription_tier, subscription_status, stripe_subscription_id, created_at');
 
         const cityCount: Record<string, number> = {};
         const stateCount: Record<string, number> = {};
+        const countryCount: Record<string, number> = {};
 
         profiles?.forEach(p => {
           if (p.city) {
@@ -256,6 +275,9 @@ serve(async (req) => {
           }
           if (p.state) {
             stateCount[p.state] = (stateCount[p.state] || 0) + 1;
+          }
+          if (p.country_code) {
+            countryCount[p.country_code] = (countryCount[p.country_code] || 0) + 1;
           }
         });
 
@@ -269,14 +291,254 @@ serve(async (req) => {
           .sort((a, b) => b.count - a.count)
           .slice(0, 10);
 
+        const topCountries = Object.entries(countryCount)
+          .map(([country, count]) => ({ 
+            country: COUNTRY_NAMES[country] || country, 
+            code: country,
+            count 
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+
+        // Get Stripe sales data for today
+        let todaySales: any[] = [];
+        let totalRevenueToday = 0;
+        let recurringCount = 0;
+        let dayUseCount = 0;
+        const planBreakdown: Record<string, { count: number; revenue: number }> = {};
+
+        const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+        if (stripeKey) {
+          try {
+            const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
+            
+            // Get today's start and end in Unix timestamp
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const todayEnd = new Date();
+            todayEnd.setHours(23, 59, 59, 999);
+
+            // Get recent payment intents
+            const paymentIntents = await stripe.paymentIntents.list({
+              created: {
+                gte: Math.floor(todayStart.getTime() / 1000),
+                lte: Math.floor(todayEnd.getTime() / 1000)
+              },
+              limit: 100
+            });
+
+            // Get recent subscriptions
+            const subscriptions = await stripe.subscriptions.list({
+              created: {
+                gte: Math.floor(todayStart.getTime() / 1000),
+                lte: Math.floor(todayEnd.getTime() / 1000)
+              },
+              limit: 100
+            });
+
+            // Process payment intents (includes one-time payments like Day Use)
+            for (const pi of paymentIntents.data) {
+              if (pi.status === 'succeeded') {
+                const amount = pi.amount / 100; // Convert from cents
+                totalRevenueToday += amount;
+                
+                // Check if it's a subscription or one-time
+                const isRecurring = pi.invoice !== null;
+                if (isRecurring) {
+                  recurringCount++;
+                } else {
+                  dayUseCount++;
+                }
+
+                // Determine plan from metadata or amount
+                let planName = 'day_use';
+                if (pi.metadata?.tier) {
+                  planName = pi.metadata.tier;
+                } else if (amount >= 79) {
+                  planName = 'premium';
+                } else if (amount >= 49) {
+                  planName = 'advanced';
+                } else if (amount >= 29) {
+                  planName = 'basic';
+                }
+
+                if (!planBreakdown[planName]) {
+                  planBreakdown[planName] = { count: 0, revenue: 0 };
+                }
+                planBreakdown[planName].count++;
+                planBreakdown[planName].revenue += amount;
+
+                todaySales.push({
+                  date: new Date(pi.created * 1000).toISOString(),
+                  plan: planName,
+                  type: isRecurring ? 'recurring' : 'day_use',
+                  amount,
+                  customer_email: pi.receipt_email || 'N/A'
+                });
+              }
+            }
+
+            // Also check for new subscriptions
+            for (const sub of subscriptions.data) {
+              if (sub.status === 'active' || sub.status === 'trialing') {
+                recurringCount++;
+              }
+            }
+
+          } catch (stripeError: unknown) {
+            const errorMessage = stripeError instanceof Error ? stripeError.message : 'Unknown error';
+            logStep("Stripe error (non-fatal)", { error: errorMessage });
+          }
+        }
+
+        // Get API-Football usage estimate (based on searches * 3 avg calls per search)
+        const apiFootballUsed = totalApiCalls * 3; // Rough estimate
+        const apiFootballLimit = 100; // Free tier
+        const apiFootballPercentage = Math.min(100, (apiFootballUsed / apiFootballLimit) * 100);
+
+        // Get Odds API usage from api_usage table
+        const { data: oddsApiUsage } = await adminClient
+          .from('api_usage')
+          .select('created_at')
+          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        
+        const oddsApiUsed = oddsApiUsage?.length || 0;
+
         return new Response(
           JSON.stringify({ 
             analytics: {
               totalApiCalls,
               todayApiCalls,
               topCities,
-              topStates
+              topStates,
+              topCountries,
+              todaySales,
+              totalRevenueToday,
+              recurringCount,
+              dayUseCount,
+              planBreakdown: Object.entries(planBreakdown).map(([plan, data]) => ({
+                plan,
+                count: data.count,
+                revenue: data.revenue
+              })),
+              apiUsage: {
+                apiFootballUsed,
+                apiFootballLimit,
+                apiFootballPercentage,
+                oddsApiUsed,
+                lastReset: new Date().toISOString().split('T')[0]
+              }
             }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      case 'get_filtered_users_count': {
+        const { filters } = params;
+        logStep("Getting filtered users count", { filters });
+
+        let query = adminClient.from('profiles').select('id', { count: 'exact' });
+
+        if (filters?.city) {
+          query = query.ilike('city', `%${filters.city}%`);
+        }
+        if (filters?.state) {
+          query = query.eq('state', filters.state);
+        }
+        if (filters?.country_code) {
+          query = query.eq('country_code', filters.country_code);
+        }
+        if (filters?.subscription_tier) {
+          query = query.eq('subscription_tier', filters.subscription_tier);
+        }
+
+        const { count, error } = await query;
+
+        if (error) throw error;
+
+        return new Response(
+          JSON.stringify({ count: count || 0 }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      case 'send_mass_email': {
+        const { filters, subject, htmlContent } = params;
+        logStep("Sending mass email", { filters, subject: subject?.substring(0, 30) });
+
+        const resendKey = Deno.env.get('RESEND_API_KEY');
+        if (!resendKey) {
+          throw new Error('RESEND_API_KEY not configured');
+        }
+
+        const resend = new Resend(resendKey);
+
+        // Build query with filters
+        let query = adminClient.from('profiles').select('email, city, state, country_code, subscription_tier');
+
+        if (filters?.city) {
+          query = query.ilike('city', `%${filters.city}%`);
+        }
+        if (filters?.state) {
+          query = query.eq('state', filters.state);
+        }
+        if (filters?.country_code) {
+          query = query.eq('country_code', filters.country_code);
+        }
+        if (filters?.subscription_tier) {
+          query = query.eq('subscription_tier', filters.subscription_tier);
+        }
+
+        const { data: users, error } = await query;
+
+        if (error) throw error;
+
+        if (!users || users.length === 0) {
+          return new Response(
+            JSON.stringify({ success: false, message: 'No users match the filters', sent: 0 }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Send emails in batches
+        const batchSize = 50;
+        let sentCount = 0;
+        let failedCount = 0;
+
+        for (let i = 0; i < users.length; i += batchSize) {
+          const batch = users.slice(i, i + batchSize);
+          
+          for (const user of batch) {
+            try {
+              await resend.emails.send({
+                from: 'Eugine <noreply@resend.dev>',
+                to: [user.email],
+                subject: subject,
+                html: htmlContent
+              });
+              sentCount++;
+            } catch (emailError: unknown) {
+              const errorMessage = emailError instanceof Error ? emailError.message : 'Unknown error';
+              logStep("Email send error", { email: user.email, error: errorMessage });
+              failedCount++;
+            }
+          }
+
+          // Small delay between batches to avoid rate limits
+          if (i + batchSize < users.length) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+
+        logStep("Mass email complete", { sent: sentCount, failed: failedCount });
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            sent: sentCount, 
+            failed: failedCount,
+            total: users.length 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

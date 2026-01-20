@@ -8,7 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, BarChart3, TrendingUp, Target, Play, History, Ban, ShieldX, ShieldCheck, Globe } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
+import { 
+  ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, 
+  BarChart3, TrendingUp, Target, Play, History, Ban, ShieldX, ShieldCheck, Globe, Mail, 
+  Send, DollarSign, CreditCard, Repeat, Calendar, Gauge, Zap, AlertCircle
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Loading } from '@/components/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,7 +40,12 @@ const BRAZILIAN_STATES: Record<string, string> = {
 
 export default function Admin() {
   const navigate = useNavigate();
-  const { isAdmin, loading, users, usersLoading, analytics, fetchUsers, fetchAnalytics, updateUser, resetSearches, setSearchCount, blockUser } = useAdmin();
+  const { 
+    isAdmin, loading, users, usersLoading, analytics, emailLoading,
+    fetchUsers, fetchAnalytics, updateUser, resetSearches, setSearchCount, 
+    blockUser, sendMassEmail, getFilteredUserCount 
+  } = useAdmin();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({
@@ -45,12 +56,24 @@ export default function Admin() {
   });
   const [searchCountInput, setSearchCountInput] = useState<{ userId: string; count: string } | null>(null);
   
+  // Email state
+  const [emailFilters, setEmailFilters] = useState({
+    city: '',
+    state: '',
+    country_code: '',
+    subscription_tier: ''
+  });
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailContent, setEmailContent] = useState('');
+  const [filteredUsersCount, setFilteredUsersCount] = useState(0);
+  
   // Backtest state
   const [backtestLoading, setBacktestLoading] = useState(false);
   const [backtestHistory, setBacktestHistory] = useState<any[]>([]);
   const [backtestDateFrom, setBacktestDateFrom] = useState('');
   const [backtestDateTo, setBacktestDateTo] = useState('');
   const [latestBacktest, setLatestBacktest] = useState<any>(null);
+
   useEffect(() => {
     if (!loading && !isAdmin) {
       toast.error('Acesso negado. Você não tem permissão de administrador.');
@@ -67,6 +90,17 @@ export default function Admin() {
       fetchBacktestHistory();
     }
   }, [isAdmin]);
+
+  // Update filtered users count when email filters change
+  useEffect(() => {
+    const updateCount = async () => {
+      const count = await getFilteredUserCount(emailFilters);
+      setFilteredUsersCount(count);
+    };
+    if (isAdmin) {
+      updateCount();
+    }
+  }, [emailFilters, isAdmin]);
 
   const fetchBacktestHistory = async () => {
     try {
@@ -175,6 +209,27 @@ export default function Admin() {
     }
   };
 
+  const handleSendEmail = async () => {
+    if (!emailSubject.trim() || !emailContent.trim()) {
+      toast.error('Preencha o assunto e conteúdo do email');
+      return;
+    }
+
+    if (filteredUsersCount === 0) {
+      toast.error('Nenhum usuário corresponde aos filtros');
+      return;
+    }
+
+    try {
+      const result = await sendMassEmail(emailFilters, emailSubject, emailContent);
+      toast.success(`Email enviado para ${result.sent} usuários (${result.failed} falhas)`);
+      setEmailSubject('');
+      setEmailContent('');
+    } catch (error) {
+      toast.error('Erro ao enviar emails');
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.phone?.includes(searchTerm)
@@ -223,7 +278,7 @@ export default function Admin() {
               <p className="text-muted-foreground">Gerencie usuários, planos e limites de busca</p>
             </div>
           </div>
-          <Button onClick={() => fetchUsers()} disabled={usersLoading}>
+          <Button onClick={() => { fetchUsers(); fetchAnalytics(); }} disabled={usersLoading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${usersLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
@@ -263,24 +318,24 @@ export default function Admin() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
+              <CardDescription>Vendas Hoje</CardDescription>
+              <CardTitle className="text-3xl text-emerald-500">
+                R$ {analytics?.totalRevenueToday?.toFixed(2) || '0.00'}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
               <CardDescription>Buscas Hoje</CardDescription>
               <CardTitle className="text-3xl text-purple-500">
                 {analytics?.todayApiCalls || 0}
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Total de Buscas</CardDescription>
-              <CardTitle className="text-3xl text-cyan-500">
-                {analytics?.totalApiCalls || 0}
-              </CardTitle>
-            </CardHeader>
-          </Card>
         </div>
 
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Usuários
@@ -289,14 +344,124 @@ export default function Admin() {
               <BarChart3 className="h-4 w-4" />
               Analytics
             </TabsTrigger>
+            <TabsTrigger value="api" className="flex items-center gap-2">
+              <Gauge className="h-4 w-4" />
+              Uso API
+            </TabsTrigger>
+            <TabsTrigger value="email" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              Email Marketing
+            </TabsTrigger>
             <TabsTrigger value="backtest" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Backtest
             </TabsTrigger>
           </TabsList>
 
+          {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Sales Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="border-emerald-500/30">
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-1">
+                    <DollarSign className="h-4 w-4" />
+                    Receita Hoje
+                  </CardDescription>
+                  <CardTitle className="text-2xl text-emerald-500">
+                    R$ {analytics?.totalRevenueToday?.toFixed(2) || '0.00'}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+              <Card className="border-blue-500/30">
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-1">
+                    <Repeat className="h-4 w-4" />
+                    Recorrentes
+                  </CardDescription>
+                  <CardTitle className="text-2xl text-blue-500">
+                    {analytics?.recurringCount || 0}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+              <Card className="border-orange-500/30">
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    Day Use
+                  </CardDescription>
+                  <CardTitle className="text-2xl text-orange-500">
+                    {analytics?.dayUseCount || 0}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+              <Card className="border-purple-500/30">
+                <CardHeader className="pb-2">
+                  <CardDescription className="flex items-center gap-1">
+                    <CreditCard className="h-4 w-4" />
+                    Pagamentos
+                  </CardDescription>
+                  <CardTitle className="text-2xl text-purple-500">
+                    {(analytics?.recurringCount || 0) + (analytics?.dayUseCount || 0)}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            </div>
+
+            {/* Plan Breakdown */}
+            {analytics?.planBreakdown && analytics.planBreakdown.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Vendas por Plano (Hoje)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {analytics.planBreakdown.map((item) => (
+                      <div key={item.plan} className="text-center p-4 bg-muted rounded-lg">
+                        <Badge className={getTierBadgeColor(item.plan)} variant="default">
+                          {item.plan.toUpperCase()}
+                        </Badge>
+                        <p className="text-2xl font-bold mt-2">{item.count}</p>
+                        <p className="text-sm text-muted-foreground">R$ {item.revenue.toFixed(2)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Top Countries */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-primary" />
+                    Top Países
+                  </CardTitle>
+                  <CardDescription>Países com mais cadastros</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {analytics?.topCountries && analytics.topCountries.length > 0 ? (
+                    <div className="space-y-3">
+                      {analytics.topCountries.map((item: any, index: number) => (
+                        <div key={item.code} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground w-6">{index + 1}.</span>
+                            <span className="font-medium">{item.country}</span>
+                          </div>
+                          <Badge variant="secondary">{item.count}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Nenhum dado disponível</p>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Top States */}
               <Card>
                 <CardHeader>
@@ -315,7 +480,7 @@ export default function Admin() {
                             <span className="text-muted-foreground w-6">{index + 1}.</span>
                             <span className="font-medium">{BRAZILIAN_STATES[item.state] || item.state}</span>
                           </div>
-                          <Badge variant="secondary">{item.count} usuários</Badge>
+                          <Badge variant="secondary">{item.count}</Badge>
                         </div>
                       ))}
                     </div>
@@ -343,7 +508,7 @@ export default function Admin() {
                             <span className="text-muted-foreground w-6">{index + 1}.</span>
                             <span className="font-medium">{item.city}</span>
                           </div>
-                          <Badge variant="secondary">{item.count} usuários</Badge>
+                          <Badge variant="secondary">{item.count}</Badge>
                         </div>
                       ))}
                     </div>
@@ -354,14 +519,117 @@ export default function Admin() {
               </Card>
             </div>
 
-            {/* API Usage Summary */}
+            {/* Today Sales Table */}
+            {analytics?.todaySales && analytics.todaySales.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                    Vendas de Hoje
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Horário</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Plano</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Valor</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {analytics.todaySales.map((sale: any, idx: number) => (
+                        <TableRow key={idx}>
+                          <TableCell>{new Date(sale.date).toLocaleTimeString('pt-BR')}</TableCell>
+                          <TableCell>{sale.customer_email}</TableCell>
+                          <TableCell>
+                            <Badge className={getTierBadgeColor(sale.plan)}>{sale.plan}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={sale.type === 'recurring' ? 'border-blue-500/30 text-blue-400' : 'border-orange-500/30 text-orange-400'}>
+                              {sale.type === 'recurring' ? 'Recorrente' : 'Day Use'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-emerald-500 font-medium">R$ {sale.amount.toFixed(2)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* API Usage Tab */}
+          <TabsContent value="api" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* API-Football Usage */}
+              <Card className="border-blue-500/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-blue-500" />
+                    API-Football
+                  </CardTitle>
+                  <CardDescription>Consumo estimado da API de estatísticas</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between text-sm">
+                    <span>Chamadas estimadas</span>
+                    <span className="font-medium">{analytics?.apiUsage?.apiFootballUsed || 0} / {analytics?.apiUsage?.apiFootballLimit || 100}</span>
+                  </div>
+                  <Progress 
+                    value={analytics?.apiUsage?.apiFootballPercentage || 0} 
+                    className="h-3"
+                  />
+                  <div className="flex items-center gap-2">
+                    {(analytics?.apiUsage?.apiFootballPercentage || 0) >= 80 ? (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    ) : (analytics?.apiUsage?.apiFootballPercentage || 0) >= 50 ? (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4 text-green-500" />
+                    )}
+                    <span className={`text-sm ${
+                      (analytics?.apiUsage?.apiFootballPercentage || 0) >= 80 ? 'text-red-500' :
+                      (analytics?.apiUsage?.apiFootballPercentage || 0) >= 50 ? 'text-amber-500' :
+                      'text-green-500'
+                    }`}>
+                      {(analytics?.apiUsage?.apiFootballPercentage || 0).toFixed(1)}% utilizado
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Estimativa baseada em ~3 chamadas por busca. Limite do plano free: 100/dia
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Odds API Usage */}
+              <Card className="border-purple-500/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-purple-500" />
+                    Odds API
+                  </CardTitle>
+                  <CardDescription>Chamadas nos últimos 30 dias</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center py-4">
+                    <p className="text-4xl font-bold text-purple-500">{analytics?.apiUsage?.oddsApiUsed || 0}</p>
+                    <p className="text-sm text-muted-foreground">chamadas registradas</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Usage Summary */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5 text-primary" />
-                  Uso da API
+                  Resumo de Consumo
                 </CardTitle>
-                <CardDescription>Resumo de consumo de buscas</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -375,7 +643,7 @@ export default function Admin() {
                   </div>
                   <div className="text-center p-4 bg-muted rounded-lg">
                     <p className="text-3xl font-bold text-green-500">
-                      {users.length > 0 ? (analytics?.totalApiCalls || 0 / users.length).toFixed(1) : 0}
+                      {users.length > 0 ? ((analytics?.totalApiCalls || 0) / users.length).toFixed(1) : 0}
                     </p>
                     <p className="text-sm text-muted-foreground">Média por Usuário</p>
                   </div>
@@ -386,6 +654,133 @@ export default function Admin() {
                     <p className="text-sm text-muted-foreground">Estados Ativos</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Email Marketing Tab */}
+          <TabsContent value="email" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-primary" />
+                  Envio de Email em Massa
+                </CardTitle>
+                <CardDescription>Envie emails filtrados por cidade, estado, país ou plano</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Filters */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Cidade</label>
+                    <Input
+                      placeholder="Ex: São Paulo"
+                      value={emailFilters.city}
+                      onChange={(e) => setEmailFilters(prev => ({ ...prev, city: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Estado</label>
+                    <Select
+                      value={emailFilters.state}
+                      onValueChange={(value) => setEmailFilters(prev => ({ ...prev, state: value === 'all' ? '' : value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        {Object.entries(BRAZILIAN_STATES).map(([code, name]) => (
+                          <SelectItem key={code} value={code}>{name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">País</label>
+                    <Select
+                      value={emailFilters.country_code}
+                      onValueChange={(value) => setEmailFilters(prev => ({ ...prev, country_code: value === 'all' ? '' : value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="BR">Brasil</SelectItem>
+                        <SelectItem value="PT">Portugal</SelectItem>
+                        <SelectItem value="US">Estados Unidos</SelectItem>
+                        <SelectItem value="AR">Argentina</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Plano</label>
+                    <Select
+                      value={emailFilters.subscription_tier}
+                      onValueChange={(value) => setEmailFilters(prev => ({ ...prev, subscription_tier: value === 'all' ? '' : value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="basic">Basic</SelectItem>
+                        <SelectItem value="advanced">Advanced</SelectItem>
+                        <SelectItem value="premium">Premium</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* User Count */}
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                  <Users className="h-5 w-5 text-primary" />
+                  <span className="font-medium">{filteredUsersCount}</span>
+                  <span className="text-muted-foreground">usuários serão notificados</span>
+                </div>
+
+                {/* Email Content */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Assunto</label>
+                    <Input
+                      placeholder="Assunto do email..."
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Conteúdo (HTML)</label>
+                    <Textarea
+                      placeholder="<h1>Olá!</h1><p>Conteúdo do email...</p>"
+                      value={emailContent}
+                      onChange={(e) => setEmailContent(e.target.value)}
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Send Button */}
+                <Button 
+                  onClick={handleSendEmail} 
+                  disabled={emailLoading || !emailSubject.trim() || !emailContent.trim() || filteredUsersCount === 0}
+                  className="w-full"
+                >
+                  {emailLoading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Enviar para {filteredUsersCount} usuários
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -553,266 +948,252 @@ export default function Admin() {
             </Card>
           </TabsContent>
 
+          {/* Users Tab */}
           <TabsContent value="users">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Usuários</CardTitle>
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por email ou telefone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {usersLoading ? (
-              <div className="flex justify-center py-8">
-                <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Telefone</TableHead>
-                      <TableHead>IP Cadastro</TableHead>
-                      <TableHead>Nascimento</TableHead>
-                      <TableHead>Plano</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Bloqueado</TableHead>
-                      <TableHead>Origem</TableHead>
-                      <TableHead>Buscas Hoje</TableHead>
-                      <TableHead>Trial Até</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => {
-                      const maxSearches = user.subscription_status === 'active' 
-                        ? TIER_LIMITS[user.subscription_tier as keyof typeof TIER_LIMITS] || 1
-                        : 3; // trial
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Usuários</CardTitle>
+                  <div className="relative w-64">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por email ou telefone..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {usersLoading ? (
+                  <div className="flex justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Telefone</TableHead>
+                          <TableHead>IP Cadastro</TableHead>
+                          <TableHead>Nascimento</TableHead>
+                          <TableHead>Plano</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Bloqueado</TableHead>
+                          <TableHead>Origem</TableHead>
+                          <TableHead>Buscas Hoje</TableHead>
+                          <TableHead>Trial Até</TableHead>
+                          <TableHead>Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.map((user) => {
+                          const maxSearches = user.subscription_status === 'active' 
+                            ? TIER_LIMITS[user.subscription_tier as keyof typeof TIER_LIMITS] || 1
+                            : 3;
 
-                      return (
-                        <TableRow key={user.id} className={user.is_blocked ? 'bg-red-500/10' : ''}>
-                          <TableCell className="font-medium">{user.email}</TableCell>
-                          <TableCell>{user.phone || '-'}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Globe className="w-3 h-3 text-muted-foreground" />
-                              <span className="text-xs text-muted-foreground">{user.registration_ip || '-'}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-xs">
-                              {user.birth_date ? new Date(user.birth_date).toLocaleDateString('pt-BR') : '-'}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getTierBadgeColor(user.subscription_tier)}>
-                              {user.subscription_tier}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={getStatusBadgeColor(user.subscription_status)}>
-                              {user.subscription_status || 'inactive'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {user.is_blocked ? (
-                              <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                                <ShieldX className="w-3 h-3 mr-1" />
-                                Bloqueado
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
-                                <ShieldCheck className="w-3 h-3 mr-1" />
-                                OK
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="outline" 
-                              className={user.stripe_subscription_id 
-                                ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' 
-                                : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-                              }
-                            >
-                              {user.stripe_subscription_id ? 'Stripe' : 'Manual'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <span className={user.today_searches >= maxSearches ? 'text-red-400' : ''}>
-                                {user.today_searches}/{maxSearches}
-                              </span>
-                              <Dialog>
-                                <DialogTrigger asChild>
+                          return (
+                            <TableRow key={user.id} className={user.is_blocked ? 'bg-red-500/10' : ''}>
+                              <TableCell className="font-medium">{user.email}</TableCell>
+                              <TableCell>{user.phone || '-'}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Globe className="w-3 h-3 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">{user.registration_ip || '-'}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-xs">
+                                  {user.birth_date ? new Date(user.birth_date).toLocaleDateString('pt-BR') : '-'}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={getTierBadgeColor(user.subscription_tier)}>
+                                  {user.subscription_tier}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={getStatusBadgeColor(user.subscription_status)}>
+                                  {user.subscription_status || 'inactive'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {user.is_blocked ? (
+                                  <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                                    <ShieldX className="w-3 h-3 mr-1" />
+                                    Bloqueado
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
+                                    <ShieldCheck className="w-3 h-3 mr-1" />
+                                    OK
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant="outline" 
+                                  className={user.stripe_subscription_id 
+                                    ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' 
+                                    : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                                  }
+                                >
+                                  {user.stripe_subscription_id ? 'Stripe' : 'Manual'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <span className={user.today_searches >= maxSearches ? 'text-red-400' : ''}>
+                                    {user.today_searches}/{maxSearches}
+                                  </span>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6"
+                                        onClick={() => setSearchCountInput({ userId: user.user_id, count: String(user.today_searches) })}
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Definir Contagem de Buscas</DialogTitle>
+                                        <DialogDescription>
+                                          Defina quantas buscas o usuário já realizou hoje.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        value={searchCountInput?.count || '0'}
+                                        onChange={(e) => setSearchCountInput(prev => prev ? { ...prev, count: e.target.value } : null)}
+                                      />
+                                      <DialogFooter>
+                                        <Button onClick={handleSetSearchCount}>
+                                          <Save className="h-4 w-4 mr-2" />
+                                          Salvar
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
                                   <Button 
                                     variant="ghost" 
                                     size="icon" 
                                     className="h-6 w-6"
-                                    onClick={() => setSearchCountInput({ userId: user.user_id, count: String(user.today_searches) })}
+                                    onClick={() => handleResetSearches(user.user_id)}
                                   >
-                                    <Edit className="h-3 w-3" />
+                                    <RotateCcw className="h-3 w-3" />
                                   </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Definir Contagem de Buscas</DialogTitle>
-                                    <DialogDescription>
-                                      Defina quantas buscas o usuário já realizou hoje.
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    value={searchCountInput?.count || '0'}
-                                    onChange={(e) => setSearchCountInput(prev => prev ? { ...prev, count: e.target.value } : null)}
-                                  />
-                                  <DialogFooter>
-                                    <Button onClick={handleSetSearchCount}>
-                                      <Save className="h-4 w-4 mr-2" />
-                                      Salvar
-                                    </Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-6 w-6"
-                                onClick={() => handleResetSearches(user.user_id)}
-                              >
-                                <RotateCcw className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(user.trial_end_date).toLocaleDateString('pt-BR')}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {/* Block/Unblock Button */}
-                              <Button 
-                                variant={user.is_blocked ? "default" : "destructive"}
-                                size="sm"
-                                onClick={async () => {
-                                  try {
-                                    await blockUser(user.user_id, !user.is_blocked, user.is_blocked ? undefined : 'Blocked by admin');
-                                    toast.success(user.is_blocked ? 'Usuário desbloqueado' : 'Usuário bloqueado');
-                                  } catch (error) {
-                                    toast.error('Erro ao alterar bloqueio');
-                                  }
-                                }}
-                              >
-                                {user.is_blocked ? (
-                                  <>
-                                    <ShieldCheck className="h-4 w-4 mr-1" />
-                                    Desbloquear
-                                  </>
-                                ) : (
-                                  <>
-                                    <Ban className="h-4 w-4 mr-1" />
-                                    Bloquear
-                                  </>
-                                )}
-                              </Button>
-                              
-                              {/* Edit Dialog */}
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
-                                    <Edit className="h-4 w-4 mr-1" />
-                                    Editar
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {new Date(user.trial_end_date).toLocaleDateString('pt-BR')}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    variant={user.is_blocked ? "default" : "destructive"}
+                                    size="sm"
+                                    onClick={async () => {
+                                      try {
+                                        await blockUser(user.user_id, !user.is_blocked, user.is_blocked ? undefined : 'Blocked by admin');
+                                        toast.success(user.is_blocked ? 'Usuário desbloqueado' : 'Usuário bloqueado');
+                                      } catch (error) {
+                                        toast.error('Erro ao alterar bloqueio');
+                                      }
+                                    }}
+                                  >
+                                    {user.is_blocked ? (
+                                      <>
+                                        <ShieldCheck className="h-4 w-4 mr-1" />
+                                        Desbloquear
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Ban className="h-4 w-4 mr-1" />
+                                        Bloquear
+                                      </>
+                                    )}
                                   </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Editar Usuário</DialogTitle>
-                                    <DialogDescription>{editingUser?.email}</DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4 py-4">
-                                    <div className="space-y-2">
-                                      <label className="text-sm font-medium">Telefone</label>
-                                      <Input
-                                        value={editForm.phone}
-                                        onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                                        placeholder="+55 11999999999"
-                                      />
-                                      <p className="text-xs text-muted-foreground">
-                                        Formato: +DDI DDD + número (ex: +55 11999999999)
-                                      </p>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <label className="text-sm font-medium">Plano</label>
-                                      <Select
-                                        value={editForm.subscription_tier}
-                                        onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_tier: value }))}
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="free">Free</SelectItem>
-                                          <SelectItem value="basic">Basic</SelectItem>
-                                          <SelectItem value="advanced">Advanced</SelectItem>
-                                          <SelectItem value="premium">Premium</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <label className="text-sm font-medium">Status da Assinatura</label>
-                                      <Select
-                                        value={editForm.subscription_status}
-                                        onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_status: value }))}
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="inactive">Inativo</SelectItem>
-                                          <SelectItem value="active">Ativo</SelectItem>
-                                          <SelectItem value="past_due">Pagamento Atrasado</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <input
-                                        type="checkbox"
-                                        id="is_active"
-                                        checked={editForm.is_active}
-                                        onChange={(e) => setEditForm(prev => ({ ...prev, is_active: e.target.checked }))}
-                                        className="rounded"
-                                      />
-                                      <label htmlFor="is_active" className="text-sm">Usuário Ativo</label>
-                                    </div>
-                                  </div>
-                                  <DialogFooter>
-                                    <Button onClick={handleSaveUser}>
-                                      <Save className="h-4 w-4 mr-2" />
-                                      Salvar Alterações
-                                    </Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                                  
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
+                                        <Edit className="h-4 w-4 mr-1" />
+                                        Editar
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Editar Usuário</DialogTitle>
+                                        <DialogDescription>{editingUser?.email}</DialogDescription>
+                                      </DialogHeader>
+                                      <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                          <label className="text-sm font-medium">Telefone</label>
+                                          <Input
+                                            value={editForm.phone}
+                                            onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                                            placeholder="+55 11999999999"
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <label className="text-sm font-medium">Plano</label>
+                                          <Select
+                                            value={editForm.subscription_tier}
+                                            onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_tier: value }))}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="free">Free</SelectItem>
+                                              <SelectItem value="basic">Basic</SelectItem>
+                                              <SelectItem value="advanced">Advanced</SelectItem>
+                                              <SelectItem value="premium">Premium</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <label className="text-sm font-medium">Status da Assinatura</label>
+                                          <Select
+                                            value={editForm.subscription_status}
+                                            onValueChange={(value) => setEditForm(prev => ({ ...prev, subscription_status: value }))}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="active">Ativo</SelectItem>
+                                              <SelectItem value="inactive">Inativo</SelectItem>
+                                              <SelectItem value="past_due">Pendente</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
+                                      <DialogFooter>
+                                        <Button onClick={handleSaveUser}>
+                                          <Save className="h-4 w-4 mr-2" />
+                                          Salvar
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
