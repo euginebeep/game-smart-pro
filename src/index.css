@@ -378,3 +378,14 @@
     transform: translateY(-10px);
   }
 }
+
+@keyframes moneyFall {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateX(0) translateY(0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateX(var(--tx)) translateY(var(--ty)) rotate(var(--rot)) scale(0.5);
+  }
+}

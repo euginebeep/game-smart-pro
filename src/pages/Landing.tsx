@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
+import MoneyExplosion from '@/components/MoneyExplosion';
 
 // Import step images
 import step1Image from '@/assets/step1-escolha-jogo.png';
@@ -29,6 +30,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState(1);
+  const [premiumHovered, setPremiumHovered] = useState(false);
 
   const labels = {
     pt: {
@@ -67,7 +69,7 @@ export default function Landing() {
         dayUse: {
           name: 'DAY USE',
           badge: 'Premium 24h',
-          price: 'R$7,77',
+          price: '$7,77',
           period: '/dia',
           features: [
             'Acesso Premium Completo por 24h',
@@ -79,7 +81,7 @@ export default function Landing() {
         },
         basic: {
           name: 'BASIC',
-          price: 'R$29,90',
+          price: '$29,90',
           period: '/mês',
           features: [
             '5 Jogos por Dia',
@@ -91,7 +93,7 @@ export default function Landing() {
         advanced: {
           name: 'ADVANCED',
           badge: 'Mais Popular',
-          price: 'R$49,90',
+          price: '$49,90',
           period: '/mês',
           features: [
             '10 Jogos por Dia',
@@ -104,8 +106,8 @@ export default function Landing() {
         premium: {
           name: 'PREMIUM',
           badge: 'Melhor Valor',
-          originalPrice: 'R$199,00',
-          price: 'R$79,90',
+          originalPrice: '$199,00',
+          price: '$79,90',
           period: '/mês',
           features: [
             'Jogos Ilimitados',
@@ -349,7 +351,7 @@ export default function Landing() {
         dayUse: {
           name: 'DAY USE',
           badge: 'Premium 24h',
-          price: '€7,77',
+          price: '$7,77',
           period: '/giorno',
           features: [
             'Accesso Premium Completo per 24h',
@@ -361,7 +363,7 @@ export default function Landing() {
         },
         basic: {
           name: 'BASIC',
-          price: '€29,90',
+          price: '$29,90',
           period: '/mese',
           features: [
             '5 Partite al Giorno',
@@ -373,7 +375,7 @@ export default function Landing() {
         advanced: {
           name: 'ADVANCED',
           badge: 'Più Popolare',
-          price: '€49,90',
+          price: '$49,90',
           period: '/mese',
           features: [
             '10 Partite al Giorno',
@@ -386,8 +388,8 @@ export default function Landing() {
         premium: {
           name: 'PREMIUM',
           badge: 'Miglior Valore',
-          originalPrice: '€199,00',
-          price: '€79,90',
+          originalPrice: '$199,00',
+          price: '$79,90',
           period: '/mese',
           features: [
             'Partite Illimitate',
@@ -617,7 +619,7 @@ export default function Landing() {
                 }`}
               >
                 {/* Text Column */}
-                <div className="order-2 md:order-1">
+                <div className="order-2 md:order-1 relative z-10">
                   <h3 
                     className="text-2xl sm:text-3xl lg:text-[42px] font-black leading-tight mb-6"
                     style={{
@@ -628,7 +630,7 @@ export default function Landing() {
                   >
                     {step.heading}
                   </h3>
-                  <p className="text-base lg:text-lg text-muted-foreground leading-relaxed">
+                  <p className="text-base lg:text-lg text-muted-foreground leading-relaxed bg-card/80 p-4 rounded-xl backdrop-blur-sm">
                     {step.description}
                   </p>
                 </div>
@@ -698,7 +700,7 @@ export default function Landing() {
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="w-full py-4 mt-auto rounded-lg font-bold bg-success text-success-foreground hover:bg-success/90 transition-all hover:shadow-lg"
+                className="w-full h-14 mt-auto rounded-lg font-bold bg-success text-success-foreground hover:bg-success/90 transition-all hover:shadow-lg flex items-center justify-center"
               >
                 {l.pricing.dayUse.cta}
               </button>
@@ -723,7 +725,7 @@ export default function Landing() {
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="btn-outline w-full py-4 mt-auto"
+                className="btn-outline w-full h-14 mt-auto flex items-center justify-center"
               >
                 {l.pricing.basic.cta}
               </button>
@@ -756,20 +758,26 @@ export default function Landing() {
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="btn-primary w-full py-4 mt-auto"
+                className="btn-primary w-full h-14 mt-auto flex items-center justify-center"
               >
                 {l.pricing.advanced.cta}
               </button>
             </div>
 
-            {/* Premium - Featured with Discount */}
-            <div className="relative glass-card p-8 flex flex-col border-2 border-accent/50 transition-all duration-300 hover:-translate-y-2.5 hover:border-accent hover:shadow-[0_20px_40px_hsla(260,80%,60%,0.3)]" style={{ background: 'linear-gradient(180deg, hsla(260, 80%, 60%, 0.1) 0%, hsla(230, 45%, 12%, 1) 100%)' }}>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            {/* Premium - Featured with Discount and Money Explosion */}
+            <div 
+              className="relative glass-card p-8 flex flex-col border-2 border-accent/50 transition-all duration-300 hover:-translate-y-2.5 hover:border-accent hover:shadow-[0_20px_40px_hsla(260,80%,60%,0.3)]" 
+              style={{ background: 'linear-gradient(180deg, hsla(260, 80%, 60%, 0.1) 0%, hsla(230, 45%, 12%, 1) 100%)' }}
+              onMouseEnter={() => setPremiumHovered(true)}
+              onMouseLeave={() => setPremiumHovered(false)}
+            >
+              <MoneyExplosion isActive={premiumHovered} />
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                 <span className="bg-accent text-accent-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
                   {(l.pricing.premium as any).badge}
                 </span>
               </div>
-              <div className="text-center mb-6 pt-4">
+              <div className="text-center mb-6 pt-4 relative z-10">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.premium.name}</h3>
                 <div className="flex flex-col items-center">
                   <span className="text-muted-foreground text-lg line-through">{(l.pricing.premium as any).originalPrice}</span>
@@ -777,7 +785,7 @@ export default function Landing() {
                   <span className="text-muted-foreground text-base font-semibold">{l.pricing.premium.period}</span>
                 </div>
               </div>
-              <ul className="space-y-3 flex-grow mb-8">
+              <ul className="space-y-3 flex-grow mb-8 relative z-10">
                 {l.pricing.premium.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-3 text-foreground">
                     <CheckCircle className="w-5 h-5 text-accent mt-0.5 shrink-0" />
@@ -787,7 +795,7 @@ export default function Landing() {
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="w-full py-4 mt-auto rounded-lg font-bold bg-accent text-accent-foreground hover:bg-accent/90 transition-all hover:shadow-lg"
+                className="w-full h-14 mt-auto rounded-lg font-bold bg-accent text-accent-foreground hover:bg-accent/90 transition-all hover:shadow-lg relative z-10 flex items-center justify-center"
               >
                 {l.pricing.premium.cta}
               </button>
