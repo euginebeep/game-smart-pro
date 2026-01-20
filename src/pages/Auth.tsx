@@ -110,7 +110,9 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedCountry, setSelectedCountry] = useState('BR');
@@ -118,6 +120,12 @@ export default function Auth() {
   const [state, setState] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [underageError, setUnderageError] = useState(false);
+  // OTP Recovery States
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -151,10 +159,14 @@ export default function Auth() {
         message: getPhoneValidationMessage(selectedCountry, t) 
       }),
     password: z.string().min(6, { message: t('auth.errors.passwordMin') }),
+    confirmPassword: z.string().min(1, { message: t('auth.errors.confirmPasswordRequired') }),
     country: z.string().min(2, { message: t('auth.errors.countryRequired') }),
     birthDate: z.string()
       .min(1, { message: t('auth.errors.birthDateRequired') })
       .refine((val) => validateAge(val), { message: t('auth.errors.mustBe18') }),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('auth.errors.passwordMismatch'),
+    path: ['confirmPassword'],
   });
 
   const signInSchema = z.object({
@@ -184,6 +196,103 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Timer for OTP expiration
+  useEffect(() => {
+    if (otpTimer > 0) {
+      const timer = setInterval(() => {
+        setOtpTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [otpTimer]);
+
+  const handleSendOTP = async () => {
+    const result = resetSchema.safeParse({ email });
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-otp', {
+        body: { email: email.trim(), language }
+      });
+
+      if (error) throw error;
+
+      setOtpSent(true);
+      setOtpTimer(120); // 2 minutes
+      toast({
+        title: t('auth.success.otpSent'),
+        description: t('auth.success.otpSentDesc'),
+      });
+    } catch (err: any) {
+      toast({
+        title: t('auth.errors.resetError'),
+        description: err.message || t('auth.errors.genericError'),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      setErrors({ otp: t('auth.errors.otpRequired') });
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setErrors({ newPassword: t('auth.errors.passwordMin') });
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrors({ confirmNewPassword: t('auth.errors.passwordMismatch') });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-otp', {
+        body: { 
+          email: email.trim(), 
+          otp: otpCode.trim(),
+          newPassword 
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: t('auth.success.passwordUpdated'),
+        description: t('auth.success.passwordUpdatedDesc'),
+      });
+      
+      // Reset states
+      setOtpSent(false);
+      setOtpCode('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setMode('login');
+    } catch (err: any) {
+      toast({
+        title: t('auth.errors.resetError'),
+        description: err.message || t('auth.errors.invalidOtp'),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -191,37 +300,13 @@ export default function Auth() {
 
     try {
       if (mode === 'reset') {
-        const result = resetSchema.safeParse({ email });
-        if (!result.success) {
-          const fieldErrors: Record<string, string> = {};
-          result.error.errors.forEach((err) => {
-            if (err.path[0]) {
-              fieldErrors[err.path[0] as string] = err.message;
-            }
-          });
-          setErrors(fieldErrors);
-          setLoading(false);
-          return;
-        }
-
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-
-        if (error) {
-          toast({
-            title: t('auth.errors.resetError'),
-            description: error.message,
-            variant: "destructive",
-          });
+        if (otpSent) {
+          await handleVerifyOTP();
         } else {
-          toast({
-            title: t('auth.success.resetSent'),
-            description: t('auth.success.resetSentDesc'),
-          });
-          setMode('login');
-          setEmail('');
+          await handleSendOTP();
         }
+        setLoading(false);
+        return;
       } else if (mode === 'login') {
         const result = signInSchema.safeParse({ email, password });
         if (!result.success) {
@@ -267,7 +352,14 @@ export default function Auth() {
         
         const phoneDigits = phone.replace(/\D/g, '');
         const fullPhone = `${countryData.phoneCode} ${phoneDigits}`;
-        const result = signUpSchema.safeParse({ email, phone: phoneDigits, password, country: selectedCountry, birthDate });
+        const result = signUpSchema.safeParse({ 
+          email, 
+          phone: phoneDigits, 
+          password, 
+          confirmPassword,
+          country: selectedCountry, 
+          birthDate 
+        });
         if (!result.success) {
           const fieldErrors: Record<string, string> = {};
           result.error.errors.forEach((err) => {
@@ -314,6 +406,19 @@ export default function Auth() {
             });
           }
         } else {
+          // Send welcome email with credentials
+          try {
+            await supabase.functions.invoke('send-welcome-email', {
+              body: { 
+                email: email.trim(), 
+                password,
+                language 
+              }
+            });
+          } catch (emailErr) {
+            console.error('Failed to send welcome email:', emailErr);
+          }
+          
           toast({
             title: t('auth.success.accountCreated'),
             description: t('auth.success.accountCreatedDesc'),
@@ -612,35 +717,165 @@ export default function Auth() {
               </>
             )}
 
+            {/* Password Fields */}
             {mode !== 'reset' && (
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">{t('auth.password')}</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t('auth.passwordPlaceholder')}
-                    className="pl-10 pr-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-foreground">{t('auth.password')}</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={t('auth.passwordPlaceholder')}
+                      className="pl-10 pr-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
                 </div>
-                {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
-              </div>
+
+                {/* Confirm Password - Only for register */}
+                {mode === 'register' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-foreground">{t('auth.confirmPassword')}</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder={t('auth.confirmPasswordPlaceholder')}
+                        className="pl-10 pr-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && <p className="text-destructive text-sm">{errors.confirmPassword}</p>}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Password Reset Flow with OTP */}
+            {mode === 'reset' && (
+              <>
+                {!otpSent ? (
+                  <p className="text-muted-foreground text-sm">
+                    {t('auth.resetDescription')}
+                  </p>
+                ) : (
+                  <>
+                    {/* OTP Timer */}
+                    <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 text-center">
+                      {otpTimer > 0 ? (
+                        <p className="text-warning font-semibold">
+                          ⏱️ {t('auth.otpExpires')}: {Math.floor(otpTimer / 60)}:{(otpTimer % 60).toString().padStart(2, '0')}
+                        </p>
+                      ) : (
+                        <p className="text-destructive font-semibold">
+                          ❌ {t('auth.otpExpired')}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* OTP Input */}
+                    <div className="space-y-2">
+                      <Label htmlFor="otp" className="text-foreground">{t('auth.otpCode')}</Label>
+                      <Input
+                        id="otp"
+                        type="text"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        className="text-center text-2xl tracking-[0.5em] font-mono bg-input border-border text-foreground"
+                        maxLength={6}
+                      />
+                      {errors.otp && <p className="text-destructive text-sm">{errors.otp}</p>}
+                    </div>
+
+                    {/* New Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword" className="text-foreground">{t('auth.newPasswordLabel')}</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="newPassword"
+                          type={showPassword ? 'text' : 'password'}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder={t('auth.passwordPlaceholder')}
+                          className="pl-10 pr-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      {errors.newPassword && <p className="text-destructive text-sm">{errors.newPassword}</p>}
+                    </div>
+
+                    {/* Confirm New Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmNewPassword" className="text-foreground">{t('auth.confirmPassword')}</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="confirmNewPassword"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          placeholder={t('auth.confirmPasswordPlaceholder')}
+                          className="pl-10 pr-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      {errors.confirmNewPassword && <p className="text-destructive text-sm">{errors.confirmNewPassword}</p>}
+                    </div>
+
+                    {/* Resend OTP button */}
+                    {otpTimer === 0 && (
+                      <button
+                        type="button"
+                        onClick={handleSendOTP}
+                        disabled={loading}
+                        className="text-primary hover:text-primary/80 text-sm transition-colors"
+                      >
+                        {t('auth.resendOtp')}
+                      </button>
+                    )}
+                  </>
+                )}
+              </>
             )}
 
             {mode === 'login' && (
               <button
                 type="button"
-                onClick={() => setMode('reset')}
+                onClick={() => { setMode('reset'); setOtpSent(false); setOtpCode(''); }}
                 className="text-primary hover:text-primary/80 text-sm transition-colors"
               >
                 {t('auth.forgotPassword')}
@@ -649,7 +884,7 @@ export default function Auth() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || (mode === 'reset' && otpSent && otpTimer === 0)}
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
             >
               {loading ? (
@@ -658,7 +893,7 @@ export default function Auth() {
                   {t('auth.loading')}
                 </>
               ) : mode === 'reset' ? (
-                t('auth.sendResetLink')
+                otpSent ? t('auth.updatePassword') : t('auth.sendOtpCode')
               ) : mode === 'login' ? (
                 t('auth.enter')
               ) : (

@@ -290,6 +290,33 @@ export type Database = {
         }
         Relationships: []
       }
+      password_reset_otp: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          otp_code: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          otp_code: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           birth_date: string | null
@@ -431,6 +458,7 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_cache: { Args: never; Returns: undefined }
+      cleanup_expired_otp: { Args: never; Returns: undefined }
       get_remaining_searches: { Args: { p_user_id: string }; Returns: Json }
       has_role: {
         Args: {
