@@ -16,6 +16,7 @@ import {
 interface AccumulatorsSectionProps {
   games: Game[];
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
+  maxAccumulators?: number;
 }
 
 type AccumulatorType = 'goalsLow' | 'goalsMedium' | 'goalsHigh' | 'winsLow' | 'winsMedium' | 'exactScores';
@@ -29,7 +30,7 @@ const ACCUMULATOR_TYPES: { id: AccumulatorType; labelKey: string; emoji: string;
   { id: 'exactScores', labelKey: 'accumulators.exactScores', emoji: '🚀', risk: 'high' },
 ];
 
-export function AccumulatorsSection({ games, userTier = 'free' }: AccumulatorsSectionProps) {
+export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators }: AccumulatorsSectionProps) {
   const { t } = useLanguage();
   const isPremium = userTier === 'premium';
   
@@ -42,9 +43,14 @@ export function AccumulatorsSection({ games, userTier = 'free' }: AccumulatorsSe
   const allAccumulators = generateAccumulators(games, t, isPremium);
   
   // Filter based on user selection (only for Premium)
-  const filteredAccumulators = isPremium 
+  let filteredAccumulators = isPremium 
     ? allAccumulators.filter(acc => enabledTypes.has(acc.typeId))
     : allAccumulators;
+  
+  // Apply max limit for free users
+  if (maxAccumulators !== undefined && maxAccumulators > 0) {
+    filteredAccumulators = filteredAccumulators.slice(0, maxAccumulators);
+  }
 
   const toggleType = (typeId: AccumulatorType) => {
     setEnabledTypes(prev => {

@@ -44,8 +44,13 @@ const Index = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
   const [userTier, setUserTier] = useState<'free' | 'basic' | 'advanced' | 'premium'>('free');
+  const [isFreeReport, setIsFreeReport] = useState(false);
+  const [limitConfig, setLimitConfig] = useState<{ maxAccumulators?: number; maxZebras?: number; maxDoubles?: number }>({});
   const previousLanguage = useRef(language);
   const gamesContentRef = useRef<HTMLDivElement>(null);
+  
+  // Cache key for localStorage (for premium offline access)
+  const CACHE_KEY = 'eugine_premium_cache';
 
   /**
    * Handles filtered games callback from GameFilters component
@@ -54,6 +59,31 @@ const Index = () => {
   const handleFilteredGames = useCallback((filtered: Game[]) => {
     setFilteredGames(filtered);
   }, []);
+
+  // Load cached data on mount (for offline access)
+  useEffect(() => {
+    if (userTier === 'premium') {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsedCache = JSON.parse(cached);
+          const cacheDate = new Date(parsedCache.cachedAt);
+          const now = new Date();
+          // Cache is valid for 24 hours
+          if ((now.getTime() - cacheDate.getTime()) < 24 * 60 * 60 * 1000) {
+            if (parsedCache.games && parsedCache.games.length > 0 && games.length === 0) {
+              setGames(parsedCache.games.map((g: any) => ({ ...g, startTime: new Date(g.startTime) })));
+              setHasFetched(true);
+              setAlertMessage(parsedCache.alertMessage || '');
+              setIsToday(parsedCache.isToday ?? true);
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error loading cache:', e);
+      }
+    }
+  }, [userTier]);
 
   const handleFetchGames = useCallback(async () => {
     setLoading(true);
@@ -75,6 +105,31 @@ const Index = () => {
       }
       if (result.userTier) {
         setUserTier(result.userTier as 'free' | 'basic' | 'advanced' | 'premium');
+      }
+      if (result.isFreeReport !== undefined) {
+        setIsFreeReport(result.isFreeReport);
+      }
+      if (result.maxAccumulators !== undefined || result.maxZebras !== undefined || result.maxDoubles !== undefined) {
+        setLimitConfig({
+          maxAccumulators: result.maxAccumulators,
+          maxZebras: result.maxZebras,
+          maxDoubles: result.maxDoubles
+        });
+      }
+      
+      // Cache full data for premium users (offline access)
+      if (result.userTier === 'premium' && result.fullAnalysisCached) {
+        try {
+          const cacheData = {
+            games: result.games,
+            alertMessage: result.alertMessage,
+            isToday: result.isToday,
+            cachedAt: new Date().toISOString()
+          };
+          localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        } catch (e) {
+          console.error('Error saving cache:', e);
+        }
       }
     } catch (err) {
       // Verificar se é erro de limite diário
@@ -237,16 +292,16 @@ const Index = () => {
                 </div>
 
                 {/* Section 1: Accumulators */}
-                <AccumulatorsSection games={games} userTier={userTier} />
+                <AccumulatorsSection games={games} userTier={userTier} maxAccumulators={limitConfig.maxAccumulators} />
 
                 {/* Section 2: Premium Double */}
-                <PremiumDoubleSection games={games} />
+                {!isFreeReport && <PremiumDoubleSection games={games} />}
 
                 {/* Section 3: Favorites Double (Premium Only) */}
-                {userTier === 'premium' && <FavoritesDoubleSection games={games} />}
+                {userTier === 'premium' && !isFreeReport && <FavoritesDoubleSection games={games} />}
 
                 {/* Section 4: Zebra of the Day */}
-                <ZebraSection games={games} userTier={userTier} />
+                <ZebraSection games={games} userTier={userTier} maxZebras={limitConfig.maxZebras} />
               </div>
 
               {/* Pricing Section - Outside export area */}

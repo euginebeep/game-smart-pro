@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface ZebraSectionProps {
   games: Game[];
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
+  maxZebras?: number;
 }
 
 interface ZebraData {
@@ -16,7 +17,7 @@ interface ZebraData {
   chanceLevel: 'high' | 'medium' | 'low';
 }
 
-export function ZebraSection({ games, userTier = 'free' }: ZebraSectionProps) {
+export function ZebraSection({ games, userTier = 'free', maxZebras }: ZebraSectionProps) {
   const { t } = useLanguage();
   const isPremium = userTier === 'premium';
   
@@ -46,7 +47,7 @@ export function ZebraSection({ games, userTier = 'free' }: ZebraSectionProps) {
     };
   };
 
-  const zebras: ZebraData[] = isPremium ? [
+  let zebras: ZebraData[] = isPremium ? [
     createZebraData(highChanceGame, 'high', {
       match: 'Sevilla x Real Sociedad',
       underdog: 'Real Sociedad',
@@ -81,6 +82,11 @@ export function ZebraSection({ games, userTier = 'free' }: ZebraSectionProps) {
       chanceLevel: 'medium'
     })
   ];
+  
+  // Apply max limit for free users
+  if (maxZebras !== undefined && maxZebras > 0) {
+    zebras = zebras.slice(0, maxZebras);
+  }
 
   const chanceConfig = {
     high: {

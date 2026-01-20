@@ -1355,12 +1355,15 @@ export default function Admin() {
                               <TableCell>
                                 <Badge 
                                   variant="outline" 
-                                  className={user.stripe_subscription_id 
-                                    ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' 
-                                    : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                                  className={
+                                    (user as any).registration_source === 'free' 
+                                      ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                                      : user.stripe_subscription_id 
+                                        ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' 
+                                        : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
                                   }
                                 >
-                                  {user.stripe_subscription_id ? 'Stripe' : 'Manual'}
+                                  {(user as any).registration_source === 'free' ? '🎁 Grátis' : (user.stripe_subscription_id ? 'Stripe' : 'Orgânico')}
                                 </Badge>
                               </TableCell>
                               <TableCell>

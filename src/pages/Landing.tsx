@@ -568,7 +568,7 @@ export default function Landing() {
           </div>
 
           <button 
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/auth?source=free')}
             className="btn-primary text-base sm:text-xl py-5 px-10 inline-flex items-center gap-2"
           >
             {l.hero.cta}

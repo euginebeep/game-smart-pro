@@ -2240,12 +2240,13 @@ serve(async (req) => {
 
     const { data: profileData } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, subscription_status, trial_end_date, timezone, country_code')
+      .select('subscription_tier, subscription_status, trial_end_date, timezone, country_code, registration_source')
       .eq('user_id', userId)
       .single();
     
     const userTimezone = profileData?.timezone || 'America/Sao_Paulo';
     const userCountry = profileData?.country_code || 'BR';
+    const registrationSource = profileData?.registration_source || 'organic';
     
     const isSubscribed = profileData?.subscription_status === 'active';
     
@@ -2336,8 +2337,34 @@ serve(async (req) => {
       return { ...data, games: jogosValidos };
     };
     
-    const filterDataByTier = (data: any, tier: string) => {
+    const filterDataByTier = (data: any, tier: string, registrationSource?: string) => {
       if (!data?.games) return data;
+      
+      // Free users (from "Receber Análise Grátis" button) get limited report
+      if (tier === 'free' && registrationSource === 'free') {
+        // Only 2 games for free users
+        const limitedGames = data.games.slice(0, 2).map((game: any) => {
+          const filteredGame = { ...game };
+          delete filteredGame.advancedData;
+          if (filteredGame.analysis) {
+            filteredGame.analysis.factors = [];
+            filteredGame.analysis.confidence = undefined;
+            filteredGame.analysis.valuePercentage = undefined;
+          }
+          return filteredGame;
+        });
+        
+        return { 
+          ...data, 
+          games: limitedGames, 
+          userTier: tier,
+          isFreeReport: true,
+          // Limit accumulators and zebras for free users
+          maxAccumulators: 1,
+          maxZebras: 1,
+          maxDoubles: 1
+        };
+      }
       
       const maxGames = tier === 'premium' ? 15 : tier === 'advanced' ? 8 : 5;
       const limitedGames = data.games.slice(0, maxGames);
@@ -2365,11 +2392,18 @@ serve(async (req) => {
           }
         }
         // Premium tier: keep all data including corners, cards, lineups, btts, topScorers
+        // Premium users get FULL analysis cached for offline viewing
         
         return filteredGame;
       });
       
-      return { ...data, games: filteredGames, userTier: tier };
+      return { 
+        ...data, 
+        games: filteredGames, 
+        userTier: tier,
+        // Flag to indicate if full analysis is available for offline
+        fullAnalysisCached: tier === 'premium'
+      };
     };
     
     // Function to enrich games with Premium data (on-demand)
@@ -2475,13 +2509,14 @@ serve(async (req) => {
         }
       }
       
-      const filteredData = filterDataByTier(timeFilteredData, userTier);
+      const filteredData = filterDataByTier(timeFilteredData, userTier, registrationSource);
       filteredData.fromCache = true;
       filteredData.dailySearchesRemaining = dailySearchInfo.remaining;
       filteredData.isTrial = dailySearchInfo.is_trial;
       filteredData.userTier = userTier;
       filteredData.userTimezone = userTimezone;
       filteredData.userCountry = userCountry;
+      filteredData.registrationSource = registrationSource;
       
       return new Response(
         JSON.stringify(filteredData),
@@ -2507,7 +2542,7 @@ serve(async (req) => {
       }
     }
     
-    const filteredResult = filterDataByTier(translatedResult, userTier);
+    const filteredResult = filterDataByTier(translatedResult, userTier, registrationSource);
     
     return new Response(
       JSON.stringify({ 
@@ -2517,7 +2552,8 @@ serve(async (req) => {
         isTrial: dailySearchInfo.is_trial,
         userTier: userTier,
         userTimezone: userTimezone,
-        userCountry: userCountry
+        userCountry: userCountry,
+        registrationSource: registrationSource
       }),
       { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
     );
