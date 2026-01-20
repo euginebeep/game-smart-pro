@@ -68,49 +68,301 @@ export function TechnicalDocsTab() {
                 </ol>
               </div>
 
-              <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700">
-                <h4 className="font-semibold text-amber-400 mb-2 flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  Prompt de Análise (Simplificado)
+              {/* FASE 1: COLETA DE DADOS */}
+              <div className="p-4 bg-slate-900/50 rounded-lg border border-emerald-500/30">
+                <h4 className="font-semibold text-emerald-400 mb-3 flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  FASE 1: Coleta de Dados (API-Football)
                 </h4>
-                <ScrollArea className="h-[200px]">
-                  <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono">
-{`ANÁLISE EUGINE v4.0 - MOTOR DE DECISÃO
+                <p className="text-xs text-muted-foreground mb-3">
+                  O sistema faz chamadas sequenciais com delays de 200-400ms para respeitar rate limits.
+                </p>
+                <ScrollArea className="h-[320px]">
+                  <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono bg-black/40 p-3 rounded">
+{`// ============= ENDPOINTS CONSULTADOS =============
 
-ENTRADA:
-- Fixture: {homeTeam} vs {awayTeam}
-- Liga: {league} | Data: {date}
-- Odds: Casa {home} | Empate {draw} | Fora {away}
+1. FIXTURES DO DIA
+   Endpoint: /fixtures
+   Params: { date: "YYYY-MM-DD", timezone: "America/Sao_Paulo" }
+   Retorna: Lista de jogos com odds básicas
+   → Fonte: https://v3.football.api-sports.io/fixtures
 
-DADOS COLETADOS:
-1. H2H: Últimos {n} confrontos diretos
-2. Forma: Últimos 5 jogos de cada time
-3. Estatísticas: Gols marcados/sofridos, BTTS%, Over 2.5%
-4. Classificação: Posição na tabela
-5. Lesões: Jogadores ausentes
-6. Previsão API: Análise externa
+2. CONFRONTOS DIRETOS (H2H)
+   Endpoint: /fixtures/headtohead
+   Params: { h2h: "{homeTeamId}-{awayTeamId}", last: "10" }
+   Retorna: Últimos 10 jogos entre os times
+   → Fonte: https://v3.football.api-sports.io/fixtures/headtohead
 
-CÁLCULO DE CONFIANÇA:
-Score = Σ(fator × peso_dinâmico)
-Onde pesos variam por:
-- Liga (ex: Premier League = mais peso em stats)
-- Tipo de aposta (1X2, Over/Under, BTTS)
+3. ESTATÍSTICAS DO TIME
+   Endpoint: /teams/statistics
+   Params: { team: "{teamId}", league: "{leagueId}", season: "{year}" }
+   Retorna: Gols, clean sheets, BTTS%, home/away splits
+   → Fonte: https://v3.football.api-sports.io/teams/statistics
 
-CRITÉRIOS DE RECOMENDAÇÃO:
-- Confiança mínima: 65%
-- Value Edge mínimo: 5%
-- Se não atender: SKIP
+4. CLASSIFICAÇÃO
+   Endpoint: /standings
+   Params: { league: "{leagueId}", season: "{year}" }
+   Retorna: Posição na tabela e forma (últimos 5 jogos)
+   → Fonte: https://v3.football.api-sports.io/standings
 
-SAÍDA:
-{
-  "type": "VITÓRIA CASA" | "EMPATE" | "MAIS DE 2.5 GOLS" | ...,
-  "confidence": 72,
-  "valuePercentage": 8.5,
-  "factors": [...],
-  "isSkip": false
+5. LESÕES E SUSPENSÕES
+   Endpoint: /injuries
+   Params: { fixture: "{fixtureId}" }
+   Retorna: Jogadores indisponíveis e motivos
+   → Fonte: https://v3.football.api-sports.io/injuries
+
+6. PREVISÃO DA API
+   Endpoint: /predictions
+   Params: { fixture: "{fixtureId}" }
+   Retorna: Winner, confidence%, advice, under/over
+   → Fonte: https://v3.football.api-sports.io/predictions
+
+7. ESCALAÇÕES (Premium)
+   Endpoint: /fixtures/lineups
+   Params: { fixture: "{fixtureId}" }
+   Retorna: 11 titulares + formação tática
+   → Fonte: https://v3.football.api-sports.io/fixtures/lineups
+
+8. ARTILHEIROS (Premium)
+   Endpoint: /players/topscorers
+   Params: { league: "{leagueId}", season: "{year}" }
+   Retorna: Top 10 artilheiros da liga
+   → Fonte: https://v3.football.api-sports.io/players/topscorers
+
+9. ODDS BTTS (Premium)
+   Endpoint: /odds
+   Params: { fixture: "{fixtureId}", bookmaker: "8", bet: "8" }
+   Retorna: Odds reais de BTTS Sim/Não
+   → Fonte: https://v3.football.api-sports.io/odds`}
+                  </pre>
+                </ScrollArea>
+                <p className="text-xs text-amber-400 mt-2 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Rate Limit: 30 req/min | Delay entre chamadas: 200-400ms
+                </p>
+              </div>
+
+              {/* FASE 2: PROCESSAMENTO */}
+              <div className="p-4 bg-slate-900/50 rounded-lg border border-cyan-500/30">
+                <h4 className="font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                  <Cpu className="h-4 w-4" />
+                  FASE 2: Motor de Análise (analyzeAdvanced)
+                </h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Função principal que processa todos os dados e gera a recomendação.
+                </p>
+                <ScrollArea className="h-[450px]">
+                  <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono bg-black/40 p-3 rounded">
+{`// ============= MOTOR EUGINE v4.0 =============
+// Arquivo: supabase/functions/fetch-odds/index.ts
+// Linha: ~764-1132
+
+function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
+  
+  // Inicializa scores para cada tipo de aposta
+  let over25Score = 50;
+  let under25Score = 50;
+  let bttsScore = 50;
+  let homeWinScore = 50;
+  let awayWinScore = 50;
+  let drawScore = 50;
+  
+  // ===== 1. ANÁLISE DO H2H =====
+  // Peso dinâmico: 10-22% dependendo da liga
+  if (h2h.totalGames >= 3) {
+    if (h2h.avgGoals >= 3.0) {
+      over25Score += 15 * h2hMultiplier;
+      factors.push("Média alta de gols no H2H");
+    }
+    if (homeWinRate >= 0.6) {
+      homeWinScore += 12 * h2hMultiplier;
+      factors.push("Casa venceu 60%+ dos confrontos");
+    }
+  }
+  
+  // ===== 2. ANÁLISE DE FORMA PONDERADA =====
+  // Peso dinâmico: 18-25% dependendo da liga
+  // FÓRMULA: formScore = (últimos3 × 0.6) + (últimos5 × 0.4)
+  const homeFormScore = calculateWeightedForm(homeForm);
+  
+  if (homeFormScore >= 70) {
+    homeWinScore += 15 * formMultiplier;
+    factors.push("Casa em ótima forma");
+  }
+  if (homeFormScore <= 40 && awayFormScore <= 40) {
+    drawScore += 12; // Ambos em má forma = empate
+  }
+  
+  // ===== 3. ANÁLISE DE ESTATÍSTICAS =====
+  // Peso dinâmico: 20-32% dependendo da liga
+  const avgGoalsTotal = homeStats.avgGoalsScored + awayStats.avgGoalsScored;
+  
+  if (avgGoalsTotal >= 3.2) {
+    over25Score += 20 * statsMultiplier;
+    factors.push("Média combinada: X.X gols/jogo");
+  }
+  
+  // BTTS baseado em percentual histórico
+  const avgBtts = (homeStats.bttsPercentage + awayStats.bttsPercentage) / 2;
+  if (avgBtts >= 60) {
+    bttsScore += 18 * statsMultiplier;
+  }
+  
+  // HOME/AWAY SPLITS
+  if (homeStats.homeGoalsAvg - awayStats.awayGoalsConcededAvg > 0.5) {
+    homeWinScore += 10;
+    factors.push("Casa forte em casa");
+  }
+  
+  // ===== 4. SHOTS & POSSESSION =====
+  // Dados do fixture (se disponível)
+  if (shotsDiff > 3) {
+    homeWinScore += 8;
+    over25Score += 5;
+  }
+  if (homePossession > 60) {
+    homeWinScore += 5;
+  }
+  
+  // ===== 5. ANÁLISE DE POSIÇÃO NA TABELA =====
+  // Peso dinâmico: 10-15%
+  const posDiff = awayPosition - homePosition;
+  
+  if (posDiff >= 10) {
+    homeWinScore += 12 * standingsMultiplier;
+    factors.push("Casa: Xº vs Fora: Yº");
+  }
+  if (Math.abs(posDiff) <= 3) {
+    drawScore += 8; // Times próximos = empate
+  }
+  
+  // ===== 6. ANÁLISE DE LESÕES =====
+  // Peso dinâmico: 10-18%
+  if (homeInjuries >= 3) {
+    homeWinScore -= 10 * injuryMultiplier;
+    awayWinScore += 8 * injuryMultiplier;
+    factors.push("Casa: X desfalques");
+  }
+  
+  // ===== 7. PREVISÃO DA API =====
+  // Peso fixo: ~5% (confirmação externa)
+  if (apiPrediction.advice.includes('over')) {
+    over25Score += 10;
+  }
+  if (apiPrediction.winnerConfidence >= 60) {
+    [winner]Score += 12;
+  }
+  
+  // ===== DETERMINAR MELHOR APOSTA COM VALUE =====
+  const allScores = [
+    { type: "Over 2.5", score: over25Score, odd: game.odds.over },
+    { type: "Under 2.5", score: under25Score, odd: game.odds.under },
+    { type: "BTTS Sim", score: bttsScore, odd: avgOdd },
+    { type: "Vitória Casa", score: homeWinScore, odd: game.odds.home },
+    { type: "Vitória Fora", score: awayWinScore, odd: game.odds.away },
+    { type: "Empate", score: drawScore, odd: game.odds.draw },
+  ];
+  
+  // Calcular VALUE para cada opção
+  scoresWithValue = allScores.map(bet => {
+    const estimatedProb = Math.min(100, Math.max(0, bet.score));
+    const impliedProb = (1 / bet.odd) * 100;
+    const value = ((estimatedProb / impliedProb) - 1) * 100;
+    return { ...bet, estimatedProb, impliedProb, value };
+  });
+  
+  // Ordenar por score e selecionar melhor
+  const best = scoresWithValue.sort((a, b) => b.score - a.score)[0];
+  const confidence = Math.min(100, Math.max(30, best.score));
+  
+  // VERIFICAR SKIP
+  if (confidence < 65 || best.value < 5) {
+    return { type: "SKIP", isSkip: true, skipReason: "..." };
+  }
+  
+  return {
+    type: best.type,
+    confidence: confidence,
+    valuePercentage: best.value,
+    factors: factors.slice(0, 5),
+    isSkip: false
+  };
 }`}
                   </pre>
                 </ScrollArea>
+              </div>
+
+              {/* FASE 3: OUTPUT */}
+              <div className="p-4 bg-slate-900/50 rounded-lg border border-purple-500/30">
+                <h4 className="font-semibold text-purple-400 mb-3 flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  FASE 3: Estrutura de Saída (BettingAnalysis)
+                </h4>
+                <ScrollArea className="h-[200px]">
+                  <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono bg-black/40 p-3 rounded">
+{`// ============= INTERFACE DE RETORNO =============
+
+interface BettingAnalysis {
+  type: string;           // "VITÓRIA CASA" | "MAIS DE 2.5 GOLS" | "SKIP"
+  reason: string;         // "H2H favorável. Casa em ótima forma."
+  profit: number;         // Lucro potencial (R$40 × odd - R$40)
+  confidence: number;     // 0-100 (mínimo para recomendar: 65)
+  
+  // Fatores que influenciaram a decisão
+  factors: AnalysisFactor[];  // Top 5 fatores
+  
+  // Value Betting
+  valuePercentage: number;      // Edge % contra o mercado
+  impliedProbability: number;   // Probabilidade das odds
+  estimatedProbability: number; // Nossa estimativa
+  
+  // Skip info
+  isSkip: boolean;        // true se não recomendamos apostar
+  skipReason?: string;    // "Confiança baixa" | "Sem edge"
+}
+
+interface AnalysisFactor {
+  name: string;           // "H2H" | "Forma" | "Estatísticas"
+  impact: 'positive' | 'negative' | 'neutral';
+  weight: number;         // Peso aplicado (0-100)
+  description: string;    // "Casa venceu 60% dos confrontos"
+}
+
+// ============= THRESHOLDS DE DECISÃO =============
+
+const MIN_CONFIDENCE_THRESHOLD = 65;  // Mínimo para recomendar
+const MIN_VALUE_THRESHOLD = 5;        // 5% edge mínimo
+const MAX_VALUE_THRESHOLD = 8;        // 8% para mercados de resultado
+
+// Se não atender ambos critérios → SKIP`}
+                  </pre>
+                </ScrollArea>
+              </div>
+
+              {/* FONTES E REFERÊNCIAS */}
+              <div className="p-4 bg-slate-900/50 rounded-lg border border-amber-500/30">
+                <h4 className="font-semibold text-amber-400 mb-3 flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  Fontes e Referências
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">Código</Badge>
+                    <code className="text-xs text-muted-foreground">supabase/functions/fetch-odds/index.ts</code>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">API</Badge>
+                    <code className="text-xs text-muted-foreground">https://www.api-football.com/documentation-v3</code>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline" className="shrink-0">Docs</Badge>
+                    <code className="text-xs text-muted-foreground">docs/EUGINE_TECHNICAL_SPECIFICATION.md</code>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Para modificar a lógica, edite diretamente o arquivo <code className="bg-black/30 px-1 rounded">fetch-odds/index.ts</code> 
+                  nas linhas 764-1132 (função analyzeAdvanced).
+                </p>
               </div>
             </div>
           </CardContent>
