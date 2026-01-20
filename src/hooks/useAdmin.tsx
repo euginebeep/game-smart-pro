@@ -228,7 +228,7 @@ export function useAdmin() {
     }
   };
 
-  const sendMassEmail = async (filters: EmailFilters, subject: string, htmlContent: string) => {
+  const sendMassEmail = async (filters: EmailFilters, subject: string, htmlContent: string, selectedUserIds?: string[]) => {
     setEmailLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -236,7 +236,7 @@ export function useAdmin() {
 
       const { data, error } = await supabase.functions.invoke('admin-users', {
         headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { action: 'send_mass_email', filters, subject, htmlContent }
+        body: { action: 'send_mass_email', filters, subject, htmlContent, selectedUserIds }
       });
 
       if (error) throw error;
@@ -248,6 +248,27 @@ export function useAdmin() {
       throw error;
     } finally {
       setEmailLoading(false);
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase.functions.invoke('admin-users', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { action: 'delete_user', userId }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      await fetchUsers();
+      return true;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
     }
   };
 
@@ -285,6 +306,7 @@ export function useAdmin() {
     setSearchCount,
     blockUser,
     sendMassEmail,
-    getFilteredUserCount
+    getFilteredUserCount,
+    deleteUser
   };
 }
