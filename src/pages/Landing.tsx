@@ -611,20 +611,20 @@ export default function Landing() {
           </div>
 
           {/* Tab Content - Two Column Layout */}
-          <div className="relative min-h-[500px] lg:min-h-[650px]">
+          <div className="relative">
             {stepData.map((step, idx) => (
               <div 
                 key={idx}
-                className={`grid md:grid-cols-2 gap-8 lg:gap-16 items-start transition-all duration-500 ${
+                className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 lg:gap-16 items-center transition-all duration-500 ${
                   activeTab === idx + 1 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'hidden opacity-0 translate-y-5'
+                    ? 'opacity-100' 
+                    : 'hidden opacity-0'
                 }`}
               >
                 {/* Text Column */}
-                <div className="order-2 md:order-1 relative z-20 flex flex-col justify-center">
+                <div className="order-2 md:order-1 flex flex-col justify-start">
                   <h3 
-                    className="text-xl sm:text-2xl lg:text-3xl xl:text-[38px] font-black leading-tight mb-4 lg:mb-6 relative z-20"
+                    className="text-xl sm:text-2xl lg:text-3xl font-black leading-tight mb-4"
                     style={{
                       background: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)',
                       WebkitBackgroundClip: 'text',
@@ -633,7 +633,7 @@ export default function Landing() {
                   >
                     {step.heading}
                   </h3>
-                  <div className="bg-card/95 p-4 sm:p-5 lg:p-6 rounded-xl border border-border/50 backdrop-blur-sm relative z-20">
+                  <div className="bg-card/80 p-4 sm:p-5 lg:p-6 rounded-xl border border-border/50 backdrop-blur-sm">
                     <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
                       {step.description}
                     </p>
@@ -642,19 +642,19 @@ export default function Landing() {
                 
                 {/* Phone Mockup Column */}
                 <div 
-                  className="order-1 md:order-2 flex justify-center items-center py-4 relative z-10"
+                  className="order-1 md:order-2 flex justify-center items-center"
                   style={{ perspective: '1000px' }}
                 >
                   <div 
-                    className="relative w-[160px] h-[320px] sm:w-[180px] sm:h-[360px] lg:w-[200px] lg:h-[400px] transition-transform duration-500 hover:scale-105"
+                    className="relative w-[200px] h-[400px] sm:w-[240px] sm:h-[480px] md:w-[280px] md:h-[560px] lg:w-[320px] lg:h-[640px] transition-transform duration-500 hover:scale-105"
                     style={{
-                      transform: 'rotateY(-10deg) rotateX(3deg)',
+                      transform: 'rotateY(-8deg) rotateX(2deg)',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1.05)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'rotateY(-10deg) rotateX(3deg)';
+                      e.currentTarget.style.transform = 'rotateY(-8deg) rotateX(2deg)';
                     }}
                   >
                     <img 
@@ -662,7 +662,7 @@ export default function Landing() {
                       alt={stepTitles[idx]}
                       className="w-full h-full object-contain"
                       style={{
-                        filter: 'drop-shadow(0 0 20px hsla(185, 100%, 50%, 0.3))',
+                        filter: 'drop-shadow(0 0 30px hsla(185, 100%, 50%, 0.25))',
                       }}
                     />
                   </div>
