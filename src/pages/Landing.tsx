@@ -41,9 +41,9 @@ export default function Landing() {
         getStarted: 'Comece Agora',
       },
       hero: {
-        title: 'PARE DE ADIVINHAR. COMECE A',
-        titleHighlight: 'GANHAR COM ANÁLISE DE DADOS.',
-        subtitle: 'Nossa IA analiza más de 40 mercados e 7 fatores por jogo para te dar a melhor recomendação. Simples, direto e lucrativo.',
+        title: 'PARE DE ADIVINHAR.',
+        titleHighlight: 'COMECE A GANHAR COM ANÁLISE DE DADOS.',
+        subtitle: 'Nossa IA analisa mais de 40 mercados e 7 fatores por jogo para te dar a melhor recomendação. Simples, direto e lucrativo.',
         cta: 'RECEBER ANÁLISE GRÁTIS',
       },
       steps: {
