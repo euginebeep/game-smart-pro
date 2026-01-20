@@ -425,6 +425,80 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
     return letter;
   };
 
+  // Calculate dynamic values
+  const homeWinPercent = adv?.homePosition 
+    ? Math.max(30, Math.min(80, 100 - (adv.homePosition * 3))).toFixed(1) 
+    : '55.0';
+  
+  const totalH2HGames = adv?.h2h?.totalGames || 0;
+  const homeH2HWins = adv?.h2h?.homeWins || 0;
+  const awayH2HWins = adv?.h2h?.awayWins || 0;
+  const draws = adv?.h2h?.draws || 0;
+  
+  // Shot conversion based on goals scored
+  const shotConversion = adv?.homeStats?.avgGoalsScored 
+    ? Math.min(70, Math.round((adv.homeStats.avgGoalsScored / 3) * 100)) 
+    : 45;
+  
+  // Possession estimate based on position
+  const possession = adv?.homePosition && adv?.awayPosition
+    ? Math.max(40, Math.min(65, 55 + (adv.awayPosition - adv.homePosition)))
+    : 52;
+
+  // Home injuries count
+  const homeInjuriesCount = adv?.homeInjuries || 0;
+  const awayInjuriesCount = adv?.awayInjuries || 0;
+  const totalInjuries = homeInjuriesCount + awayInjuriesCount;
+  
+  // Impact score based on injuries (1-5)
+  const impactScore = Math.min(5, Math.max(1, Math.ceil(awayInjuriesCount / 2)));
+
+  // Dynamic conclusions based on data
+  const getFormConclusion = () => {
+    const homeForm = adv?.homeForm || '';
+    const awayForm = adv?.awayForm || '';
+    const homeWins = (homeForm.match(/W/g) || []).length;
+    const awayWins = (awayForm.match(/W/g) || []).length;
+    
+    if (homeWins >= 3 && awayWins <= 2) return l.strongHomeForm;
+    if (awayWins >= 3 && homeWins <= 2) return language === 'pt' ? 'Visitante em boa fase. Mandante irregular.' : 
+                                          language === 'es' ? 'Visitante en buena racha. Local irregular.' :
+                                          language === 'it' ? 'Ospiti in buona forma. Casa incostante.' :
+                                          'Away team in good form. Home team inconsistent.';
+    return language === 'pt' ? 'Ambos os times em fase similar.' : 
+           language === 'es' ? 'Ambos equipos en fase similar.' :
+           language === 'it' ? 'Entrambe le squadre in forma simile.' :
+           'Both teams in similar form.';
+  };
+
+  const getH2HConclusion = () => {
+    if (homeH2HWins > awayH2HWins + 1) return l.historicalAdvantage;
+    if (awayH2HWins > homeH2HWins + 1) return language === 'pt' ? 'Visitante tem vantagem nos confrontos diretos.' :
+                                             language === 'es' ? 'Visitante tiene ventaja en los enfrentamientos.' :
+                                             language === 'it' ? 'Ospiti hanno vantaggio negli scontri diretti.' :
+                                             'Away team has advantage in head-to-head.';
+    return language === 'pt' ? 'Confrontos equilibrados entre os times.' :
+           language === 'es' ? 'Enfrentamientos equilibrados entre los equipos.' :
+           language === 'it' ? 'Scontri equilibrati tra le squadre.' :
+           'Balanced head-to-head record.';
+  };
+
+  const getInjuryConclusion = () => {
+    if (awayInjuriesCount > homeInjuriesCount + 2) return l.missingDefender;
+    if (homeInjuriesCount > awayInjuriesCount + 2) return language === 'pt' ? 'Mandante sem jogadores importantes. Vantagem para o visitante.' :
+                                                          language === 'es' ? 'Local sin jugadores clave. Ventaja para el visitante.' :
+                                                          language === 'it' ? 'Casa senza giocatori chiave. Vantaggio per gli ospiti.' :
+                                                          'Home team missing key players. Advantage for away.';
+    if (totalInjuries === 0) return language === 'pt' ? 'Todos os jogadores disponíveis.' :
+                                    language === 'es' ? 'Todos los jugadores disponibles.' :
+                                    language === 'it' ? 'Tutti i giocatori disponibili.' :
+                                    'All players available.';
+    return language === 'pt' ? 'Ambos os times com desfalques similares.' :
+           language === 'es' ? 'Ambos equipos con bajas similares.' :
+           language === 'it' ? 'Entrambe le squadre con assenze simili.' :
+           'Both teams with similar absences.';
+  };
+
   return (
     <div className="bg-slate-950 text-white min-h-screen p-4 sm:p-6 space-y-6">
       {/* Header with Teams */}
@@ -680,19 +754,25 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
               </div>
               <div>
                 <p className="text-slate-400 text-xs">{l.shotConversion}</p>
-                <p className="text-white font-bold">58%</p>
+                <p className="text-white font-bold">{shotConversion}%</p>
               </div>
               <div>
                 <p className="text-slate-400 text-xs">{l.possession}</p>
                 <div className="flex items-center gap-2">
                   <div className="w-10 h-10 rounded-full border-4 border-green-400 flex items-center justify-center">
-                    <span className="text-xs font-bold">60%</span>
+                    <span className="text-xs font-bold">{possession}%</span>
                   </div>
                 </div>
               </div>
               <div className="pt-2 border-t border-slate-800">
                 <p className="text-yellow-400 text-xs font-medium">{l.conclusion}</p>
-                <p className="text-slate-300 text-xs">{l.arsenalDominates}</p>
+                <p className="text-slate-300 text-xs">
+                  {possession > 55 ? l.arsenalDominates : 
+                   language === 'pt' ? 'Posse equilibrada entre os times.' :
+                   language === 'es' ? 'Posesión equilibrada entre los equipos.' :
+                   language === 'it' ? 'Possesso equilibrato tra le squadre.' :
+                   'Balanced possession between teams.'}
+                </p>
               </div>
             </div>
           </div>
@@ -733,7 +813,7 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
               </div>
               <div className="pt-2 border-t border-slate-800">
                 <p className="text-yellow-400 text-xs font-medium">{l.conclusion}</p>
-                <p className="text-slate-300 text-xs">{l.strongHomeForm}</p>
+                <p className="text-slate-300 text-xs">{getFormConclusion()}</p>
               </div>
             </div>
           </div>
@@ -770,7 +850,7 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
               </div>
               <div className="pt-2 border-t border-slate-800">
                 <p className="text-yellow-400 text-xs font-medium">{l.conclusion}</p>
-                <p className="text-slate-300 text-xs">{l.historicalAdvantage}</p>
+                <p className="text-slate-300 text-xs">{getH2HConclusion()}</p>
               </div>
             </div>
           </div>
@@ -787,7 +867,7 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
             <div className="space-y-3">
               <div>
                 <p className="text-slate-400 text-xs">{l.homeWinPercent}</p>
-                <p className="text-white text-2xl font-bold">96.3%</p>
+                <p className="text-white text-2xl font-bold">{homeWinPercent}%</p>
               </div>
               <div>
                 <p className="text-slate-400 text-xs">{l.crowdInfluence}</p>
@@ -846,17 +926,21 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
                 <p className="text-slate-400 text-xs">{l.impactScore}</p>
                 <div className="flex gap-1 mt-1">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className={`w-4 h-6 rounded ${i <= 3 ? 'bg-yellow-400' : 'bg-slate-700'}`} />
+                    <div key={i} className={`w-4 h-6 rounded ${i <= impactScore ? 'bg-yellow-400' : 'bg-slate-700'}`} />
                   ))}
                 </div>
               </div>
               <div>
                 <p className="text-slate-400 text-xs">{l.lineupChange}</p>
-                <p className="text-xs text-slate-300">-{adv?.awayInjuries || 2} {l.keyPlayers}</p>
+                <p className="text-xs text-slate-300">
+                  {totalInjuries > 0 
+                    ? `-${awayInjuriesCount} ${l.keyPlayers} (${game.awayTeam})` 
+                    : l.none}
+                </p>
               </div>
               <div className="pt-2 border-t border-slate-800">
                 <p className="text-yellow-400 text-xs font-medium">{l.conclusion}</p>
-                <p className="text-slate-300 text-xs">{l.missingDefender}</p>
+                <p className="text-slate-300 text-xs">{getInjuryConclusion()}</p>
               </div>
             </div>
           </div>
@@ -920,22 +1004,10 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="py-1">Bet365</td>
-                    <td className="text-center text-emerald-400 font-bold">3.00</td>
-                    <td className="text-center">2.60</td>
-                    <td className="text-center">2.60</td>
-                  </tr>
-                  <tr>
-                    <td className="py-1 text-emerald-400">Betfair</td>
-                    <td className="text-center font-bold">2.00</td>
-                    <td className="text-center text-emerald-400 font-bold">6.00</td>
-                    <td className="text-center">2.70</td>
-                  </tr>
-                  <tr>
-                    <td className="py-1">Betano</td>
-                    <td className="text-center font-bold">2.80</td>
-                    <td className="text-center">3.50</td>
-                    <td className="text-center text-emerald-400 font-bold">2.50</td>
+                    <td className="py-1">{game.bookmaker}</td>
+                    <td className="text-center text-emerald-400 font-bold">{game.odds.home.toFixed(2)}</td>
+                    <td className="text-center">{game.odds.draw.toFixed(2)}</td>
+                    <td className="text-center">{game.odds.away.toFixed(2)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -944,7 +1016,7 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
             <p className="text-slate-500 text-xs">{l.none}</p>
           </div>
 
-          {/* Referee Analysis */}
+          {/* Referee Analysis - Placeholder since API doesn't provide referee data */}
           <div className="bg-slate-900 rounded-xl p-4 border border-slate-700">
             <h3 className="font-bold text-white mb-3">{l.refereeAnalysis}</h3>
             <div className="space-y-2">
@@ -952,44 +1024,101 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
                 <span className="text-slate-400 text-xs">{l.refereeName}</span>
                 <div className="flex items-center gap-1">
                   <span className="w-3 h-3 rounded bg-yellow-400" />
-                  <span className="text-white text-xs">Anthony Taylor</span>
+                  <span className="text-white text-xs">
+                    {language === 'pt' ? 'Não disponível' : 
+                     language === 'es' ? 'No disponible' : 
+                     language === 'it' ? 'Non disponibile' : 
+                     'Not available'}
+                  </span>
                 </div>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400 text-xs">{l.games}</span>
-                <span className="text-white text-xs">370</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-slate-400 text-xs">{l.yellowCards}</span>
-                <span className="text-white text-xs">4.2</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400 text-xs">{l.penaltyFreq}</span>
-                <span className="text-white text-xs">0.35</span>
+                <span className="text-white text-xs">
+                  {language === 'pt' ? '~3.5 média' : 
+                   language === 'es' ? '~3.5 promedio' : 
+                   language === 'it' ? '~3.5 media' : 
+                   '~3.5 avg'}
+                </span>
               </div>
             </div>
             <div className="pt-3 border-t border-slate-800 mt-3">
               <p className="text-yellow-400 text-xs font-medium">{l.conclusion}</p>
-              <p className="text-slate-300 text-xs">{l.strictReferee}</p>
+              <p className="text-slate-300 text-xs">
+                {language === 'pt' ? 'Dados do árbitro não disponíveis para esta partida.' : 
+                 language === 'es' ? 'Datos del árbitro no disponibles para este partido.' : 
+                 language === 'it' ? 'Dati arbitro non disponibili per questa partita.' : 
+                 'Referee data not available for this match.'}
+              </p>
             </div>
           </div>
 
-          {/* Statistical Curiosities */}
+          {/* Statistical Curiosities - Dynamic based on actual data */}
           <div className="bg-slate-900 rounded-xl p-4 border border-slate-700">
             <h3 className="font-bold text-white mb-3">{l.statCuriosities}</h3>
             <p className="text-slate-400 text-xs mb-2">{l.funFacts}</p>
             <div className="space-y-2">
-              {[
-                `${game.homeTeam} ${l.scoredSecondHalf}`,
-                `${game.awayTeam} ${l.concededFirst}`,
-                l.lastH2HOver,
-                `${game.homeTeam} ${l.unbeatenHome}`,
-              ].map((fact, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span className="w-2 h-2 rounded bg-yellow-400 mt-1.5 flex-shrink-0" />
-                  <p className="text-slate-300 text-xs">{fact}</p>
-                </div>
-              ))}
+              {(() => {
+                const facts: string[] = [];
+                
+                // Fact based on home form
+                const homeFormWins = (adv?.homeForm || '').split('').filter(l => l === 'W').length;
+                if (homeFormWins >= 3) {
+                  facts.push(language === 'pt' ? `${game.homeTeam} venceu ${homeFormWins} dos últimos 5 jogos.` :
+                             language === 'es' ? `${game.homeTeam} ganó ${homeFormWins} de los últimos 5 partidos.` :
+                             language === 'it' ? `${game.homeTeam} ha vinto ${homeFormWins} delle ultime 5 partite.` :
+                             `${game.homeTeam} won ${homeFormWins} of the last 5 games.`);
+                }
+                
+                // Fact based on avg goals
+                if (adv?.homeStats?.avgGoalsScored && adv.homeStats.avgGoalsScored > 1.5) {
+                  facts.push(language === 'pt' ? `${game.homeTeam} marca em média ${adv.homeStats.avgGoalsScored.toFixed(1)} gols por jogo.` :
+                             language === 'es' ? `${game.homeTeam} marca en promedio ${adv.homeStats.avgGoalsScored.toFixed(1)} goles por partido.` :
+                             language === 'it' ? `${game.homeTeam} segna in media ${adv.homeStats.avgGoalsScored.toFixed(1)} gol per partita.` :
+                             `${game.homeTeam} scores an average of ${adv.homeStats.avgGoalsScored.toFixed(1)} goals per game.`);
+                }
+                
+                // Fact based on H2H
+                if (adv?.h2h && adv.h2h.totalGames > 0) {
+                  facts.push(language === 'pt' ? `Nos últimos ${adv.h2h.totalGames} confrontos: ${adv.h2h.homeWins} vitórias para ${game.homeTeam}.` :
+                             language === 'es' ? `En los últimos ${adv.h2h.totalGames} enfrentamientos: ${adv.h2h.homeWins} victorias para ${game.homeTeam}.` :
+                             language === 'it' ? `Negli ultimi ${adv.h2h.totalGames} incontri: ${adv.h2h.homeWins} vittorie per ${game.homeTeam}.` :
+                             `In the last ${adv.h2h.totalGames} meetings: ${adv.h2h.homeWins} wins for ${game.homeTeam}.`);
+                }
+                
+                // Fact based on positions
+                if (adv?.homePosition && adv?.awayPosition) {
+                  facts.push(language === 'pt' ? `${game.homeTeam} está em ${adv.homePosition}º, ${game.awayTeam} em ${adv.awayPosition}º na tabela.` :
+                             language === 'es' ? `${game.homeTeam} está en ${adv.homePosition}º, ${game.awayTeam} en ${adv.awayPosition}º en la tabla.` :
+                             language === 'it' ? `${game.homeTeam} è ${adv.homePosition}º, ${game.awayTeam} è ${adv.awayPosition}º in classifica.` :
+                             `${game.homeTeam} is ${adv.homePosition}th, ${game.awayTeam} is ${adv.awayPosition}th in the table.`);
+                }
+                
+                // Fact based on over 2.5 percentage
+                if (adv?.homeStats?.over25Percentage && adv.homeStats.over25Percentage > 50) {
+                  facts.push(language === 'pt' ? `${Math.round(adv.homeStats.over25Percentage)}% dos jogos do ${game.homeTeam} tiveram mais de 2.5 gols.` :
+                             language === 'es' ? `${Math.round(adv.homeStats.over25Percentage)}% de los partidos del ${game.homeTeam} tuvieron más de 2.5 goles.` :
+                             language === 'it' ? `${Math.round(adv.homeStats.over25Percentage)}% delle partite del ${game.homeTeam} hanno avuto più di 2.5 gol.` :
+                             `${Math.round(adv.homeStats.over25Percentage)}% of ${game.homeTeam}'s games had over 2.5 goals.`);
+                }
+                
+                // If no dynamic facts available, show generic ones
+                if (facts.length === 0) {
+                  facts.push(
+                    language === 'pt' ? 'Dados estatísticos detalhados não disponíveis.' :
+                    language === 'es' ? 'Datos estadísticos detallados no disponibles.' :
+                    language === 'it' ? 'Dati statistici dettagliati non disponibili.' :
+                    'Detailed statistical data not available.'
+                  );
+                }
+                
+                return facts.slice(0, 4).map((fact, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="w-2 h-2 rounded bg-yellow-400 mt-1.5 flex-shrink-0" />
+                    <p className="text-slate-300 text-xs">{fact}</p>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
         </div>
