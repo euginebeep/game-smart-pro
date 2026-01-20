@@ -495,14 +495,13 @@ export default function Landing() {
         <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-black tracking-tight mb-6 leading-tight">
-            <span className="text-foreground">{l.hero.title}</span>
-            <br />
-            <span className="text-foreground">{l.hero.titleHighlight}</span>
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-6 leading-[1.15]">
+            <span className="text-foreground block">{l.hero.title}</span>
+            <span className="text-primary block mt-1">{l.hero.titleHighlight}</span>
           </h1>
 
-          <p className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10">
+          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg xl:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 px-2">
             {l.hero.subtitle}
           </p>
 
@@ -608,20 +607,20 @@ export default function Landing() {
           </div>
 
           {/* Tab Content - Two Column Layout */}
-          <div className="relative">
+          <div className="relative min-h-[500px] lg:min-h-[650px]">
             {stepData.map((step, idx) => (
               <div 
                 key={idx}
-                className={`grid md:grid-cols-2 gap-10 lg:gap-16 items-center transition-all duration-500 ${
+                className={`grid md:grid-cols-2 gap-8 lg:gap-16 items-start transition-all duration-500 ${
                   activeTab === idx + 1 
                     ? 'opacity-100 translate-y-0' 
                     : 'hidden opacity-0 translate-y-5'
                 }`}
               >
                 {/* Text Column */}
-                <div className="order-2 md:order-1 relative z-10">
+                <div className="order-2 md:order-1 relative z-10 flex flex-col justify-center">
                   <h3 
-                    className="text-2xl sm:text-3xl lg:text-[42px] font-black leading-tight mb-6"
+                    className="text-xl sm:text-2xl lg:text-3xl xl:text-[38px] font-black leading-tight mb-4 lg:mb-6"
                     style={{
                       background: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)',
                       WebkitBackgroundClip: 'text',
@@ -630,26 +629,28 @@ export default function Landing() {
                   >
                     {step.heading}
                   </h3>
-                  <p className="text-base lg:text-lg text-muted-foreground leading-relaxed bg-card/80 p-4 rounded-xl backdrop-blur-sm">
-                    {step.description}
-                  </p>
+                  <div className="bg-card/90 p-4 sm:p-5 lg:p-6 rounded-xl border border-border/50 backdrop-blur-sm">
+                    <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
                 
                 {/* Phone Mockup Column */}
                 <div 
-                  className="order-1 md:order-2 flex justify-center items-center"
+                  className="order-1 md:order-2 flex justify-center items-center py-4"
                   style={{ perspective: '1000px' }}
                 >
                   <div 
-                    className="relative w-[280px] h-[560px] lg:w-[300px] lg:h-[615px] transition-transform duration-500 hover:scale-105"
+                    className="relative w-[220px] h-[440px] sm:w-[260px] sm:h-[520px] lg:w-[280px] lg:h-[560px] transition-transform duration-500 hover:scale-105"
                     style={{
-                      transform: 'rotateY(-15deg) rotateX(5deg)',
+                      transform: 'rotateY(-10deg) rotateX(3deg)',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1.05)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'rotateY(-15deg) rotateX(5deg)';
+                      e.currentTarget.style.transform = 'rotateY(-10deg) rotateX(3deg)';
                     }}
                   >
                     <img 
@@ -657,7 +658,7 @@ export default function Landing() {
                       alt={stepTitles[idx]}
                       className="w-full h-full object-contain"
                       style={{
-                        filter: 'drop-shadow(0 0 30px hsla(185, 100%, 50%, 0.4))',
+                        filter: 'drop-shadow(0 0 25px hsla(185, 100%, 50%, 0.35))',
                       }}
                     />
                   </div>
