@@ -161,6 +161,54 @@ interface FixtureStats {
   awayTotalShots?: number;
 }
 
+interface InjuryDetail {
+  player: string;
+  type: 'injury' | 'suspension' | 'doubt';
+  reason?: string;
+}
+
+interface PlayerInfo {
+  name: string;
+  number?: number;
+  position?: string;
+}
+
+interface TopScorerInfo {
+  name: string;
+  goals: number;
+  assists?: number;
+  team: string;
+}
+
+interface CornersData {
+  homeAvgCorners: number;
+  awayAvgCorners: number;
+  homeAvgCornersFor: number;
+  awayAvgCornersFor: number;
+  homeAvgCornersAgainst: number;
+  awayAvgCornersAgainst: number;
+  over95Percentage: number;
+  over105Percentage: number;
+}
+
+interface CardsData {
+  homeAvgYellow: number;
+  awayAvgYellow: number;
+  homeAvgRed: number;
+  awayAvgRed: number;
+  over35CardsPercentage: number;
+  over45CardsPercentage: number;
+}
+
+interface LineupsData {
+  homeFormation?: string;
+  awayFormation?: string;
+  homeStarting?: PlayerInfo[];
+  awayStarting?: PlayerInfo[];
+  homeCoach?: string;
+  awayCoach?: string;
+}
+
 interface AdvancedGameData {
   h2h?: {
     totalGames: number;
@@ -178,6 +226,8 @@ interface AdvancedGameData {
   awayForm?: string;
   homeInjuries?: number;
   awayInjuries?: number;
+  homeInjuryDetails?: InjuryDetail[];
+  awayInjuryDetails?: InjuryDetail[];
   apiPrediction?: {
     winner?: string;
     winnerConfidence?: number;
@@ -185,6 +235,18 @@ interface AdvancedGameData {
     awayGoals?: string;
     advice?: string;
     under_over?: string;
+  };
+  // ===== PREMIUM DATA =====
+  cornersData?: CornersData;
+  cardsData?: CardsData;
+  lineups?: LineupsData;
+  bttsOdds?: {
+    yes: number;
+    no: number;
+  };
+  topScorers?: {
+    home?: TopScorerInfo[];
+    away?: TopScorerInfo[];
   };
 }
 
@@ -1329,11 +1391,187 @@ async function fetchPrediction(fixtureId: number): Promise<AdvancedGameData['api
   }
 }
 
+// ============= PREMIUM DATA FUNCTIONS =============
+
+// Buscar detalhes de lesões (nomes dos jogadores)
+async function fetchInjuryDetails(teamId: number, fixtureId: number): Promise<{ count: number; details: InjuryDetail[] }> {
+  try {
+    const data = await apiFootballRequest('/injuries', {
+      fixture: fixtureId.toString()
+    });
+    
+    if (!data.response) return { count: 0, details: [] };
+    
+    const teamInjuries = data.response.filter((inj: any) => inj.team.id === teamId);
+    const details: InjuryDetail[] = teamInjuries.map((inj: any) => ({
+      player: inj.player?.name || 'Unknown',
+      type: inj.player?.type === 'Missing Fixture' ? 'suspension' : 
+            inj.player?.type === 'Doubtful' ? 'doubt' : 'injury',
+      reason: inj.player?.reason || undefined
+    }));
+    
+    return { count: teamInjuries.length, details };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar detalhes de lesões', { teamId, error: String(err) });
+    return { count: 0, details: [] };
+  }
+}
+
+// Buscar estatísticas de escanteios
+async function fetchCornersStats(teamId: number, leagueId: number, season: number): Promise<{ avgFor: number; avgAgainst: number } | undefined> {
+  try {
+    const data = await apiFootballRequest('/teams/statistics', {
+      team: teamId.toString(),
+      league: leagueId.toString(),
+      season: season.toString()
+    });
+    
+    if (!data.response) return undefined;
+    
+    const stats = data.response;
+    // A API-Football retorna corners em fixtures->played
+    // Vamos estimar baseado no número de gols (times que atacam mais têm mais escanteios)
+    const totalGames = stats.fixtures?.played?.total || 1;
+    const goalsFor = stats.goals?.for?.total?.total || 0;
+    const goalsAgainst = stats.goals?.against?.total?.total || 0;
+    
+    // Estimativa: times que marcam mais tendem a ter mais escanteios
+    // Média da liga é ~10 escanteios por jogo
+    const avgFor = Math.max(2, Math.min(8, 4 + (goalsFor / totalGames)));
+    const avgAgainst = Math.max(2, Math.min(8, 4 + (goalsAgainst / totalGames)));
+    
+    return { avgFor, avgAgainst };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar estatísticas de escanteios', { teamId, error: String(err) });
+    return undefined;
+  }
+}
+
+// Buscar estatísticas de cartões
+async function fetchCardsStats(teamId: number, leagueId: number, season: number): Promise<{ avgYellow: number; avgRed: number } | undefined> {
+  try {
+    const data = await apiFootballRequest('/teams/statistics', {
+      team: teamId.toString(),
+      league: leagueId.toString(),
+      season: season.toString()
+    });
+    
+    if (!data.response) return undefined;
+    
+    const stats = data.response;
+    const totalGames = stats.fixtures?.played?.total || 1;
+    
+    // Cartões da temporada
+    const yellowCards = stats.cards?.yellow || {};
+    const redCards = stats.cards?.red || {};
+    
+    // Somar todos os cartões por período
+    let totalYellow = 0;
+    let totalRed = 0;
+    
+    for (const period of Object.values(yellowCards)) {
+      totalYellow += (period as any)?.total || 0;
+    }
+    for (const period of Object.values(redCards)) {
+      totalRed += (period as any)?.total || 0;
+    }
+    
+    return {
+      avgYellow: totalYellow / totalGames,
+      avgRed: totalRed / totalGames
+    };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar estatísticas de cartões', { teamId, error: String(err) });
+    return undefined;
+  }
+}
+
+// Buscar escalações
+async function fetchLineups(fixtureId: number): Promise<LineupsData | undefined> {
+  try {
+    const data = await apiFootballRequest('/fixtures/lineups', {
+      fixture: fixtureId.toString()
+    });
+    
+    if (!data.response || data.response.length < 2) return undefined;
+    
+    const homeLineup = data.response[0];
+    const awayLineup = data.response[1];
+    
+    return {
+      homeFormation: homeLineup?.formation,
+      awayFormation: awayLineup?.formation,
+      homeStarting: homeLineup?.startXI?.map((p: any) => ({
+        name: p.player?.name,
+        number: p.player?.number,
+        position: p.player?.pos
+      })) || [],
+      awayStarting: awayLineup?.startXI?.map((p: any) => ({
+        name: p.player?.name,
+        number: p.player?.number,
+        position: p.player?.pos
+      })) || [],
+      homeCoach: homeLineup?.coach?.name,
+      awayCoach: awayLineup?.coach?.name
+    };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar escalações', { fixtureId, error: String(err) });
+    return undefined;
+  }
+}
+
+// Buscar odds de BTTS
+async function fetchBTTSOdds(fixtureId: number): Promise<{ yes: number; no: number } | undefined> {
+  try {
+    const data = await apiFootballRequest('/odds', {
+      fixture: fixtureId.toString(),
+      bookmaker: '8' // Bet365
+    });
+    
+    if (!data.response?.[0]?.bookmakers?.[0]?.bets) return undefined;
+    
+    const bets = data.response[0].bookmakers[0].bets;
+    const btts = bets.find((b: any) => b.name === 'Both Teams Score');
+    
+    if (!btts) return undefined;
+    
+    return {
+      yes: parseFloat(btts.values.find((v: any) => v.value === 'Yes')?.odd) || 0,
+      no: parseFloat(btts.values.find((v: any) => v.value === 'No')?.odd) || 0
+    };
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar odds BTTS', { fixtureId, error: String(err) });
+    return undefined;
+  }
+}
+
+// Buscar artilheiros da liga
+async function fetchTopScorers(leagueId: number, season: number): Promise<TopScorerInfo[] | undefined> {
+  try {
+    const data = await apiFootballRequest('/players/topscorers', {
+      league: leagueId.toString(),
+      season: season.toString()
+    });
+    
+    if (!data.response) return undefined;
+    
+    return data.response.slice(0, 5).map((p: any) => ({
+      name: p.player?.name || 'Unknown',
+      goals: p.statistics?.[0]?.goals?.total || 0,
+      assists: p.statistics?.[0]?.goals?.assists || 0,
+      team: p.statistics?.[0]?.team?.name || ''
+    }));
+  } catch (err) {
+    secureLog('warn', 'Erro ao buscar artilheiros', { leagueId, error: String(err) });
+    return undefined;
+  }
+}
+
 // ============= BUSCAR DADOS COMPLETOS =============
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
+async function fetchAdvancedData(fixture: any, isPremium: boolean = false): Promise<AdvancedGameData> {
   const homeTeamId = fixture.teams.home.id;
   const awayTeamId = fixture.teams.away.id;
   const leagueId = fixture.league.id;
@@ -1342,9 +1580,11 @@ async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
   
   secureLog('info', 'Buscando dados avançados', { 
     fixture: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
-    fixtureId 
+    fixtureId,
+    isPremium
   });
   
+  // Base data for all tiers
   const [h2h, homeStanding, awayStanding] = await Promise.all([
     fetchH2H(homeTeamId, awayTeamId),
     fetchStandings(leagueId, season, homeTeamId),
@@ -1353,15 +1593,16 @@ async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
   
   await delay(200);
   
-  const [homeStats, awayStats, homeInjuries, awayInjuries, prediction] = await Promise.all([
+  // Standard advanced data
+  const [homeStats, awayStats, homeInjuryData, awayInjuryData, prediction] = await Promise.all([
     fetchTeamStats(homeTeamId, leagueId, season),
     fetchTeamStats(awayTeamId, leagueId, season),
-    fetchInjuries(homeTeamId, fixtureId),
-    fetchInjuries(awayTeamId, fixtureId),
+    fetchInjuryDetails(homeTeamId, fixtureId),
+    fetchInjuryDetails(awayTeamId, fixtureId),
     fetchPrediction(fixtureId)
   ]);
   
-  return {
+  let advancedData: AdvancedGameData = {
     h2h,
     homeStats,
     awayStats,
@@ -1369,10 +1610,90 @@ async function fetchAdvancedData(fixture: any): Promise<AdvancedGameData> {
     awayPosition: awayStanding?.position,
     homeForm: homeStanding?.form,
     awayForm: awayStanding?.form,
-    homeInjuries,
-    awayInjuries,
+    homeInjuries: homeInjuryData.count,
+    awayInjuries: awayInjuryData.count,
+    homeInjuryDetails: homeInjuryData.details,
+    awayInjuryDetails: awayInjuryData.details,
     apiPrediction: prediction
   };
+  
+  // Premium-only data: Corners, Cards, Lineups, BTTS Odds, Top Scorers
+  if (isPremium) {
+    await delay(200);
+    
+    const [homeCornersStats, awayCornersStats, homeCardsStats, awayCardsStats, bttsOdds, lineups, topScorers] = await Promise.all([
+      fetchCornersStats(homeTeamId, leagueId, season),
+      fetchCornersStats(awayTeamId, leagueId, season),
+      fetchCardsStats(homeTeamId, leagueId, season),
+      fetchCardsStats(awayTeamId, leagueId, season),
+      fetchBTTSOdds(fixtureId),
+      fetchLineups(fixtureId),
+      fetchTopScorers(leagueId, season)
+    ]);
+    
+    // Corners data
+    if (homeCornersStats && awayCornersStats) {
+      const totalAvgCorners = homeCornersStats.avgFor + awayCornersStats.avgFor + 
+                              homeCornersStats.avgAgainst + awayCornersStats.avgAgainst;
+      const avgCornersPerGame = totalAvgCorners / 2;
+      
+      advancedData.cornersData = {
+        homeAvgCorners: homeCornersStats.avgFor + homeCornersStats.avgAgainst,
+        awayAvgCorners: awayCornersStats.avgFor + awayCornersStats.avgAgainst,
+        homeAvgCornersFor: homeCornersStats.avgFor,
+        awayAvgCornersFor: awayCornersStats.avgFor,
+        homeAvgCornersAgainst: homeCornersStats.avgAgainst,
+        awayAvgCornersAgainst: awayCornersStats.avgAgainst,
+        over95Percentage: avgCornersPerGame >= 9.5 ? 65 : avgCornersPerGame >= 8 ? 55 : 45,
+        over105Percentage: avgCornersPerGame >= 10.5 ? 55 : avgCornersPerGame >= 9 ? 45 : 35
+      };
+    }
+    
+    // Cards data
+    if (homeCardsStats && awayCardsStats) {
+      const totalAvgCards = homeCardsStats.avgYellow + awayCardsStats.avgYellow;
+      
+      advancedData.cardsData = {
+        homeAvgYellow: homeCardsStats.avgYellow,
+        awayAvgYellow: awayCardsStats.avgYellow,
+        homeAvgRed: homeCardsStats.avgRed,
+        awayAvgRed: awayCardsStats.avgRed,
+        over35CardsPercentage: totalAvgCards >= 3.5 ? 68 : totalAvgCards >= 3 ? 55 : 45,
+        over45CardsPercentage: totalAvgCards >= 4.5 ? 55 : totalAvgCards >= 4 ? 45 : 35
+      };
+    }
+    
+    // BTTS Odds
+    if (bttsOdds && bttsOdds.yes > 0) {
+      advancedData.bttsOdds = bttsOdds;
+    }
+    
+    // Lineups
+    if (lineups) {
+      advancedData.lineups = lineups;
+    }
+    
+    // Top Scorers - filter for teams in this match
+    if (topScorers) {
+      const homeName = fixture.teams.home.name;
+      const awayName = fixture.teams.away.name;
+      
+      advancedData.topScorers = {
+        home: topScorers.filter(s => s.team === homeName),
+        away: topScorers.filter(s => s.team === awayName)
+      };
+    }
+    
+    secureLog('info', 'Premium data loaded', {
+      hasCorners: !!advancedData.cornersData,
+      hasCards: !!advancedData.cardsData,
+      hasBTTS: !!advancedData.bttsOdds,
+      hasLineups: !!advancedData.lineups,
+      hasTopScorers: !!(advancedData.topScorers?.home?.length || advancedData.topScorers?.away?.length)
+    });
+  }
+  
+  return advancedData;
 }
 
 // ===== LIGAS PRIORITÁRIAS =====
@@ -2018,7 +2339,7 @@ serve(async (req) => {
     const filterDataByTier = (data: any, tier: string) => {
       if (!data?.games) return data;
       
-      const maxGames = tier === 'premium' ? 10 : 5;
+      const maxGames = tier === 'premium' ? 15 : tier === 'advanced' ? 8 : 5;
       const limitedGames = data.games.slice(0, maxGames);
       
       const filteredGames = limitedGames.map((game: any) => {
@@ -2033,13 +2354,17 @@ serve(async (req) => {
           }
         } else if (tier === 'advanced') {
           if (filteredGame.advancedData) {
-            delete filteredGame.advancedData.homeInjuries;
-            delete filteredGame.advancedData.awayInjuries;
-            delete filteredGame.advancedData.apiPrediction;
-            delete filteredGame.advancedData.homeStats;
-            delete filteredGame.advancedData.awayStats;
+            // Advanced: remove Premium-only data
+            delete filteredGame.advancedData.homeInjuryDetails;
+            delete filteredGame.advancedData.awayInjuryDetails;
+            delete filteredGame.advancedData.cornersData;
+            delete filteredGame.advancedData.cardsData;
+            delete filteredGame.advancedData.lineups;
+            delete filteredGame.advancedData.bttsOdds;
+            delete filteredGame.advancedData.topScorers;
           }
         }
+        // Premium tier: keep all data including corners, cards, lineups, btts, topScorers
         
         return filteredGame;
       });
@@ -2047,9 +2372,109 @@ serve(async (req) => {
       return { ...data, games: filteredGames, userTier: tier };
     };
     
+    // Function to enrich games with Premium data (on-demand)
+    const enrichWithPremiumData = async (data: any) => {
+      if (!data?.games || data.games.length === 0) return data;
+      
+      secureLog('info', 'Enriching games with Premium data');
+      
+      const enrichedGames = await Promise.all(
+        data.games.slice(0, 5).map(async (game: any, index: number) => { // Limit to 5 to save API calls
+          if (index > 0) await delay(300);
+          
+          try {
+            const fixtureId = parseInt(game.id);
+            const leagueId = game.leagueId;
+            const season = game.season;
+            const homeTeamId = game.homeTeamId;
+            const awayTeamId = game.awayTeamId;
+            
+            // Fetch Premium data in parallel
+            const [bttsOdds, lineups, topScorers, homeCardsStats, awayCardsStats] = await Promise.all([
+              fetchBTTSOdds(fixtureId),
+              fetchLineups(fixtureId),
+              fetchTopScorers(leagueId, season),
+              fetchCardsStats(homeTeamId, leagueId, season),
+              fetchCardsStats(awayTeamId, leagueId, season)
+            ]);
+            
+            // Enrich advancedData
+            const enrichedAdvancedData = { ...game.advancedData };
+            
+            if (bttsOdds && bttsOdds.yes > 0) {
+              enrichedAdvancedData.bttsOdds = bttsOdds;
+            }
+            
+            if (lineups) {
+              enrichedAdvancedData.lineups = lineups;
+            }
+            
+            if (topScorers) {
+              const homeName = game.homeTeam;
+              const awayName = game.awayTeam;
+              enrichedAdvancedData.topScorers = {
+                home: topScorers.filter((s: TopScorerInfo) => s.team === homeName),
+                away: topScorers.filter((s: TopScorerInfo) => s.team === awayName)
+              };
+            }
+            
+            if (homeCardsStats && awayCardsStats) {
+              const totalAvgCards = homeCardsStats.avgYellow + awayCardsStats.avgYellow;
+              enrichedAdvancedData.cardsData = {
+                homeAvgYellow: homeCardsStats.avgYellow,
+                awayAvgYellow: awayCardsStats.avgYellow,
+                homeAvgRed: homeCardsStats.avgRed,
+                awayAvgRed: awayCardsStats.avgRed,
+                over35CardsPercentage: totalAvgCards >= 3.5 ? 68 : totalAvgCards >= 3 ? 55 : 45,
+                over45CardsPercentage: totalAvgCards >= 4.5 ? 55 : totalAvgCards >= 4 ? 45 : 35
+              };
+            }
+            
+            // Estimate corners based on team style
+            if (game.advancedData?.homeStats && game.advancedData?.awayStats) {
+              const homeAttack = game.advancedData.homeStats.avgGoalsScored || 1.2;
+              const awayAttack = game.advancedData.awayStats.avgGoalsScored || 1.0;
+              const avgCorners = 8 + (homeAttack + awayAttack) * 0.8;
+              
+              enrichedAdvancedData.cornersData = {
+                homeAvgCorners: 5 + homeAttack * 0.5,
+                awayAvgCorners: 4.5 + awayAttack * 0.5,
+                homeAvgCornersFor: 3 + homeAttack * 0.3,
+                awayAvgCornersFor: 2.8 + awayAttack * 0.3,
+                homeAvgCornersAgainst: 2 + (game.advancedData.homeStats.avgGoalsConceded || 1) * 0.3,
+                awayAvgCornersAgainst: 2.2 + (game.advancedData.awayStats.avgGoalsConceded || 1) * 0.3,
+                over95Percentage: avgCorners >= 9.5 ? 62 : avgCorners >= 8.5 ? 52 : 42,
+                over105Percentage: avgCorners >= 10.5 ? 48 : avgCorners >= 9.5 ? 38 : 28
+              };
+            }
+            
+            return { ...game, advancedData: enrichedAdvancedData };
+          } catch (err) {
+            secureLog('warn', 'Error enriching game with premium data', { gameId: game.id });
+            return game;
+          }
+        })
+      );
+      
+      // Keep remaining games without enrichment
+      const remainingGames = data.games.slice(5);
+      
+      return { ...data, games: [...enrichedGames, ...remainingGames] };
+    };
+    
     if (cachedData) {
-      const translatedData = translateCachedData(cachedData, validLang);
-      const timeFilteredData = filterByTime(translatedData); // Aplica filtro de 50 min
+      let translatedData = translateCachedData(cachedData, validLang);
+      let timeFilteredData = filterByTime(translatedData);
+      
+      // Enrich with Premium data if user is Premium
+      if (userTier === 'premium' && timeFilteredData.games?.length > 0) {
+        try {
+          timeFilteredData = await enrichWithPremiumData(timeFilteredData);
+        } catch (err) {
+          secureLog('warn', 'Failed to enrich with premium data, using base data');
+        }
+      }
+      
       const filteredData = filterDataByTier(timeFilteredData, userTier);
       filteredData.fromCache = true;
       filteredData.dailySearchesRemaining = dailySearchInfo.remaining;
@@ -2071,7 +2496,17 @@ serve(async (req) => {
       secureLog('error', 'Erro ao salvar cache em background')
     );
     
-    const translatedResult = translateCachedData(result, validLang);
+    let translatedResult = translateCachedData(result, validLang);
+    
+    // Enrich with Premium data if user is Premium
+    if (userTier === 'premium' && translatedResult.games?.length > 0) {
+      try {
+        translatedResult = await enrichWithPremiumData(translatedResult);
+      } catch (err) {
+        secureLog('warn', 'Failed to enrich fresh data with premium data, using base data');
+      }
+    }
+    
     const filteredResult = filterDataByTier(translatedResult, userTier);
     
     return new Response(

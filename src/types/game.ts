@@ -49,6 +49,9 @@ export interface AdvancedGameData {
   // Injuries
   homeInjuries?: number;
   awayInjuries?: number;
+  // Injury Details (Premium)
+  homeInjuryDetails?: InjuryDetail[];
+  awayInjuryDetails?: InjuryDetail[];
   // API Predictions
   apiPrediction?: {
     winner?: string;
@@ -61,6 +64,65 @@ export interface AdvancedGameData {
     winnerLabel?: string;
     confidenceLabel?: string;
   };
+  // ===== PREMIUM DATA =====
+  // Corners Statistics
+  cornersData?: {
+    homeAvgCorners: number;
+    awayAvgCorners: number;
+    homeAvgCornersFor: number;
+    awayAvgCornersFor: number;
+    homeAvgCornersAgainst: number;
+    awayAvgCornersAgainst: number;
+    over95Percentage: number;
+    over105Percentage: number;
+  };
+  // Cards Statistics  
+  cardsData?: {
+    homeAvgYellow: number;
+    awayAvgYellow: number;
+    homeAvgRed: number;
+    awayAvgRed: number;
+    over35CardsPercentage: number;
+    over45CardsPercentage: number;
+  };
+  // Lineups
+  lineups?: {
+    homeFormation?: string;
+    awayFormation?: string;
+    homeStarting?: PlayerInfo[];
+    awayStarting?: PlayerInfo[];
+    homeCoach?: string;
+    awayCoach?: string;
+  };
+  // BTTS Odds (real from bookmaker)
+  bttsOdds?: {
+    yes: number;
+    no: number;
+  };
+  // Top Scorers
+  topScorers?: {
+    home?: TopScorerInfo[];
+    away?: TopScorerInfo[];
+  };
+}
+
+export interface InjuryDetail {
+  player: string;
+  type: 'injury' | 'suspension' | 'doubt';
+  reason?: string;
+}
+
+export interface PlayerInfo {
+  name: string;
+  number?: number;
+  position?: string;
+}
+
+export interface TopScorerInfo {
+  name: string;
+  goals: number;
+  assists?: number;
+  team: string;
 }
 
 export interface TeamStats {
