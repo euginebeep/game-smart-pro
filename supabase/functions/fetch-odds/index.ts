@@ -1669,6 +1669,38 @@ async function getFromCache(supabaseAdmin: any): Promise<any | null> {
     return null;
   }
   
+  // Verifica se o primeiro jogo do cache já passou do limite de 50 minutos
+  const cachedGames = data.data?.games;
+  if (cachedGames && cachedGames.length > 0) {
+    const agora = new Date();
+    const limiteMinimo = new Date(agora.getTime() + 50 * 60 * 1000); // +50 min
+    
+    // Ordena por horário para pegar o primeiro
+    const sortedGames = [...cachedGames].sort((a: any, b: any) => 
+      new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    );
+    
+    const primeiroJogo = sortedGames[0];
+    const horarioPrimeiroJogo = new Date(primeiroJogo.startTime);
+    
+    // Se o primeiro jogo já passou do limite de 50 minutos, invalida o cache
+    if (horarioPrimeiroJogo < limiteMinimo) {
+      secureLog('info', 'Cache invalidado - primeiro jogo já passou do limite de 50min', { 
+        cacheKey,
+        primeiroJogoHorario: primeiroJogo.startTime,
+        limiteMinimo: limiteMinimo.toISOString()
+      });
+      
+      // Deleta o cache inválido
+      await supabaseAdmin
+        .from('odds_cache')
+        .delete()
+        .eq('cache_key', cacheKey);
+      
+      return null;
+    }
+  }
+  
   secureLog('info', 'Cache hit', { cacheKey });
   return data.data;
 }
