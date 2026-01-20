@@ -391,10 +391,53 @@ serve(async (req) => {
           }
         }
 
-        // Get API-Football usage estimate (based on searches * 3 avg calls per search)
-        const apiFootballUsed = totalApiCalls * 3; // Rough estimate
-        const apiFootballLimit = 100; // Free tier
-        const apiFootballPercentage = Math.min(100, (apiFootballUsed / apiFootballLimit) * 100);
+        // Get REAL API-Football usage from their status endpoint
+        let apiFootballUsed = 0;
+        let apiFootballLimit = 100;
+        let apiFootballPercentage = 0;
+        let apiFootballPlan = 'Free';
+        let apiFootballRemaining = 0;
+        let apiFootballError: string | null = null;
+
+        const apiFootballKey = Deno.env.get('API_FOOTBALL_KEY');
+        if (apiFootballKey) {
+          try {
+            logStep("Fetching API-Football status");
+            const statusResponse = await fetch('https://v3.football.api-sports.io/status', {
+              headers: {
+                'x-apisports-key': apiFootballKey
+              }
+            });
+
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json();
+              logStep("API-Football status received", statusData);
+
+              if (statusData.response) {
+                const account = statusData.response.account;
+                const subscription = statusData.response.subscription;
+                const requests = statusData.response.requests;
+
+                apiFootballPlan = subscription?.plan || 'Unknown';
+                apiFootballLimit = requests?.limit_day || 100;
+                apiFootballUsed = requests?.current || 0;
+                apiFootballRemaining = apiFootballLimit - apiFootballUsed;
+                apiFootballPercentage = apiFootballLimit > 0 
+                  ? Math.min(100, (apiFootballUsed / apiFootballLimit) * 100) 
+                  : 0;
+              }
+            } else {
+              apiFootballError = `Status ${statusResponse.status}`;
+              logStep("API-Football status error", { status: statusResponse.status });
+            }
+          } catch (apiError: unknown) {
+            const errorMessage = apiError instanceof Error ? apiError.message : 'Unknown error';
+            apiFootballError = errorMessage;
+            logStep("API-Football fetch error", { error: errorMessage });
+          }
+        } else {
+          apiFootballError = 'API_FOOTBALL_KEY not configured';
+        }
 
         // Get Odds API usage from api_usage table
         const { data: oddsApiUsage } = await adminClient
@@ -425,6 +468,9 @@ serve(async (req) => {
                 apiFootballUsed,
                 apiFootballLimit,
                 apiFootballPercentage,
+                apiFootballRemaining,
+                apiFootballPlan,
+                apiFootballError,
                 oddsApiUsed,
                 lastReset: new Date().toISOString().split('T')[0]
               }

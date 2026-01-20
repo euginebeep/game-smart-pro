@@ -37,6 +37,9 @@ interface ApiUsageData {
   apiFootballUsed: number;
   apiFootballLimit: number;
   apiFootballPercentage: number;
+  apiFootballRemaining: number;
+  apiFootballPlan: string;
+  apiFootballError: string | null;
   oddsApiUsed: number;
   lastReset: string;
 }
