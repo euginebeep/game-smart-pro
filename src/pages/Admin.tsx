@@ -17,6 +17,7 @@ import {
   BookOpen, Clock, Wifi, WifiOff, Filter
 } from 'lucide-react';
 import { TechnicalDocsTab } from '@/components/admin/TechnicalDocsTab';
+import { BacktestDashboard } from '@/components/admin/BacktestDashboard';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Loading } from '@/components/Loading';
@@ -260,12 +261,7 @@ export default function Admin() {
   };
   const [filteredUsersCount, setFilteredUsersCount] = useState(0);
   
-  // Backtest state
-  const [backtestLoading, setBacktestLoading] = useState(false);
-  const [backtestHistory, setBacktestHistory] = useState<any[]>([]);
-  const [backtestDateFrom, setBacktestDateFrom] = useState('');
-  const [backtestDateTo, setBacktestDateTo] = useState('');
-  const [latestBacktest, setLatestBacktest] = useState<any>(null);
+  // Backtest state removed - now handled by BacktestDashboard component
 
   useEffect(() => {
     if (!loading && !isAdmin) {
@@ -280,7 +276,6 @@ export default function Admin() {
         toast.error('Erro ao carregar usuários');
       });
       fetchAnalytics();
-      fetchBacktestHistory();
     }
   }, [isAdmin]);
 
@@ -295,57 +290,8 @@ export default function Admin() {
     }
   }, [emailFilters, isAdmin]);
 
-  const fetchBacktestHistory = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
 
-      const { data, error } = await supabase.functions.invoke('run-backtest', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { action: 'history' },
-      });
 
-      if (error) throw error;
-      
-      setBacktestHistory(data.history || []);
-      if (data.history && data.history.length > 0) {
-        setLatestBacktest(data.history[0]);
-      }
-    } catch (err) {
-      console.error('Error fetching backtest history:', err);
-    }
-  };
-
-  const runBacktest = async () => {
-    if (!backtestDateFrom || !backtestDateTo) {
-      toast.error('Selecione as datas de início e fim');
-      return;
-    }
-
-    setBacktestLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Não autenticado');
-
-      const { data, error } = await supabase.functions.invoke('run-backtest', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: {
-          action: 'run',
-          dateFrom: backtestDateFrom,
-          dateTo: backtestDateTo,
-        },
-      });
-
-      if (error) throw error;
-
-      toast.success(`Backtest concluído: ${data.summary.hitRate.toFixed(1)}% de acertos, ROI ${data.summary.totalRoi > 0 ? '+' : ''}${data.summary.totalRoi.toFixed(2)} unidades`);
-      fetchBacktestHistory();
-    } catch (err: any) {
-      toast.error(err.message || 'Erro ao executar backtest');
-    } finally {
-      setBacktestLoading(false);
-    }
-  };
 
   const handleEditUser = (user: any) => {
     setEditingUser(user);
@@ -1104,165 +1050,7 @@ export default function Admin() {
 
           {/* Backtest Tab */}
           <TabsContent value="backtest" className="space-y-4">
-            {/* Latest Backtest Summary */}
-            {latestBacktest && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>Taxa de Acerto</CardDescription>
-                    <CardTitle className={`text-3xl ${latestBacktest.hit_rate >= 55 ? 'text-green-500' : latestBacktest.hit_rate >= 45 ? 'text-yellow-500' : 'text-red-500'}`}>
-                      {latestBacktest.hit_rate?.toFixed(1)}%
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>ROI Total</CardDescription>
-                    <CardTitle className={`text-3xl ${latestBacktest.total_roi > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {latestBacktest.total_roi > 0 ? '+' : ''}{latestBacktest.total_roi?.toFixed(2)}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>Yield por Aposta</CardDescription>
-                    <CardTitle className={`text-3xl ${latestBacktest.yield_per_bet > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {(latestBacktest.yield_per_bet * 100)?.toFixed(1)}%
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>Recomendações</CardDescription>
-                    <CardTitle className="text-3xl text-purple-500">
-                      {latestBacktest.total_recommendations}
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-              </div>
-            )}
-
-            {/* Run Backtest */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Play className="h-5 w-5 text-primary" />
-                  Executar Backtest
-                </CardTitle>
-                <CardDescription>
-                  Simule recomendações passadas com a lógica atual do motor de análise
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-4 items-end">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Data Início</label>
-                    <Input
-                      type="date"
-                      value={backtestDateFrom}
-                      onChange={(e) => setBacktestDateFrom(e.target.value)}
-                      className="w-40"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Data Fim</label>
-                    <Input
-                      type="date"
-                      value={backtestDateTo}
-                      onChange={(e) => setBacktestDateTo(e.target.value)}
-                      className="w-40"
-                    />
-                  </div>
-                  <Button onClick={runBacktest} disabled={backtestLoading}>
-                    {backtestLoading ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        Executando...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-2" />
-                        Iniciar Backtest
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Backtest History */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5 text-primary" />
-                  Histórico de Backtests
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {backtestHistory.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Período</TableHead>
-                          <TableHead>Fixtures</TableHead>
-                          <TableHead>Recomendações</TableHead>
-                          <TableHead>Acertos</TableHead>
-                          <TableHead>Taxa</TableHead>
-                          <TableHead>ROI</TableHead>
-                          <TableHead>Yield</TableHead>
-                          <TableHead>Melhor Tipo</TableHead>
-                          <TableHead>Data</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {backtestHistory.map((bt) => (
-                          <TableRow key={bt.id}>
-                            <TableCell className="font-medium">
-                              {new Date(bt.date_from).toLocaleDateString('pt-BR')} - {new Date(bt.date_to).toLocaleDateString('pt-BR')}
-                            </TableCell>
-                            <TableCell>{bt.total_fixtures}</TableCell>
-                            <TableCell>{bt.total_recommendations}</TableCell>
-                            <TableCell>
-                              <span className="text-green-500">{bt.total_hits}</span>
-                              <span className="text-muted-foreground"> / </span>
-                              <span className="text-red-500">{bt.total_misses}</span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={bt.hit_rate >= 55 ? 'bg-green-500/20 text-green-400' : bt.hit_rate >= 45 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}>
-                                {bt.hit_rate?.toFixed(1)}%
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <span className={bt.total_roi > 0 ? 'text-green-500' : 'text-red-500'}>
-                                {bt.total_roi > 0 ? '+' : ''}{bt.total_roi?.toFixed(2)}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <span className={bt.yield_per_bet > 0 ? 'text-green-500' : 'text-red-500'}>
-                                {(bt.yield_per_bet * 100)?.toFixed(1)}%
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                                {bt.best_bet_type || '-'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {new Date(bt.created_at).toLocaleDateString('pt-BR')}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-sm text-center py-8">
-                    Nenhum backtest executado ainda. Execute um backtest para ver os resultados.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <BacktestDashboard />
           </TabsContent>
 
           {/* Users Tab */}
