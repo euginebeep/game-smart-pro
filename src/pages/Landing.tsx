@@ -124,7 +124,7 @@ export default function Landing() {
         about: 'Sobre Nós',
         terms: 'Termos de Uso',
         privacy: 'Política de Privacidade',
-        copyright: '© 2024 EUGINE v4.0. Todos os direitos reservados. Jogue com responsabilidade.',
+        copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. Todos os direitos reservados. Jogue com responsabilidade.`,
       },
     },
     en: {
@@ -218,7 +218,7 @@ export default function Landing() {
         about: 'About Us',
         terms: 'Terms of Use',
         privacy: 'Privacy Policy',
-        copyright: '© 2024 EUGINE v4.0. All rights reserved. Gamble responsibly.',
+        copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. All rights reserved. Gamble responsibly.`,
       },
     },
     es: {
@@ -312,7 +312,7 @@ export default function Landing() {
         about: 'Sobre Nosotros',
         terms: 'Términos de Uso',
         privacy: 'Política de Privacidad',
-        copyright: '© 2024 EUGINE v4.0. Todos los derechos reservados. Juega responsablemente.',
+        copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. Todos los derechos reservados. Juega responsablemente.`,
       },
     },
     it: {
@@ -406,7 +406,7 @@ export default function Landing() {
         about: 'Chi Siamo',
         terms: 'Termini di Uso',
         privacy: 'Politica sulla Privacy',
-        copyright: '© 2024 EUGINE v4.0. Tutti i diritti riservati. Gioca responsabilmente.',
+        copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. Tutti i diritti riservati. Gioca responsabilmente.`,
       },
     },
   };
@@ -834,7 +834,7 @@ export default function Landing() {
 
             {/* Copyright */}
             <p className="text-muted-foreground/40 text-xs">
-              © {new Date().getFullYear()} GS ItalyInvestments. All rights reserved.
+              {l.footer.copyright}
             </p>
           </div>
         </div>

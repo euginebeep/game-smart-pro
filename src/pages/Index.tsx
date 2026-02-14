@@ -429,9 +429,9 @@ const Index = () => {
               by <span className="font-semibold">GS ItalyInvestments</span>
             </p>
             <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
-              <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{t('main.terms') || 'Termos'}</a>
-              <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{t('main.privacy') || 'Privacidade'}</a>
-              <a href="/about" className="hover:text-foreground transition-colors">{t('main.about') || 'Sobre'}</a>
+              <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{t('main.terms')}</a>
+              <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{t('main.privacy')}</a>
+              <a href="/about" className="hover:text-foreground transition-colors">{t('main.about')}</a>
             </div>
             <p className="text-muted-foreground/40 text-[10px] sm:text-xs max-w-md">
               {t('main.disclaimer')}

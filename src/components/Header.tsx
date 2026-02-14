@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
 import { ActiveUsersCounter } from './ActiveUsersCounter';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface HeaderProps {
   onFetch: () => void;
@@ -106,26 +107,37 @@ export function Header({
           )}
 
           {/* Fetch CTA with cooldown timer */}
-          <button
-            onClick={onFetch}
-            disabled={loading || (isTrial && dailySearchesRemaining === 0) || cooldownRemaining > 0}
-            className="btn-primary flex items-center gap-2 text-sm px-5 py-2 min-w-[130px] justify-center disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
-          >
-            {cooldownRemaining > 0 && (
-              <div 
-                className="absolute inset-0 bg-muted/30" 
-                style={{ width: `${(cooldownRemaining / (5 * 60 * 1000)) * 100}%`, transition: 'width 1s linear' }} 
-              />
-            )}
-            <span className="relative flex items-center gap-2">
-              <Zap className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
-              {cooldownRemaining > 0 ? (
-                <span>{Math.floor(cooldownRemaining / 60000)}:{String(Math.floor((cooldownRemaining % 60000) / 1000)).padStart(2, '0')}</span>
-              ) : (
-                <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onFetch}
+                  disabled={loading || (isTrial && dailySearchesRemaining === 0) || cooldownRemaining > 0}
+                  className="btn-primary flex items-center gap-2 text-sm px-5 py-2 min-w-[130px] justify-center disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                >
+                  {cooldownRemaining > 0 && (
+                    <div 
+                      className="absolute inset-0 bg-muted/30" 
+                      style={{ width: `${(cooldownRemaining / (5 * 60 * 1000)) * 100}%`, transition: 'width 1s linear' }} 
+                    />
+                  )}
+                  <span className="relative flex items-center gap-2">
+                    <Zap className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+                    {cooldownRemaining > 0 ? (
+                      <span>{Math.floor(cooldownRemaining / 60000)}:{String(Math.floor((cooldownRemaining % 60000) / 1000)).padStart(2, '0')}</span>
+                    ) : (
+                      <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>
+                    )}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              {cooldownRemaining > 0 && (
+                <TooltipContent side="bottom" className="max-w-[200px] text-center">
+                  <p className="text-xs">{t('main.cooldownTooltip')}</p>
+                </TooltipContent>
               )}
-            </span>
-          </button>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Admin */}
           {isAdmin && (
