@@ -19,6 +19,7 @@ const getDeviceInfo = () => {
   const browser = ua.match(/(Chrome|Firefox|Safari|Edge|Opera)/)?.[0] || 'Unknown';
   return `${isMobile ? 'Mobile' : 'Desktop'} - ${browser}`;
 };
+
 interface Profile {
   id: string;
   user_id: string;
@@ -79,26 +80,31 @@ export function useAuth() {
   });
 
   const previousTierRef = useRef<string | null>(null);
+  const profileFetchedRef = useRef(false);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-    if (error) {
-      console.error('Error fetching profile:', error);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return data as Profile;
+    } catch (err) {
+      console.error('Error in fetchProfile:', err);
       return null;
     }
-
-    return data as Profile;
   };
 
   const calculateTrialStatus = (profile: Profile | null) => {
     if (!profile) return { trialDaysRemaining: 0, isTrialExpired: true };
 
-    // Se tem assinatura ativa, não precisa de trial
     if (profile.subscription_status === 'active') {
       return { trialDaysRemaining: 0, isTrialExpired: false };
     }
@@ -114,36 +120,47 @@ export function useAuth() {
     };
   };
 
-  const checkSubscription = useCallback(async () => {
-    // Ensure we have a valid session with access token
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      console.log('[checkSubscription] No valid session, skipping');
-      return;
+  // Load profile in background WITHOUT blocking the loading state
+  const loadProfileInBackground = useCallback(async (userId: string) => {
+    const profile = await fetchProfile(userId);
+    if (profile) {
+      profileFetchedRef.current = true;
+      const trialStatus = calculateTrialStatus(profile);
+      setAuthState(prev => ({
+        ...prev,
+        profile,
+        ...trialStatus,
+        subscription: {
+          tier: profile.subscription_tier || 'free',
+          isSubscribed: profile.subscription_status === 'active',
+          subscriptionEnd: profile.subscription_end_date || null,
+          isLoading: false,
+        },
+      }));
     }
+  }, []);
 
-    // Don't set loading state to avoid UI flickering
+  const checkSubscription = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
-      
       if (error) {
         console.error('Error checking subscription:', error);
         return;
       }
 
-      // Only update state if values actually changed
       setAuthState(prev => {
         const newTier = data.tier || 'free';
         const newIsSubscribed = data.subscribed || false;
         const newSubscriptionEnd = data.subscription_end || null;
         
-        // Check if anything actually changed
         if (
           prev.subscription.tier === newTier &&
           prev.subscription.isSubscribed === newIsSubscribed &&
           prev.subscription.subscriptionEnd === newSubscriptionEnd
         ) {
-          // No changes, don't update state
           return prev;
         }
         
@@ -158,43 +175,21 @@ export function useAuth() {
         };
       });
 
-      // Atualizar profile local only if needed
       if (session.user) {
-        const profile = await fetchProfile(session.user.id);
-        if (profile) {
-          const trialStatus = calculateTrialStatus(profile);
-          setAuthState(prev => {
-            // Check if profile data actually changed
-            if (
-              prev.profile?.subscription_tier === profile.subscription_tier &&
-              prev.profile?.subscription_status === profile.subscription_status &&
-              prev.trialDaysRemaining === trialStatus.trialDaysRemaining
-            ) {
-              return prev;
-            }
-            return {
-              ...prev,
-              profile,
-              ...trialStatus,
-            };
-          });
-        }
+        await loadProfileInBackground(session.user.id);
       }
     } catch (err) {
       console.error('Error in checkSubscription:', err);
     }
-  }, []);
+  }, [loadProfileInBackground]);
 
   const createCheckout = async (tier: 'basic' | 'advanced' | 'premium', language?: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { tier, language: language || 'pt' },
       });
-
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
+      if (data?.url) window.open(data.url, '_blank');
     } catch (err) {
       console.error('Error creating checkout:', err);
       throw err;
@@ -206,11 +201,8 @@ export function useAuth() {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { tier: 'dayuse', language: language || 'pt' },
       });
-
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
+      if (data?.url) window.open(data.url, '_blank');
     } catch (err) {
       console.error('Error creating Day Use checkout:', err);
       throw err;
@@ -220,65 +212,39 @@ export function useAuth() {
   const openCustomerPortal = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
-      
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
+      if (data?.url) window.open(data.url, '_blank');
     } catch (err) {
       console.error('Error opening customer portal:', err);
       throw err;
     }
   };
 
-  // Registrar sessão no servidor para controle anti-multilogin
   const registerSession = useCallback(async () => {
-    // Ensure we have a valid session with access token
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      console.log('[registerSession] No valid session, skipping');
-      return;
-    }
+    if (!session?.access_token) return;
 
     try {
       const sessionToken = getSessionToken();
       const deviceInfo = getDeviceInfo();
-      
       const { data, error } = await supabase.functions.invoke('validate-session', {
-        body: { 
-          action: 'register', 
-          sessionToken, 
-          deviceInfo 
-        },
+        body: { action: 'register', sessionToken, deviceInfo },
       });
-
-      if (error) {
-        console.error('Error registering session:', error);
-      } else {
-        console.log('Session registered:', data);
-      }
+      if (error) console.error('Error registering session:', error);
+      else console.log('Session registered:', data);
     } catch (err) {
       console.error('Error in registerSession:', err);
     }
   }, []);
 
-  // Validar se a sessão atual ainda é válida
   const validateSession = useCallback(async () => {
-    // Ensure we have a valid session with access token
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      console.log('[validateSession] No valid session, skipping');
-      return;
-    }
+    if (!session?.access_token) return;
 
     try {
       const sessionToken = getSessionToken();
-      
       const { data, error } = await supabase.functions.invoke('validate-session', {
-        body: { 
-          action: 'validate', 
-          sessionToken 
-        },
+        body: { action: 'validate', sessionToken },
       });
 
       if (error) {
@@ -287,80 +253,51 @@ export function useAuth() {
       }
 
       if (data && !data.valid) {
-        // Sessão invalidada - outro dispositivo logou
         setAuthState(prev => ({ ...prev, sessionInvalid: true }));
-        
         toast({
           title: '⚠️ Sessão Encerrada',
           description: `Sua conta foi acessada em outro dispositivo (${data.activeDevice || 'desconhecido'}). Você será desconectado.`,
           variant: 'destructive',
           duration: 8000,
         });
-
-        // Fazer logout após mostrar a mensagem
-        setTimeout(() => {
-          supabase.auth.signOut();
-        }, 3000);
+        setTimeout(() => supabase.auth.signOut(), 3000);
       }
     } catch (err) {
       console.error('Error in validateSession:', err);
     }
   }, []);
 
-  // Safety timeout: if loading hangs for 12s, try getSession then force loading=false
+  // MAIN AUTH INITIALIZATION
+  // Key principle: set loading=false as soon as we know if user exists or not.
+  // Profile loads in background - don't block the UI for it.
   useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setAuthState(prev => {
-          if (!prev.loading) return prev;
-          console.warn('[useAuth] Safety timeout triggered. Session found:', !!session);
-          const user = session?.user ?? null;
-          return { ...prev, session: session ?? prev.session, user: user ?? prev.user, loading: false };
-        });
-      }).catch(() => {
-        setAuthState(prev => prev.loading ? { ...prev, loading: false } : prev);
-      });
-    }, 12000);
-    return () => clearTimeout(safetyTimer);
-  }, []);
+    let mounted = true;
 
-  useEffect(() => {
+    // 1. Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
+        
+        console.log('[useAuth] onAuthStateChange:', event, !!session);
+        
+        // IMMEDIATELY set user and loading=false
+        // This unblocks ProtectedRoute right away
         setAuthState(prev => ({
           ...prev,
           session,
           user: session?.user ?? null,
+          loading: false,
         }));
 
+        // Load profile in background (non-blocking)
         if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id).then(profile => {
-              const trialStatus = calculateTrialStatus(profile);
-              setAuthState(prev => ({
-                ...prev,
-                profile,
-                ...trialStatus,
-                loading: false,
-                subscription: {
-                  tier: profile?.subscription_tier || 'free',
-                  isSubscribed: profile?.subscription_status === 'active',
-                  subscriptionEnd: profile?.subscription_end_date || null,
-                  isLoading: false,
-                },
-              }));
-            }).catch(err => {
-              console.error('Error in onAuthStateChange fetchProfile:', err);
-              setAuthState(prev => ({ ...prev, loading: false }));
-            });
-          }, 0);
+          loadProfileInBackground(session.user.id);
         } else {
           setAuthState(prev => ({
             ...prev,
             profile: null,
             trialDaysRemaining: 0,
             isTrialExpired: false,
-            loading: false,
             subscription: {
               tier: 'free',
               isSubscribed: false,
@@ -372,39 +309,47 @@ export function useAuth() {
       }
     );
 
+    // 2. Also check current session (in case onAuthStateChange is slow)
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
+      console.log('[useAuth] getSession result:', !!session);
+      
+      // Set user and stop loading
       setAuthState(prev => ({
         ...prev,
-        session,
-        user: session?.user ?? null,
+        session: session ?? prev.session,
+        user: session?.user ?? prev.user,
+        loading: false,
       }));
 
       if (session?.user) {
-        fetchProfile(session.user.id).then(profile => {
-          const trialStatus = calculateTrialStatus(profile);
-          setAuthState(prev => ({
-            ...prev,
-            profile,
-            ...trialStatus,
-            loading: false,
-            subscription: {
-              tier: profile?.subscription_tier || 'free',
-              isSubscribed: profile?.subscription_status === 'active',
-              subscriptionEnd: profile?.subscription_end_date || null,
-              isLoading: false,
-            },
-          }));
-        }).catch(err => {
-          console.error('Error in getSession fetchProfile:', err);
-          setAuthState(prev => ({ ...prev, loading: false }));
-        });
-      } else {
+        loadProfileInBackground(session.user.id);
+      }
+    }).catch(err => {
+      console.error('[useAuth] getSession error:', err);
+      if (mounted) {
         setAuthState(prev => ({ ...prev, loading: false }));
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // 3. Safety timeout - absolute fallback for Android PWA edge cases
+    const safetyTimer = setTimeout(() => {
+      if (mounted) {
+        setAuthState(prev => {
+          if (!prev.loading) return prev;
+          console.warn('[useAuth] Safety timeout: forcing loading=false');
+          return { ...prev, loading: false };
+        });
+      }
+    }, 5000);
+
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
+  }, [loadProfileInBackground]);
 
   // Real-time subscription status listener
   useEffect(() => {
@@ -424,20 +369,15 @@ export function useAuth() {
           const newProfile = payload.new as Profile;
           const oldProfile = payload.old as Partial<Profile>;
           
-          // Only process if there are actual changes that matter
           const hasRelevantChanges = 
             oldProfile.subscription_tier !== newProfile.subscription_tier ||
             oldProfile.subscription_status !== newProfile.subscription_status ||
             oldProfile.subscription_end_date !== newProfile.subscription_end_date;
           
-          if (!hasRelevantChanges) {
-            console.log('[REALTIME] No relevant profile changes, skipping update');
-            return;
-          }
+          if (!hasRelevantChanges) return;
           
           console.log('[REALTIME] Profile updated:', newProfile);
 
-          // Check for subscription tier change
           if (oldProfile.subscription_tier !== newProfile.subscription_tier) {
             const newTierLabel = tierLabels[newProfile.subscription_tier] || newProfile.subscription_tier;
             const oldTierLabel = tierLabels[oldProfile.subscription_tier || 'free'] || oldProfile.subscription_tier;
@@ -458,7 +398,6 @@ export function useAuth() {
             }
           }
 
-          // Check for subscription status change
           if (oldProfile.subscription_status !== newProfile.subscription_status) {
             if (newProfile.subscription_status === 'active' && oldProfile.subscription_status !== 'active') {
               toast({
@@ -482,7 +421,6 @@ export function useAuth() {
             }
           }
 
-          // Update local state
           const trialStatus = calculateTrialStatus(newProfile);
           setAuthState(prev => ({
             ...prev,
@@ -504,62 +442,48 @@ export function useAuth() {
     };
   }, [authState.user]);
 
-  // Auto-check subscription on page load and periodically
-  // Only run after profile is loaded to ensure auth is fully initialized
+  // Auto-check subscription periodically (only after profile loaded)
   useEffect(() => {
-    if (authState.session?.access_token && !authState.loading && authState.profile) {
-      // Check on initial load with delay to ensure auth is propagated
-      const timer = setTimeout(checkSubscription, 1000);
-      
-      // Check every 60 seconds
+    if (authState.session?.access_token && authState.profile) {
+      const timer = setTimeout(checkSubscription, 2000);
       const interval = setInterval(checkSubscription, 60000);
       return () => {
         clearTimeout(timer);
         clearInterval(interval);
       };
     }
-  }, [authState.session?.access_token, authState.loading, authState.profile, checkSubscription]);
+  }, [authState.session?.access_token, authState.profile, checkSubscription]);
 
-  // Registrar sessão ao fazer login
-  // Only run after profile is loaded to ensure auth is fully initialized
+  // Register session after profile loaded
   useEffect(() => {
-    if (authState.session?.access_token && !authState.loading && authState.profile) {
-      // Delay to ensure auth state is fully propagated
-      const timer = setTimeout(() => {
-        registerSession();
-      }, 1500);
+    if (authState.session?.access_token && authState.profile) {
+      const timer = setTimeout(registerSession, 1500);
       return () => clearTimeout(timer);
     }
-  }, [authState.session?.access_token, authState.loading, authState.profile, registerSession]);
+  }, [authState.session?.access_token, authState.profile, registerSession]);
 
-  // Validar sessão periodicamente (anti-multilogin)
-  // Only validate after profile is loaded to ensure auth is fully ready
+  // Validate session periodically (anti-multilogin)
   useEffect(() => {
-    if (authState.session?.access_token && !authState.loading && !authState.sessionInvalid && authState.profile) {
-      // Initial validation with longer delay to ensure auth is fully propagated
+    if (authState.session?.access_token && !authState.sessionInvalid && authState.profile) {
       const initialTimer = setTimeout(validateSession, 3000);
-      // Validar a cada 30 segundos
       const interval = setInterval(validateSession, 30000);
       return () => {
         clearTimeout(initialTimer);
         clearInterval(interval);
       };
     }
-  }, [authState.session?.access_token, authState.loading, authState.sessionInvalid, authState.profile, validateSession]);
+  }, [authState.session?.access_token, authState.sessionInvalid, authState.profile, validateSession]);
 
   // Check URL for subscription success
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('subscription') === 'success') {
-      // Limpar URL
       window.history.replaceState({}, '', window.location.pathname);
-      // Re-check subscription após sucesso
       setTimeout(checkSubscription, 2000);
     }
   }, [checkSubscription]);
 
   const signOut = async () => {
-    // Limpar sessão no servidor
     try {
       await supabase.functions.invoke('validate-session', {
         body: { action: 'logout' },
@@ -567,10 +491,7 @@ export function useAuth() {
     } catch (err) {
       console.error('Error logging out session:', err);
     }
-    
-    // Limpar token local
     sessionStorage.removeItem('eugine_session_token');
-    
     await supabase.auth.signOut();
   };
 
