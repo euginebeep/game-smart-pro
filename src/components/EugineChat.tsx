@@ -38,8 +38,28 @@ export function EugineChat() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = docHeight > 0 ? scrollTop / docHeight : 0;
+      // Map scroll percentage to vertical position (80px from top to 80px from bottom)
+      const minTop = 80;
+      const maxTop = window.innerHeight - 80;
+      setScrollY(minTop + scrollPercent * (maxTop - minTop));
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -129,7 +149,8 @@ export function EugineChat() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed right-4 top-24 z-50 w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center overflow-hidden animate-[bounce_2s_infinite]"
+          className="fixed right-4 z-50 w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center overflow-hidden animate-[bounce_2s_infinite]"
+          style={{ top: `${scrollY}px`, transition: 'top 0.15s ease-out' }}
           aria-label="Abrir chat"
         >
           <img src={avatar} alt="Assistente EUGINE" className="w-full h-full object-cover" />
