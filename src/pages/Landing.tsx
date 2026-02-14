@@ -21,10 +21,12 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 
-// Import step images
-import step1Image from '@/assets/step1-escolha-jogo.png';
-import step2Image from '@/assets/step2-receba-analise.png';
-import step3Image from '@/assets/step3-decida-confianca.png';
+// Import step images — real app screenshots for social proof
+import step1Image from '@/assets/step-analysis-main.png';
+import step2Image from '@/assets/step-analysis-factors.png';
+import step3Image from '@/assets/step-corners.png';
+import step3ImageAlt from '@/assets/step-cards.png';
+import step3ImageAlt2 from '@/assets/step-players.png';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -418,6 +420,7 @@ export default function Landing() {
   };
 
   const stepImages = [step1Image, step2Image, step3Image];
+  const stepExtraImages: (string[] | null)[] = [null, null, [step3ImageAlt, step3ImageAlt2]];
   const stepTitles = [l.steps.step1.title, l.steps.step2.title, l.steps.step3.title];
   const stepData = [
     { heading: l.steps.step1.heading, description: l.steps.step1.description },
@@ -646,32 +649,38 @@ export default function Landing() {
                   </div>
                 </div>
                 
-                {/* Phone Mockup Column */}
-                <div 
-                  className="order-1 md:order-2 flex justify-center items-center"
-                  style={{ perspective: '1000px' }}
-                >
+                {/* Screenshot Column */}
+                <div className="order-1 md:order-2 flex flex-col items-center gap-4">
                   <div 
-                    className="relative w-[200px] h-[400px] sm:w-[240px] sm:h-[480px] md:w-[280px] md:h-[560px] lg:w-[320px] lg:h-[640px] transition-transform duration-500 hover:scale-105"
+                    className="relative w-full max-w-[520px] rounded-2xl overflow-hidden transition-transform duration-500 hover:scale-[1.02]"
                     style={{
-                      transform: 'rotateY(-8deg) rotateX(2deg)',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'rotateY(-8deg) rotateX(2deg)';
+                      boxShadow: '0 0 40px hsla(185, 100%, 50%, 0.15), 0 20px 60px rgba(0,0,0,0.5)',
+                      border: '1px solid hsla(185, 100%, 50%, 0.2)',
                     }}
                   >
                     <img 
                       src={stepImages[idx]} 
                       alt={stepTitles[idx]}
-                      className="w-full h-full object-contain"
-                      style={{
-                        filter: 'drop-shadow(0 0 30px hsla(185, 100%, 50%, 0.25))',
-                      }}
+                      className="w-full h-auto object-cover rounded-2xl"
                     />
                   </div>
+                  {/* Extra images for step 3 */}
+                  {stepExtraImages[idx] && (
+                    <div className="flex gap-3 w-full max-w-[520px]">
+                      {stepExtraImages[idx]!.map((img, i) => (
+                        <div 
+                          key={i}
+                          className="flex-1 rounded-xl overflow-hidden transition-transform duration-300 hover:scale-105"
+                          style={{
+                            boxShadow: '0 0 20px hsla(185, 100%, 50%, 0.1), 0 10px 30px rgba(0,0,0,0.4)',
+                            border: '1px solid hsla(185, 100%, 50%, 0.15)',
+                          }}
+                        >
+                          <img src={img} alt={`Detail ${i + 1}`} className="w-full h-auto object-cover rounded-xl" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
