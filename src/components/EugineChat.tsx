@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { X, Send, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import eugineAvatar from '@/assets/eugine-girl-avatar.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -115,11 +116,11 @@ export function EugineChat() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-transform flex items-center justify-center animate-bounce"
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center animate-bounce overflow-hidden"
           style={{ animationDuration: '2s' }}
           aria-label="Abrir chat"
         >
-          <MessageCircle className="h-6 w-6" />
+          <img src={eugineAvatar} alt="Assistente EUGINE" className="w-full h-full object-cover" />
         </button>
       )}
 
