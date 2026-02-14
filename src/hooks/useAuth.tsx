@@ -307,45 +307,20 @@ export function useAuth() {
     }
   }, []);
 
-  // Safety timeout: force loading=false after 10s, but try to recover session first
+  // Safety timeout: if loading hangs for 12s, try getSession then force loading=false
   useEffect(() => {
-    const safetyTimer = setTimeout(async () => {
-      setAuthState(prev => {
-        if (!prev.loading) return prev; // Already resolved, do nothing
-        return prev; // Keep as-is, we'll update below
-      });
-      
-      // Check if still loading
-      setAuthState(prev => {
-        if (!prev.loading) return prev;
-        
-        // Try to get session one more time
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          setAuthState(innerPrev => {
-            if (!innerPrev.loading) return innerPrev;
-            console.warn('[useAuth] Safety timeout: forcing loading=false after 10s, session:', !!session);
-            if (session?.user) {
-              // We have a session, set user and stop loading
-              return {
-                ...innerPrev,
-                session,
-                user: session.user,
-                loading: false,
-              };
-            }
-            return { ...innerPrev, loading: false };
-          });
-        }).catch(() => {
-          setAuthState(innerPrev => {
-            if (!innerPrev.loading) return innerPrev;
-            console.warn('[useAuth] Safety timeout: getSession failed, forcing loading=false');
-            return { ...innerPrev, loading: false };
-          });
+    const safetyTimer = setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setAuthState(prev => {
+          if (!prev.loading) return prev;
+          console.warn('[useAuth] Safety timeout triggered. Session found:', !!session);
+          const user = session?.user ?? null;
+          return { ...prev, session: session ?? prev.session, user: user ?? prev.user, loading: false };
         });
-        
-        return prev;
+      }).catch(() => {
+        setAuthState(prev => prev.loading ? { ...prev, loading: false } : prev);
       });
-    }, 10000);
+    }, 12000);
     return () => clearTimeout(safetyTimer);
   }, []);
 
