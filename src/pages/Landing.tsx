@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
 import { useNavigate } from 'react-router-dom';
 import { 
   Play, 
@@ -565,6 +566,11 @@ export default function Landing() {
                 }}
               />
             </div>
+          </div>
+
+          {/* Active Users Counter */}
+          <div className="mb-6 flex justify-center">
+            <ActiveUsersCounter />
           </div>
 
           <button 
