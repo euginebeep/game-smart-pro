@@ -144,25 +144,115 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
 
       {/* BASIC: Analysis Boxes (Todos veem) */}
       <div className="grid gap-3 sm:gap-4 lg:grid-cols-2 mb-4 sm:mb-6">
-        {/* Bet Recommendation */}
-        <div className="analysis-box analysis-box-success p-3 sm:p-4">
+        {/* Bet Recommendation — com Edge Visual */}
+        <div className={`analysis-box p-3 sm:p-4 ${analysis.isSkip ? 'analysis-box-warning' : 'analysis-box-success'}`}>
           <div className="flex items-center gap-2 mb-2 sm:mb-3">
-            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            <h3 className="font-bold text-primary uppercase tracking-wide text-xs sm:text-sm">
-              {humanizeAnalysisType(analysis.type, game, t)}
+            <DollarSign className={`w-4 h-4 sm:w-5 sm:h-5 ${analysis.isSkip ? 'text-warning' : 'text-primary'}`} />
+            <h3 className={`font-bold uppercase tracking-wide text-xs sm:text-sm ${analysis.isSkip ? 'text-warning' : 'text-primary'}`}>
+              {analysis.isSkip 
+                ? (t('analysis.skip') || 'Jogo arriscado — melhor pular')
+                : (t('analysis.suggestedBet') || '⭐ Nossa Recomendação')}
             </h3>
           </div>
-          <p className="text-foreground/90 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
-            {analysis.reason}
-          </p>
-          <div className="bg-primary/20 rounded-lg sm:rounded-xl p-2 sm:p-3 inline-block">
-            <p className="text-xs sm:text-sm">
-              <span className="text-muted-foreground">{t('gameCard.bet')} 40 → </span>
-              <span className="text-primary font-bold">
-                {t('gameCard.profit')} {analysis.profit.toFixed(2)}
-              </span>
-            </p>
-          </div>
+          
+          {!analysis.isSkip ? (
+            <>
+              {/* Tipo da aposta em linguagem clara */}
+              <p className="text-foreground font-semibold text-sm sm:text-base mb-3">
+                {humanizeAnalysisType(analysis.type, game, t)}
+              </p>
+              
+              {/* Barra visual de edge: Casa vs EUGINE */}
+              {analysis.impliedProbability && analysis.estimatedProbability && (
+                <div className="bg-secondary/30 rounded-lg p-3 mb-3 space-y-2">
+                  <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {t('analysis.whyThisBet') || 'Por que essa aposta?'}
+                  </p>
+                  
+                  {/* Comparação visual lado a lado */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="text-center">
+                      <p className="text-[10px] text-muted-foreground">
+                        {t('analysis.bookmakerSays') || 'A casa diz'}
+                      </p>
+                      <p className="text-lg font-bold text-muted-foreground">
+                        {Math.round(analysis.impliedProbability)}%
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] text-primary">
+                        {t('analysis.eugineCalc') || 'EUGINE calcula'}
+                      </p>
+                      <p className="text-lg font-bold text-primary">
+                        {Math.round(analysis.estimatedProbability)}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Barra de progresso comparativa */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground w-12">{t('analysis.house') || 'Casa'}</span>
+                      <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                        <div className="h-full bg-muted-foreground/40 rounded-full" style={{ width: `${Math.min(100, analysis.impliedProbability)}%` }} />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-primary w-12">EUGINE</span>
+                      <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full ${
+                            (analysis.valuePercentage || 0) > 10 ? 'bg-emerald-500' :
+                            (analysis.valuePercentage || 0) > 5 ? 'bg-primary' :
+                            'bg-yellow-500'
+                          }`}
+                          style={{ width: `${Math.min(100, analysis.estimatedProbability)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Badge de vantagem */}
+                  {analysis.valuePercentage && analysis.valuePercentage > 0 && (
+                    <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold ${
+                      analysis.valuePercentage > 15 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                      analysis.valuePercentage > 8 ? 'bg-primary/20 text-primary border border-primary/30' :
+                      'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                    }`}>
+                      {t('analysis.yourEdge') || 'Sua vantagem'}: +{analysis.valuePercentage.toFixed(1)}%
+                      {analysis.valuePercentage > 15 && ` 🔥`}
+                      {analysis.valuePercentage > 8 && analysis.valuePercentage <= 15 && ` ✅`}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Razão em texto */}
+              <p className="text-foreground/90 text-xs sm:text-sm leading-relaxed mb-3">
+                {analysis.reason}
+              </p>
+              
+              {/* Retorno */}
+              <div className="bg-primary/20 rounded-lg sm:rounded-xl p-2 sm:p-3 inline-block">
+                <p className="text-xs sm:text-sm">
+                  <span className="text-muted-foreground">{t('gameCard.bet')} 40 → </span>
+                  <span className="text-primary font-bold">
+                    {t('gameCard.profit')} {analysis.profit.toFixed(2)}
+                  </span>
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* SKIP — explicação didática */}
+              <p className="text-foreground/80 text-xs sm:text-sm leading-relaxed mb-2">
+                {t('analysis.skipExplainFull') || 'Não encontramos vantagem matemática nesse jogo. A casa de apostas precificou as odds corretamente — apostar aqui seria como jogar moeda.'}
+              </p>
+              <p className="text-warning/80 text-[10px] sm:text-xs italic">
+                {t('analysis.skipTip') || '💡 Dica: Só aposte quando o EUGINE encontrar vantagem. Disciplina é o que separa apostadores lucrativos dos que perdem.'}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Market Analysis */}
