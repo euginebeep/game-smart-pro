@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.run-backtest]
 verify_jwt = false
+
+[functions.check-results]
+verify_jwt = false
