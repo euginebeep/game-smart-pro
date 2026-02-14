@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { Onboarding } from '@/components/Onboarding';
 import { Header } from '@/components/Header';
 import { GameCard } from '@/components/GameCard';
 import { MatchCard } from '@/components/MatchCard';
@@ -49,6 +50,7 @@ const Index = () => {
   const [isFreeReport, setIsFreeReport] = useState(false);
   const [isFreeSource, setIsFreeSource] = useState(false);
   const [limitConfig, setLimitConfig] = useState<{ maxAccumulators?: number; maxZebras?: number; maxDoubles?: number }>({});
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('eugine_onboarding_done'));
   const previousLanguage = useRef(language);
   const gamesContentRef = useRef<HTMLDivElement>(null);
   
@@ -243,6 +245,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8 relative">
+      {/* Onboarding for first-time users */}
+      {showOnboarding && (
+        <Onboarding onComplete={() => {
+          localStorage.setItem('eugine_onboarding_done', 'true');
+          setShowOnboarding(false);
+        }} />
+      )}
       {/* Language Update Indicator */}
       {isUpdatingLanguage && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-primary/90 text-primary-foreground py-2 px-4 text-center text-sm font-medium animate-pulse">

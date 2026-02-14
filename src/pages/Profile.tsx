@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save, Phone, MapPin, Building2, Loader2, User } from 'lucide-react';
+import { ArrowLeft, Save, Phone, MapPin, Building2, Loader2, User, Bell } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { Loading } from '@/components/Loading';
@@ -71,7 +72,7 @@ const COUNTRY_PHONE_RULES: Record<string, { min: number; max: number; phoneCode:
 };
 
 export default function Profile() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, loading: authLoading } = useAuth();
@@ -81,10 +82,13 @@ export default function Profile() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [countryCode, setCountryCode] = useState('BR');
+  const [emailDailyPicks, setEmailDailyPicks] = useState(true);
+  const [emailResults, setEmailResults] = useState(true);
+  const [preferredTime, setPreferredTime] = useState('10:00');
+  const [notifLoading, setNotifLoading] = useState(false);
 
   useEffect(() => {
     if (profile) {
-      // Extract phone number without country code
       const phoneWithCode = profile.phone || '';
       const phoneRule = COUNTRY_PHONE_RULES[profile.country_code || 'BR'];
       const phoneCode = phoneRule?.phoneCode || '+55';
@@ -96,6 +100,23 @@ export default function Profile() {
       setCountryCode(profile.country_code || 'BR');
     }
   }, [profile]);
+
+  // Load notification preferences
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from('notification_preferences' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      if (data) {
+        setEmailDailyPicks((data as any).email_daily_picks ?? true);
+        setEmailResults((data as any).email_results ?? true);
+        setPreferredTime((data as any).preferred_time ?? '10:00');
+      }
+    })();
+  }, [user]);
 
   const handlePhoneChange = (value: string) => {
     const masked = applyPhoneMask(value, countryCode);
@@ -260,6 +281,107 @@ export default function Profile() {
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
+              {t('profile.save')}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Notification Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              {language === 'pt' ? 'Notificações por Email' :
+               language === 'es' ? 'Notificaciones por Email' :
+               language === 'it' ? 'Notifiche Email' :
+               'Email Notifications'}
+            </CardTitle>
+            <CardDescription>
+              {language === 'pt' ? 'Configure quais emails deseja receber' :
+               language === 'es' ? 'Configura qué emails deseas recibir' :
+               language === 'it' ? 'Configura quali email vuoi ricevere' :
+               'Configure which emails you want to receive'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {language === 'pt' ? 'Receber picks do dia' :
+                   language === 'es' ? 'Recibir picks del día' :
+                   language === 'it' ? 'Ricevi i pick del giorno' :
+                   'Receive daily picks'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'pt' ? 'Melhores apostas do dia no seu email' :
+                   language === 'es' ? 'Las mejores apuestas del día en tu email' :
+                   language === 'it' ? 'Le migliori scommesse del giorno nella tua email' :
+                   'Best bets of the day in your email'}
+                </p>
+              </div>
+              <Switch checked={emailDailyPicks} onCheckedChange={setEmailDailyPicks} />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {language === 'pt' ? 'Receber resultados' :
+                   language === 'es' ? 'Recibir resultados' :
+                   language === 'it' ? 'Ricevi risultati' :
+                   'Receive results'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'pt' ? 'Veja se as sugestões acertaram' :
+                   language === 'es' ? 'Mira si las sugerencias acertaron' :
+                   language === 'it' ? 'Vedi se i suggerimenti hanno avuto successo' :
+                   'See if the suggestions were correct'}
+                </p>
+              </div>
+              <Switch checked={emailResults} onCheckedChange={setEmailResults} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>
+                {language === 'pt' ? 'Horário preferido' :
+                 language === 'es' ? 'Horario preferido' :
+                 language === 'it' ? 'Orario preferito' :
+                 'Preferred time'}
+              </Label>
+              <Select value={preferredTime} onValueChange={setPreferredTime}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {['08:00', '09:00', '10:00', '11:00'].map(time => (
+                    <SelectItem key={time} value={time}>{time}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button
+              onClick={async () => {
+                if (!user) return;
+                setNotifLoading(true);
+                try {
+                  await supabase.from('notification_preferences' as any).upsert({
+                    user_id: user.id,
+                    email_daily_picks: emailDailyPicks,
+                    email_results: emailResults,
+                    preferred_time: preferredTime,
+                    updated_at: new Date().toISOString(),
+                  } as any);
+                  toast({ title: t('profile.success'), description: t('profile.savedSuccessfully') });
+                } catch (err: any) {
+                  toast({ title: t('profile.error'), description: err.message, variant: 'destructive' });
+                } finally {
+                  setNotifLoading(false);
+                }
+              }}
+              disabled={notifLoading}
+              className="w-full"
+            >
+              {notifLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {t('profile.save')}
             </Button>
           </CardContent>

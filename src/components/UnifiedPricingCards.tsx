@@ -251,15 +251,10 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
                 </button>
               ) : plan.isOneTime ? (
                 <button
-                  onClick={handleDayUse}
-                  disabled={loadingTier === 'dayuse'}
-                  className={`w-full h-14 rounded-lg font-bold ${plan.buttonClass} transition-all hover:shadow-lg flex items-center justify-center gap-2`}
+                  disabled
+                  className="w-full h-14 rounded-lg font-bold opacity-50 cursor-not-allowed bg-muted text-muted-foreground flex items-center justify-center gap-2"
                 >
-                  {loadingTier === 'dayuse' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    plan.cta
-                  )}
+                  {t('pricing.comingSoon') || 'Em breve'}
                 </button>
               ) : (
                 <button

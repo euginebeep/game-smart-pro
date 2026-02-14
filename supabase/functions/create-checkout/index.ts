@@ -2,17 +2,29 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  'https://www.eugineai.com',
+  'https://eugineai.com',
+  'https://game-smart-pro.lovable.app',
+  'http://localhost:8080',
+  'http://localhost:5173',
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Mapeamento de tiers e moedas para price IDs
 type Currency = 'brl' | 'usd' | 'eur';
 type Tier = 'basic' | 'advanced' | 'premium' | 'dayuse';
 
@@ -21,7 +33,7 @@ const TIER_PRICES: Record<Currency, Record<Tier, string>> = {
     basic: 'price_1SprZDBQSLreveKU8QmxRF80',
     advanced: 'price_1Spry1BQSLreveKU7NcHTNVx',
     premium: 'price_1SpryWBQSLreveKU7x6v5S9f',
-    dayuse: 'price_dayuse_brl', // Will be created in Stripe
+    dayuse: 'price_dayuse_brl',
   },
   usd: {
     basic: 'price_1SptWYBQSLreveKUetIBcgIW',
@@ -37,7 +49,6 @@ const TIER_PRICES: Record<Currency, Record<Tier, string>> = {
   },
 };
 
-// Mapear idioma para moeda
 const LANGUAGE_TO_CURRENCY: Record<string, Currency> = {
   pt: 'brl',
   en: 'usd',
@@ -46,6 +57,8 @@ const LANGUAGE_TO_CURRENCY: Record<string, Currency> = {
 };
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -53,32 +66,24 @@ serve(async (req) => {
   try {
     logStep("Function started");
     
-    // Pegar o tier e idioma do body
     const body = await req.json();
     const tier = body.tier as Tier;
     const language = (body.language as string) || 'pt';
-    
-    // Determinar moeda baseada no idioma
     const currency: Currency = LANGUAGE_TO_CURRENCY[language] || 'brl';
     
-    // Validar tier
     const validTiers: Tier[] = ['basic', 'advanced', 'premium', 'dayuse'];
     if (!tier || !validTiers.includes(tier)) {
       throw new Error(`Invalid tier: ${tier}. Valid options: basic, advanced, premium, dayuse`);
     }
     
-    // Day Use is a one-time payment
     const isDayUse = tier === 'dayuse';
-    
     const priceId = TIER_PRICES[currency][tier];
     logStep("Tier and currency selected", { tier, currency, language, priceId });
 
-    // Validar se o price ID é real (não placeholder)
     if (priceId.startsWith('price_dayuse_')) {
       throw new Error('Day Use ainda não está disponível. Em breve!');
     }
 
-    // Use getClaims for signing-keys compatible auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
@@ -120,7 +125,6 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil" 
     });
     
-    // Verificar se já existe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
@@ -133,12 +137,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: isDayUse ? "payment" : "subscription",
       payment_method_types: isDayUse ? ['card', 'pix'] : ['card'],
       success_url: `${origin}/?subscription=success`,
