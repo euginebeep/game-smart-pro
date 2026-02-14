@@ -172,6 +172,10 @@ export interface BettingAnalysis {
   profit: number;
   confidence?: number; // 0-100
   valuePercentage?: number; // Value edge %
+  impliedProbability?: number; // Prob que a casa calcula
+  estimatedProbability?: number; // Prob que o EUGINE calcula
+  isSkip?: boolean;
+  skipReason?: string;
   factors?: AnalysisFactor[];
 }
 
