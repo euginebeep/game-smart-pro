@@ -2,7 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import eugineAvatar from '@/assets/eugine-girl-avatar.png';
+import { useLanguage } from '@/contexts/LanguageContext';
+import avatarPt from '@/assets/avatar-pt.png';
+import avatarEn from '@/assets/avatar-en.png';
+import avatarEs from '@/assets/avatar-es.png';
+import avatarIt from '@/assets/avatar-it.png';
+
+const avatarByLang: Record<string, string> = {
+  pt: avatarPt,
+  en: avatarEn,
+  es: avatarEs,
+  it: avatarIt,
+};
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +30,8 @@ const QUICK_QUESTIONS = [
 ];
 
 export function EugineChat() {
+  const { language } = useLanguage();
+  const avatar = avatarByLang[language] || avatarPt;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: 'Olá! 👋 Sou o assistente do EUGINE. Como posso te ajudar hoje?' }
@@ -120,7 +133,7 @@ export function EugineChat() {
           style={{ animationDuration: '2s' }}
           aria-label="Abrir chat"
         >
-          <img src={eugineAvatar} alt="Assistente EUGINE" className="w-full h-full object-cover" />
+          <img src={avatar} alt="Assistente EUGINE" className="w-full h-full object-cover" />
         </button>
       )}
 
