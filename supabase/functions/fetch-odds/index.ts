@@ -1986,6 +1986,10 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
       ]);
       
       let homeOdd = 0, drawOdd = 0, awayOdd = 0, overOdd = 0, underOdd = 0;
+      let over15Odd = 0, under15Odd = 0, over35Odd = 0, under35Odd = 0, over45Odd = 0, under45Odd = 0;
+      let bttsYesOdd = 0, bttsNoOdd = 0;
+      let dcHomeDrawOdd = 0, dcAwayDrawOdd = 0, dcHomeAwayOdd = 0;
+      let dnbOdd = 0;
       let bookmakerName = 'N/A';
       let hasValidOdds = false;
       
@@ -2009,24 +2013,24 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
           }
 
           // ===== NOVOS MERCADOS: Extrair odds reais =====
-          const over15Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 1.5')?.odd) || 0;
-          const under15Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 1.5')?.odd) || 0;
-          const over35Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 3.5')?.odd) || 0;
-          const under35Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 3.5')?.odd) || 0;
-          const over45Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 4.5')?.odd) || 0;
-          const under45Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 4.5')?.odd) || 0;
+          over15Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 1.5')?.odd) || 0;
+          under15Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 1.5')?.odd) || 0;
+          over35Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 3.5')?.odd) || 0;
+          under35Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 3.5')?.odd) || 0;
+          over45Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 4.5')?.odd) || 0;
+          under45Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 4.5')?.odd) || 0;
 
           const bttsBet = bookmaker.bets?.find((b: any) => b.name === 'Both Teams Score');
-          const bttsYesOdd = parseFloat(bttsBet?.values?.find((v: any) => v.value === 'Yes')?.odd) || 0;
-          const bttsNoOdd = parseFloat(bttsBet?.values?.find((v: any) => v.value === 'No')?.odd) || 0;
+          bttsYesOdd = parseFloat(bttsBet?.values?.find((v: any) => v.value === 'Yes')?.odd) || 0;
+          bttsNoOdd = parseFloat(bttsBet?.values?.find((v: any) => v.value === 'No')?.odd) || 0;
 
           const dcBet = bookmaker.bets?.find((b: any) => b.name === 'Double Chance');
-          const dcHomeDrawOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Home/Draw')?.odd) || 0;
-          const dcAwayDrawOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Draw/Away')?.odd) || 0;
-          const dcHomeAwayOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Home/Away')?.odd) || 0;
+          dcHomeDrawOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Home/Draw')?.odd) || 0;
+          dcAwayDrawOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Draw/Away')?.odd) || 0;
+          dcHomeAwayOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Home/Away')?.odd) || 0;
 
           const dnbBet = bookmaker.bets?.find((b: any) => b.name === 'Draw No Bet');
-          const dnbOdd = parseFloat(dnbBet?.values?.find((v: any) => v.value === 'Home')?.odd) || 0;
+          dnbOdd = parseFloat(dnbBet?.values?.find((v: any) => v.value === 'Home')?.odd) || 0;
         }
       }
       
