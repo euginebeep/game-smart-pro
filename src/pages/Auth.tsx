@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -523,6 +524,9 @@ export default function Auth() {
             <span className="text-primary text-lg ml-2">v4.0</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-2">{t('auth.systemName')}</p>
+          <div className="mt-3 flex justify-center">
+            <ActiveUsersCounter />
+          </div>
         </div>
 
         {/* Auth Card */}
