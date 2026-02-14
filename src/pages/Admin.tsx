@@ -14,7 +14,7 @@ import {
   ArrowLeft, RefreshCw, Users, Search, Edit, RotateCcw, Save, Activity, MapPin, Building2, 
   BarChart3, TrendingUp, Target, Play, History, Ban, ShieldX, ShieldCheck, Globe, Mail, 
   Send, DollarSign, CreditCard, Repeat, Calendar, Gauge, Zap, AlertCircle, Trash2, CheckSquare, Square,
-  BookOpen
+  BookOpen, Clock, Wifi, WifiOff, Filter
 } from 'lucide-react';
 import { TechnicalDocsTab } from '@/components/admin/TechnicalDocsTab';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -41,6 +41,22 @@ const BRAZILIAN_STATES: Record<string, string> = {
   'SE': 'Sergipe', 'TO': 'Tocantins'
 };
 
+// Format relative time (e.g. "há 3 min", "há 2h", "há 3 dias")
+const formatRelativeTime = (dateStr: string): string => {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMin < 1) return 'agora';
+  if (diffMin < 60) return `há ${diffMin} min`;
+  if (diffHours < 24) return `há ${diffHours}h`;
+  if (diffDays < 30) return `há ${diffDays}d`;
+  return date.toLocaleDateString('pt-BR');
+};
+
 export default function Admin() {
   const navigate = useNavigate();
   const { 
@@ -52,6 +68,12 @@ export default function Admin() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   
   const [searchTerm, setSearchTerm] = useState('');
+  // User table filters
+  const [filterTier, setFilterTier] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterState, setFilterState] = useState('all');
+  const [filterOnline, setFilterOnline] = useState('all');
+  const [filterSource, setFilterSource] = useState('all');
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editForm, setEditForm] = useState({
     subscription_tier: '',
@@ -438,10 +460,21 @@ export default function Admin() {
     }
   };
 
-  const filteredUsers = users.filter(user => 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.phone?.includes(searchTerm)
-  );
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phone?.includes(searchTerm);
+    const matchesTier = filterTier === 'all' || user.subscription_tier === filterTier;
+    const matchesStatus = filterStatus === 'all' || (user.subscription_status || 'inactive') === filterStatus;
+    const matchesState = filterState === 'all' || user.state === filterState;
+    const matchesOnline = filterOnline === 'all' || 
+      (filterOnline === 'online' && user.is_online) || 
+      (filterOnline === 'offline' && !user.is_online);
+    const matchesSource = filterSource === 'all' || 
+      (filterSource === 'free' && (user as any).registration_source === 'free') ||
+      (filterSource === 'organic' && (user as any).registration_source !== 'free' && !user.stripe_subscription_id) ||
+      (filterSource === 'stripe' && !!user.stripe_subscription_id);
+    return matchesSearch && matchesTier && matchesStatus && matchesState && matchesOnline && matchesSource;
+  });
 
   const getTierBadgeColor = (tier: string) => {
     switch (tier) {
@@ -1236,8 +1269,11 @@ export default function Admin() {
           <TabsContent value="users">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Usuários</CardTitle>
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <CardTitle className="flex items-center gap-2">
+                    Usuários
+                    <Badge variant="secondary">{filteredUsers.length}/{users.length}</Badge>
+                  </CardTitle>
                   <div className="relative w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -1247,6 +1283,84 @@ export default function Admin() {
                       className="pl-9"
                     />
                   </div>
+                </div>
+                {/* Filters */}
+                <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Filter className="h-4 w-4" />
+                    Filtros:
+                  </div>
+                  <Select value={filterTier} onValueChange={setFilterTier}>
+                    <SelectTrigger className="w-[130px] h-8 text-xs">
+                      <SelectValue placeholder="Plano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos Planos</SelectItem>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="basic">Basic</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-[130px] h-8 text-xs">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos Status</SelectItem>
+                      <SelectItem value="active">Ativo</SelectItem>
+                      <SelectItem value="inactive">Inativo</SelectItem>
+                      <SelectItem value="past_due">Pendente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterOnline} onValueChange={setFilterOnline}>
+                    <SelectTrigger className="w-[130px] h-8 text-xs">
+                      <SelectValue placeholder="Online" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="online">🟢 Online</SelectItem>
+                      <SelectItem value="offline">⚫ Offline</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterSource} onValueChange={setFilterSource}>
+                    <SelectTrigger className="w-[130px] h-8 text-xs">
+                      <SelectValue placeholder="Origem" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas Origens</SelectItem>
+                      <SelectItem value="free">🎁 Grátis</SelectItem>
+                      <SelectItem value="organic">Orgânico</SelectItem>
+                      <SelectItem value="stripe">Stripe</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterState} onValueChange={setFilterState}>
+                    <SelectTrigger className="w-[130px] h-8 text-xs">
+                      <SelectValue placeholder="Estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos Estados</SelectItem>
+                      {Object.entries(BRAZILIAN_STATES).map(([code, name]) => (
+                        <SelectItem key={code} value={code}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {(filterTier !== 'all' || filterStatus !== 'all' || filterOnline !== 'all' || filterSource !== 'all' || filterState !== 'all') && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 text-xs"
+                      onClick={() => {
+                        setFilterTier('all');
+                        setFilterStatus('all');
+                        setFilterOnline('all');
+                        setFilterSource('all');
+                        setFilterState('all');
+                      }}
+                    >
+                      Limpar Filtros
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -1269,7 +1383,6 @@ export default function Admin() {
                     <Button 
                       size="sm"
                       onClick={() => {
-                        // Switch to email tab with selected users
                         const tabsTrigger = document.querySelector('[value="email"]') as HTMLButtonElement;
                         if (tabsTrigger) tabsTrigger.click();
                       }}
@@ -1295,16 +1408,16 @@ export default function Admin() {
                               onCheckedChange={toggleAllUsers}
                             />
                           </TableHead>
+                          <TableHead>Status</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Telefone</TableHead>
                           <TableHead>IP Cadastro</TableHead>
-                          <TableHead>Nascimento</TableHead>
                           <TableHead>Plano</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Bloqueado</TableHead>
+                          <TableHead>Assinatura</TableHead>
                           <TableHead>Origem</TableHead>
                           <TableHead>Buscas Hoje</TableHead>
-                          <TableHead>Trial Até</TableHead>
+                          <TableHead>Último Acesso</TableHead>
+                          <TableHead>Cadastro</TableHead>
                           <TableHead>Ações</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -1312,7 +1425,7 @@ export default function Admin() {
                         {filteredUsers.map((user) => {
                           const maxSearches = user.subscription_status === 'active' 
                             ? TIER_LIMITS[user.subscription_tier as keyof typeof TIER_LIMITS] || 1
-                            : 3;
+                            : (user as any).registration_source === 'free' ? 1 : 3;
 
                           return (
                             <TableRow key={user.id} className={user.is_blocked ? 'bg-destructive/10' : ''}>
@@ -1322,18 +1435,31 @@ export default function Admin() {
                                   onCheckedChange={() => toggleUserSelection(user.user_id)}
                                 />
                               </TableCell>
-                              <TableCell className="font-medium">{user.email}</TableCell>
-                              <TableCell>{user.phone || '-'}</TableCell>
+                              {/* Online status */}
                               <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <Globe className="w-3 h-3 text-muted-foreground" />
-                                  <span className="text-xs text-muted-foreground">{user.registration_ip || '-'}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="relative flex h-3 w-3">
+                                    {user.is_online ? (
+                                      <>
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+                                      </>
+                                    ) : (
+                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-muted-foreground/30" />
+                                    )}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {user.is_online ? 'Online' : 'Offline'}
+                                  </span>
+                                  {user.is_blocked && (
+                                    <ShieldX className="w-3 h-3 text-destructive" />
+                                  )}
                                 </div>
                               </TableCell>
+                              <TableCell className="font-medium text-sm">{user.email}</TableCell>
+                              <TableCell className="text-xs">{user.phone || '-'}</TableCell>
                               <TableCell>
-                                <span className="text-xs">
-                                  {user.birth_date ? new Date(user.birth_date).toLocaleDateString('pt-BR') : '-'}
-                                </span>
+                                <span className="text-xs text-muted-foreground font-mono">{user.registration_ip || '-'}</span>
                               </TableCell>
                               <TableCell>
                                 <Badge className={getTierBadgeColor(user.subscription_tier)}>
@@ -1344,19 +1470,6 @@ export default function Admin() {
                                 <Badge variant="outline" className={getStatusBadgeColor(user.subscription_status)}>
                                   {user.subscription_status || 'inactive'}
                                 </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {user.is_blocked ? (
-                                  <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                                    <ShieldX className="w-3 h-3 mr-1" />
-                                    Bloqueado
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
-                                    <ShieldCheck className="w-3 h-3 mr-1" />
-                                    OK
-                                  </Badge>
-                                )}
                               </TableCell>
                               <TableCell>
                                 <Badge 
@@ -1374,7 +1487,7 @@ export default function Admin() {
                               </TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
-                                  <span className={user.today_searches >= maxSearches ? 'text-red-400' : ''}>
+                                  <span className={user.today_searches >= maxSearches ? 'text-red-400 font-bold' : ''}>
                                     {user.today_searches}/{maxSearches}
                                   </span>
                                   <Dialog>
@@ -1419,8 +1532,22 @@ export default function Admin() {
                                   </Button>
                                 </div>
                               </TableCell>
+                              {/* Last access */}
                               <TableCell>
-                                {new Date(user.trial_end_date).toLocaleDateString('pt-BR')}
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">
+                                    {user.last_active_at 
+                                      ? formatRelativeTime(user.last_active_at)
+                                      : '-'}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              {/* Registration date */}
+                              <TableCell>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                                </span>
                               </TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">

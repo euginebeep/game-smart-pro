@@ -375,7 +375,17 @@ export default function Auth() {
 
         const redirectUrl = `${window.location.origin}/`;
 
-        const { error } = await supabase.auth.signUp({
+        // Capture user's IP for registration tracking
+        let userIp: string | null = null;
+        try {
+          const ipRes = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipRes.json();
+          userIp = ipData.ip || null;
+        } catch {
+          // Non-critical, continue without IP
+        }
+
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
@@ -391,6 +401,17 @@ export default function Auth() {
             },
           },
         });
+
+        // Store registration IP in profile after signup
+        if (!error && signUpData?.user?.id && userIp) {
+          try {
+            await supabase.functions.invoke('admin-users', {
+              body: { action: 'set_registration_ip', userId: signUpData.user.id, ip: userIp }
+            }).catch(() => {});
+          } catch {
+            // Non-critical
+          }
+        }
 
         if (error) {
           if (error.message.includes('already registered') || error.message.includes('User already registered')) {

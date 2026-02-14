@@ -24,6 +24,9 @@ interface AdminUser {
   city: string | null;
   state: string | null;
   country_code: string | null;
+  last_active_at: string | null;
+  is_online: boolean;
+  last_device: string | null;
 }
 
 interface SalesData {

@@ -86,8 +86,24 @@ serve(async (req) => {
 
     logStep("Admin verified");
 
-    const { action, ...params } = await req.json();
+    const body = await req.json();
+    const { action, ...params } = body;
     logStep("Action requested", { action });
+
+    // Public action: set_registration_ip (no admin required)
+    if (action === 'set_registration_ip') {
+      const { userId: targetUserId, ip } = params;
+      if (targetUserId && ip) {
+        await adminClient
+          .from('profiles')
+          .update({ registration_ip: ip })
+          .eq('user_id', targetUserId);
+      }
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     switch (action) {
       case 'list_users': {
@@ -99,17 +115,33 @@ serve(async (req) => {
         if (error) throw error;
 
         // Get today's search counts
+        const today = new Date().toISOString().split('T')[0];
         const { data: searches } = await adminClient
           .from('daily_searches')
           .select('user_id, search_count')
-          .eq('search_date', new Date().toISOString().split('T')[0]);
+          .eq('search_date', today);
 
         const searchMap = new Map(searches?.map(s => [s.user_id, s.search_count]) || []);
 
-        const users = profiles?.map(p => ({
-          ...p,
-          today_searches: searchMap.get(p.user_id) || 0
-        }));
+        // Get active sessions for online status and last access
+        const { data: sessions } = await adminClient
+          .from('active_sessions')
+          .select('user_id, last_active_at, device_info');
+
+        const sessionMap = new Map(sessions?.map(s => [s.user_id, { last_active_at: s.last_active_at, device_info: s.device_info }]) || []);
+
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+        const users = profiles?.map(p => {
+          const session = sessionMap.get(p.user_id);
+          return {
+            ...p,
+            today_searches: searchMap.get(p.user_id) || 0,
+            last_active_at: session?.last_active_at || p.updated_at || null,
+            is_online: session?.last_active_at ? session.last_active_at > fiveMinutesAgo : false,
+            last_device: session?.device_info || null,
+          };
+        });
 
         return new Response(
           JSON.stringify({ users }),
