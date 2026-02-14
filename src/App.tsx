@@ -16,6 +16,7 @@ import AnalysisPage from "./pages/AnalysisPage";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PremiumChatWrapper } from "./components/PremiumChatWrapper";
+import { InstallPrompt } from "./components/InstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      <InstallPrompt />
     </TooltipProvider>
   </QueryClientProvider>
 );
