@@ -380,6 +380,36 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          campaign: string | null
+          converted: boolean | null
+          created_at: string | null
+          email: string
+          id: string
+          medium: string | null
+          source: string | null
+        }
+        Insert: {
+          campaign?: string | null
+          converted?: boolean | null
+          created_at?: string | null
+          email: string
+          id?: string
+          medium?: string | null
+          source?: string | null
+        }
+        Update: {
+          campaign?: string | null
+          converted?: boolean | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          medium?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           created_at: string | null
