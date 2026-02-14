@@ -12,6 +12,11 @@ const logStep = (step: string, details?: any) => {
   console.log(`[VALIDATE-SESSION] ${step}${detailsStr}`);
 };
 
+// Master users exempt from multi-login restrictions
+const MASTER_USER_IDS = [
+  '132733b1-1a28-48dd-9369-be0e49d2a225', // fabiobr9999@gmail.com
+];
+
 // Hash session token before storing - prevents token theft if DB is compromised
 async function hashToken(token: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -110,6 +115,18 @@ serve(async (req) => {
       // Validar se a sessão atual é a sessão ativa
       if (!sessionToken) {
         throw new Error("Session token is required for validation");
+      }
+
+      // Master users are always valid (multi-connection allowed)
+      if (MASTER_USER_IDS.includes(userId)) {
+        logStep("Master user - skipping validation", { userId: userId.substring(0, 8) + '...' });
+        return new Response(JSON.stringify({ 
+          valid: true, 
+          message: "Master user - always valid" 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
       }
 
       // Hash the incoming token to compare with stored hash
