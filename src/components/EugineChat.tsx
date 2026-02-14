@@ -22,19 +22,26 @@ interface Message {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eugine-chat`;
 
-const QUICK_QUESTIONS = [
-  'Como o EUGINE funciona?',
-  'Qual plano escolher?',
-  'É confiável?',
-  'Como cancelar?',
-];
+const QUICK_QUESTIONS: Record<string, string[]> = {
+  pt: ['Como o EUGINE funciona?', 'Qual plano escolher?', 'É confiável?', 'Como cancelar?'],
+  en: ['How does EUGINE work?', 'Which plan to choose?', 'Is it reliable?', 'How to cancel?'],
+  es: ['¿Cómo funciona EUGINE?', '¿Qué plan elegir?', '¿Es confiable?', '¿Cómo cancelar?'],
+  it: ['Come funziona EUGINE?', 'Quale piano scegliere?', 'È affidabile?', 'Come cancellare?'],
+};
+
+const WELCOME_MSG: Record<string, string> = {
+  pt: 'Olá! 👋 Sou o assistente do EUGINE. Como posso te ajudar hoje?',
+  en: 'Hello! 👋 I\'m the EUGINE assistant. How can I help you today?',
+  es: '¡Hola! 👋 Soy el asistente de EUGINE. ¿Cómo puedo ayudarte hoy?',
+  it: 'Ciao! 👋 Sono l\'assistente di EUGINE. Come posso aiutarti oggi?',
+};
 
 export function EugineChat() {
   const { language } = useLanguage();
   const avatar = avatarByLang[language] || avatarPt;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Olá! 👋 Sou o assistente do EUGINE. Como posso te ajudar hoje?' }
+    { role: 'assistant', content: WELCOME_MSG[language] || WELCOME_MSG.pt }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +67,11 @@ export function EugineChat() {
       window.removeEventListener('resize', handleScroll);
     };
   }, []);
+
+  // Reset messages when language changes
+  useEffect(() => {
+    setMessages([{ role: 'assistant', content: WELCOME_MSG[language] || WELCOME_MSG.pt }]);
+  }, [language]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,6 +101,7 @@ export function EugineChat() {
         },
         body: JSON.stringify({
           messages: allMessages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10),
+          language,
         }),
       });
 
@@ -201,7 +214,7 @@ export function EugineChat() {
           {/* Quick Questions */}
           {messages.length <= 2 && (
             <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-              {QUICK_QUESTIONS.map(q => (
+              {(QUICK_QUESTIONS[language] || QUICK_QUESTIONS.pt).map(q => (
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
