@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AccumulatorCard, RiskLevel } from './AccumulatorCard';
 import { Game } from '@/types/game';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Filter, Check } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -34,20 +34,16 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
   const { t } = useLanguage();
   const isPremium = userTier === 'premium';
   
-  // All types enabled by default
   const [enabledTypes, setEnabledTypes] = useState<Set<AccumulatorType>>(
     new Set(ACCUMULATOR_TYPES.map(type => type.id))
   );
   
-  // Generate all accumulators
   const allAccumulators = generateAccumulators(games, t, isPremium);
   
-  // Filter based on user selection (only for Premium)
   let filteredAccumulators = isPremium 
     ? allAccumulators.filter(acc => enabledTypes.has(acc.typeId))
     : allAccumulators;
   
-  // Apply max limit for free users
   if (maxAccumulators !== undefined && maxAccumulators > 0) {
     filteredAccumulators = filteredAccumulators.slice(0, maxAccumulators);
   }
@@ -56,7 +52,6 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
     setEnabledTypes(prev => {
       const newSet = new Set(prev);
       if (newSet.has(typeId)) {
-        // Don't allow disabling all types
         if (newSet.size > 1) {
           newSet.delete(typeId);
         }
@@ -79,7 +74,6 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
-      {/* Section Header */}
       <div className="text-center mb-5 sm:mb-6 lg:mb-8">
         <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-1 sm:mb-2">
           {t('accumulators.title')}
@@ -88,7 +82,6 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
           {t('accumulators.subtitle')} <span className="text-warning font-semibold">{t('accumulators.warning')}</span>
         </p>
         
-        {/* Premium Filter Controls */}
         {isPremium && (
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <span className="text-primary text-sm font-medium flex items-center gap-1">
@@ -109,45 +102,23 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
-                {/* Quick Filters */}
                 <div className="flex gap-1 p-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="flex-1 text-xs h-7"
-                    onClick={selectAll}
-                  >
+                  <Button variant="ghost" size="sm" className="flex-1 text-xs h-7" onClick={selectAll}>
                     {t('accumulators.all') || 'Todos'}
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="flex-1 text-xs h-7 text-green-500"
-                    onClick={() => selectByRisk('low')}
-                  >
+                  <Button variant="ghost" size="sm" className="flex-1 text-xs h-7 text-green-500" onClick={() => selectByRisk('low')}>
                     🛡️ {t('accumulators.riskLow')}
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="flex-1 text-xs h-7 text-yellow-500"
-                    onClick={() => selectByRisk('medium')}
-                  >
+                  <Button variant="ghost" size="sm" className="flex-1 text-xs h-7 text-yellow-500" onClick={() => selectByRisk('medium')}>
                     ⚖️ {t('accumulators.riskMedium')}
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="flex-1 text-xs h-7 text-red-500"
-                    onClick={() => selectByRisk('high')}
-                  >
+                  <Button variant="ghost" size="sm" className="flex-1 text-xs h-7 text-red-500" onClick={() => selectByRisk('high')}>
                     🚀 {t('accumulators.riskHigh')}
                   </Button>
                 </div>
                 
                 <DropdownMenuSeparator />
                 
-                {/* Individual Type Toggles */}
                 {ACCUMULATOR_TYPES.map(type => (
                   <DropdownMenuCheckboxItem
                     key={type.id}
@@ -167,7 +138,6 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
         )}
       </div>
 
-      {/* Accumulators Grid */}
       <div className="grid gap-4 sm:gap-5 lg:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filteredAccumulators.map((acc, idx) => (
           <AccumulatorCard
@@ -183,7 +153,6 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
         ))}
       </div>
       
-      {/* Empty State */}
       {filteredAccumulators.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
           <p>{t('accumulators.noResults') || 'Nenhum acumulador selecionado'}</p>
@@ -206,7 +175,7 @@ interface AccumulatorData {
   typeId: AccumulatorType;
 }
 
-// ===== FUNÇÃO AUXILIAR: Calcular chance REAL baseada nas odds =====
+// ===== Calculate real chance based on odds =====
 function calculateRealChance(bets: { odd: number }[]): number {
   const marginFactor = 0.93;
   const combinedProb = bets.reduce((prob, bet) => {
@@ -216,14 +185,14 @@ function calculateRealChance(bets: { odd: number }[]): number {
   return Math.max(1, Math.round(combinedProb * 100));
 }
 
-// ===== FUNÇÃO AUXILIAR: Calcular odd de Double Chance =====
+// ===== Calculate Double Chance odd =====
 function calcDoubleChanceOdd(homeOdd: number, drawOdd: number): number {
   if (!homeOdd || !drawOdd || homeOdd <= 1 || drawOdd <= 1) return 1.20;
   const dc = 1 / ((1 / homeOdd) + (1 / drawOdd));
   return Math.round(Math.max(1.01, dc) * 100) / 100;
 }
 
-// ===== FUNÇÃO AUXILIAR: Estimar odd BTTS a partir de over =====
+// ===== Estimate BTTS odd from over =====
 function estimateBttsOdd(overOdd: number): number {
   if (!overOdd || overOdd <= 1) return 1.85;
   return Math.round(Math.max(1.30, overOdd * 0.98) * 100) / 100;
@@ -231,22 +200,18 @@ function estimateBttsOdd(overOdd: number): number {
 
 function generateAccumulators(games: Game[], t: (key: string) => string, isPremium: boolean): AccumulatorData[] {
   const validGames = games.filter(g => g && g.homeTeam && g.awayTeam && g.odds);
-  
   const getGame = (index: number) => validGames[index % Math.max(1, validGames.length)];
   
-  // Ordenar jogos por confiança da análise (maior primeiro)
   const sortedByConfidence = [...validGames].sort((a, b) => 
     (b.analysis?.confidence || 0) - (a.analysis?.confidence || 0)
   );
 
-  // Jogos com melhor análise para gols
   const goalCandidates = sortedByConfidence.filter(g => {
     const type = g.analysis?.type?.toUpperCase() || '';
     return type.includes('GOL') || type.includes('OVER') || type.includes('BTTS') || type.includes('MARCAM') || (g.analysis?.confidence || 0) >= 60;
   });
   const bestGoalGames = goalCandidates.length >= 2 ? goalCandidates : sortedByConfidence;
 
-  // Jogos com melhor análise para vitórias
   const winCandidates = sortedByConfidence.filter(g => {
     const type = g.analysis?.type?.toUpperCase() || '';
     return type.includes('VITÓRIA') || type.includes('WIN') || type.includes('VICTORY');
@@ -257,7 +222,7 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
 
   if (validGames.length === 0) return baseAccumulators;
 
-  // ===== LOW RISK — GOLS (2 pernas: BTTS + Over 1.5) =====
+  // ===== LOW RISK — GOALS (2 legs: Over 1.5 + Over 1.5) → target 35-50% =====
   const lowRiskGoalsCount = isPremium ? 3 : 1;
   for (let i = 0; i < lowRiskGoalsCount; i++) {
     const g1 = bestGoalGames[i * 2] || getGame(i * 2);
@@ -266,13 +231,13 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
     const bets = [
       {
         match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: t('accumulators.bothScore'),
-        odd: g1.odds.bttsYes || g1.advancedData?.bttsOdds?.yes || estimateBttsOdd(g1.odds.over)
+        bet: t('accumulators.atLeast2Goals') || 'Almeno 2 gol',
+        odd: g1.odds.over15 || Math.round(Math.max(1.15, (g1.odds.over || 1.85) * 0.68) * 100) / 100
       },
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: t('accumulators.atLeast2Goals'),
-        odd: g2.odds.over15 || Math.max(1.15, Math.round((g2.odds.over * 0.82) * 100) / 100)
+        bet: t('accumulators.atLeast2Goals') || 'Almeno 2 gol',
+        odd: g2.odds.over15 || Math.round(Math.max(1.15, (g2.odds.over || 1.85) * 0.68) * 100) / 100
       }
     ];
 
@@ -281,35 +246,29 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       emoji: '🛡️',
       title: `${t('accumulators.goalsLowRisk')}${isPremium && lowRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: Math.max(20, Math.min(100, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.25)))),
+      betAmount: Math.max(50, Math.min(150, Math.round(1000 * Math.max(0.05, (chancePercent / 100) * 0.30)))),
       chancePercent,
       riskLevel: 'low',
       typeId: 'goalsLow'
     });
   }
 
-  // ===== MEDIUM RISK — GOLS (3 pernas: Over 2.5 + BTTS + Over 2.5) =====
+  // ===== MEDIUM RISK — GOALS (2 legs: Over 2.5 + BTTS) → target 20-35% =====
   const mediumRiskGoalsCount = isPremium ? 3 : 1;
   for (let i = 0; i < mediumRiskGoalsCount; i++) {
-    const g1 = bestGoalGames[i * 3] || getGame(i * 3);
-    const g2 = bestGoalGames[i * 3 + 1] || getGame(i * 3 + 1);
-    const g3 = bestGoalGames[i * 3 + 2] || getGame(i * 3 + 2);
+    const g1 = bestGoalGames[i * 2] || getGame(i * 2);
+    const g2 = bestGoalGames[i * 2 + 1] || getGame(i * 2 + 1);
 
     const bets = [
       {
         match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: t('accumulators.over25'),
+        bet: t('accumulators.over25') || 'Più di 2.5 gol',
         odd: g1.odds.over || 1.85
       },
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: t('accumulators.bothTeamsScore'),
-        odd: g2.odds.bttsYes || g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over)
-      },
-      {
-        match: `${g3.homeTeam} x ${g3.awayTeam}`,
-        bet: t('accumulators.over25'),
-        odd: g3.odds.over || 1.65
+        bet: t('accumulators.bothTeamsScore') || 'Entrambe segnano',
+        odd: g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over)
       }
     ];
 
@@ -318,41 +277,35 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       emoji: '⚖️',
       title: `${t('accumulators.goalsMediumRisk')}${isPremium && mediumRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: Math.max(10, Math.min(60, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.15)))),
+      betAmount: Math.max(25, Math.min(80, Math.round(1000 * Math.max(0.02, (chancePercent / 100) * 0.20)))),
       chancePercent,
       riskLevel: 'medium',
       typeId: 'goalsMedium'
     });
   }
 
-  // ===== HIGH RISK — GOLS (4 pernas: Over 3.5 etc) =====
+  // ===== HIGH RISK — GOALS (3 legs: Over 2.5 + BTTS + Over 3.5) → target 8-18% =====
   const highRiskGoalsCount = isPremium ? 3 : 1;
   for (let i = 0; i < highRiskGoalsCount; i++) {
-    const g1 = bestGoalGames[i * 4] || getGame(i * 4);
-    const g2 = bestGoalGames[i * 4 + 1] || getGame(i * 4 + 1);
-    const g3 = bestGoalGames[i * 4 + 2] || getGame(i * 4 + 2);
-    const g4 = bestGoalGames[i * 4 + 3] || getGame(i * 4 + 3);
+    const g1 = bestGoalGames[i * 3] || getGame(i * 3);
+    const g2 = bestGoalGames[i * 3 + 1] || getGame(i * 3 + 1);
+    const g3 = bestGoalGames[i * 3 + 2] || getGame(i * 3 + 2);
 
     const bets = [
       {
         match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: t('accumulators.over35'),
-        odd: g1.odds.over35 || Math.round(Math.max(1.80, (g1.odds.over || 1.85) * 1.35) * 100) / 100
+        bet: t('accumulators.over25') || 'Più di 2.5 gol',
+        odd: g1.odds.over || 1.85
       },
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: t('accumulators.over35'),
-        odd: g2.odds.over35 || Math.round(Math.max(1.80, (g2.odds.over || 1.85) * 1.30) * 100) / 100
+        bet: t('accumulators.bothTeamsScore') || 'Entrambe segnano',
+        odd: g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over)
       },
       {
         match: `${g3.homeTeam} x ${g3.awayTeam}`,
-        bet: t('accumulators.over45'),
-        odd: g3.odds.over45 || Math.round(Math.max(2.50, (g3.odds.over || 1.85) * 1.75) * 100) / 100
-      },
-      {
-        match: `${g4.homeTeam} x ${g4.awayTeam}`,
-        bet: t('accumulators.over35'),
-        odd: g4.odds.over35 || Math.round(Math.max(1.80, (g4.odds.over || 1.85) * 1.45) * 100) / 100
+        bet: t('accumulators.over35') || 'Più di 3.5 gol',
+        odd: g3.odds.over35 || Math.round(Math.max(1.80, (g3.odds.over || 1.85) * 1.35) * 100) / 100
       }
     ];
 
@@ -361,14 +314,14 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       emoji: '🚀',
       title: `${t('accumulators.goalsHighRisk')}${isPremium && highRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: Math.max(5, Math.min(20, Math.round(1000 * Math.max(0.005, (chancePercent / 100) * 0.08)))),
+      betAmount: Math.max(10, Math.min(30, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.10)))),
       chancePercent,
       riskLevel: 'high',
       typeId: 'goalsHigh'
     });
   }
 
-  // ===== LOW RISK — VITÓRIAS (Double Chance: 2 pernas) =====
+  // ===== LOW RISK — WINS (2 legs Double Chance) → target 40-60% =====
   const lowRiskWinsCount = isPremium ? 3 : 1;
   for (let i = 0; i < lowRiskWinsCount; i++) {
     const g1 = bestWinGames[i * 2] || getGame(i * 2);
@@ -392,19 +345,18 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       emoji: '🛡️',
       title: `${t('accumulators.winsDoubleChance')}${isPremium && lowRiskWinsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: Math.max(20, Math.min(100, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.25)))),
+      betAmount: Math.max(50, Math.min(150, Math.round(1000 * Math.max(0.05, (chancePercent / 100) * 0.30)))),
       chancePercent,
       riskLevel: 'low',
       typeId: 'winsLow'
     });
   }
 
-  // ===== MEDIUM RISK — VITÓRIAS (3 pernas: Moneyline) =====
+  // ===== MEDIUM RISK — WINS (2 legs Moneyline) → target 15-30% =====
   const mediumRiskWinsCount = isPremium ? 3 : 1;
   for (let i = 0; i < mediumRiskWinsCount; i++) {
-    const g1 = bestWinGames[i * 3] || getGame(i * 3);
-    const g2 = bestWinGames[i * 3 + 1] || getGame(i * 3 + 1);
-    const g3 = bestWinGames[i * 3 + 2] || getGame(i * 3 + 2);
+    const g1 = bestWinGames[i * 2] || getGame(i * 2);
+    const g2 = bestWinGames[i * 2 + 1] || getGame(i * 2 + 1);
 
     const bets = [
       {
@@ -416,11 +368,6 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
         bet: `${t('accumulators.victory')} ${g2.homeTeam}`,
         odd: g2.odds.home || 1.55
-      },
-      {
-        match: `${g3.homeTeam} x ${g3.awayTeam}`,
-        bet: `${t('accumulators.victory')} ${g3.homeTeam}`,
-        odd: g3.odds.home || 1.60
       }
     ];
 
@@ -429,40 +376,34 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       emoji: '⚖️',
       title: `${t('accumulators.winsMediumRisk')}${isPremium && mediumRiskWinsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: Math.max(10, Math.min(60, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.15)))),
+      betAmount: Math.max(25, Math.min(80, Math.round(1000 * Math.max(0.02, (chancePercent / 100) * 0.20)))),
       chancePercent,
       riskLevel: 'medium',
       typeId: 'winsMedium'
     });
   }
 
-  // ===== HIGH RISK — PLACARES EXATOS =====
+  // ===== HIGH RISK — EXACT SCORES (2 legs) → target 3-8% =====
   const highRiskScoresCount = isPremium ? 3 : 1;
   for (let i = 0; i < highRiskScoresCount; i++) {
-    const g1 = getGame(i * 3);
-    const g2 = getGame(i * 3 + 1);
-    const g3 = getGame(i * 3 + 2);
+    const g1 = getGame(i * 2);
+    const g2 = getGame(i * 2 + 1);
     const scores = [
-      ['2-1', '3-2', '2-0'],
-      ['1-0', '2-2', '3-1'],
-      ['1-1', '3-0', '2-1']
-    ][i] || ['2-1', '3-2', '2-0'];
+      ['2-1', '1-0'],
+      ['1-1', '2-0'],
+      ['3-1', '2-2']
+    ][i] || ['2-1', '1-0'];
 
     const bets = [
       {
         match: `${g1.homeTeam} x ${g1.awayTeam}`,
         bet: `${t('accumulators.score')} ${scores[0]}`,
-        odd: 8.50 + (i * 2)
+        odd: 7.00 + (i * 1.5)
       },
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
         bet: `${t('accumulators.score')} ${scores[1]}`,
-        odd: 21.00 + (i * 5)
-      },
-      {
-        match: `${g3.homeTeam} x ${g3.awayTeam}`,
-        bet: `${t('accumulators.score')} ${scores[2]}`,
-        odd: 10.00 + (i * 3)
+        odd: 6.50 + (i * 1.5)
       }
     ];
 
@@ -471,12 +412,20 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       emoji: '🚀',
       title: `${t('accumulators.exactScores')}${isPremium && highRiskScoresCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: Math.max(5, Math.min(20, Math.round(1000 * Math.max(0.005, (chancePercent / 100) * 0.08)))),
+      betAmount: Math.max(10, Math.min(30, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.10)))),
       chancePercent,
       riskLevel: 'high',
       typeId: 'exactScores'
     });
   }
 
-  return baseAccumulators;
+  // Filter by minimum chance thresholds
+  const filtered = baseAccumulators.filter(acc => {
+    if (acc.riskLevel === 'low' && acc.chancePercent < 25) return false;
+    if (acc.riskLevel === 'medium' && acc.chancePercent < 10) return false;
+    if (acc.riskLevel === 'high' && acc.chancePercent < 3) return false;
+    return true;
+  });
+
+  return filtered;
 }
