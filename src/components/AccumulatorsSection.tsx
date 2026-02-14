@@ -267,21 +267,22 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       {
         match: `${g1.homeTeam} x ${g1.awayTeam}`,
         bet: t('accumulators.bothScore'),
-        odd: g1.advancedData?.bttsOdds?.yes || estimateBttsOdd(g1.odds.over)
+        odd: g1.odds.bttsYes || g1.advancedData?.bttsOdds?.yes || estimateBttsOdd(g1.odds.over)
       },
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
         bet: t('accumulators.atLeast2Goals'),
-        odd: Math.max(1.15, Math.round((g2.odds.over * 0.82) * 100) / 100)
+        odd: g2.odds.over15 || Math.max(1.15, Math.round((g2.odds.over * 0.82) * 100) / 100)
       }
     ];
 
+    const chancePercent = calculateRealChance(bets);
     baseAccumulators.push({
       emoji: '🛡️',
       title: `${t('accumulators.goalsLowRisk')}${isPremium && lowRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: 60,
-      chancePercent: calculateRealChance(bets),
+      betAmount: Math.max(20, Math.min(100, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.25)))),
+      chancePercent,
       riskLevel: 'low',
       typeId: 'goalsLow'
     });
@@ -303,7 +304,7 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
         bet: t('accumulators.bothTeamsScore'),
-        odd: g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over)
+        odd: g2.odds.bttsYes || g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over)
       },
       {
         match: `${g3.homeTeam} x ${g3.awayTeam}`,
@@ -312,12 +313,13 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       }
     ];
 
+    const chancePercent = calculateRealChance(bets);
     baseAccumulators.push({
       emoji: '⚖️',
       title: `${t('accumulators.goalsMediumRisk')}${isPremium && mediumRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: 40,
-      chancePercent: calculateRealChance(bets),
+      betAmount: Math.max(10, Math.min(60, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.15)))),
+      chancePercent,
       riskLevel: 'medium',
       typeId: 'goalsMedium'
     });
@@ -335,31 +337,32 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       {
         match: `${g1.homeTeam} x ${g1.awayTeam}`,
         bet: t('accumulators.over35'),
-        odd: Math.round(Math.max(1.80, (g1.odds.over || 1.85) * 1.35) * 100) / 100
+        odd: g1.odds.over35 || Math.round(Math.max(1.80, (g1.odds.over || 1.85) * 1.35) * 100) / 100
       },
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
         bet: t('accumulators.over35'),
-        odd: Math.round(Math.max(1.80, (g2.odds.over || 1.85) * 1.30) * 100) / 100
+        odd: g2.odds.over35 || Math.round(Math.max(1.80, (g2.odds.over || 1.85) * 1.30) * 100) / 100
       },
       {
         match: `${g3.homeTeam} x ${g3.awayTeam}`,
         bet: t('accumulators.over45'),
-        odd: Math.round(Math.max(2.50, (g3.odds.over || 1.85) * 1.75) * 100) / 100
+        odd: g3.odds.over45 || Math.round(Math.max(2.50, (g3.odds.over || 1.85) * 1.75) * 100) / 100
       },
       {
         match: `${g4.homeTeam} x ${g4.awayTeam}`,
         bet: t('accumulators.over35'),
-        odd: Math.round(Math.max(1.80, (g4.odds.over || 1.85) * 1.45) * 100) / 100
+        odd: g4.odds.over35 || Math.round(Math.max(1.80, (g4.odds.over || 1.85) * 1.45) * 100) / 100
       }
     ];
 
+    const chancePercent = calculateRealChance(bets);
     baseAccumulators.push({
       emoji: '🚀',
       title: `${t('accumulators.goalsHighRisk')}${isPremium && highRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: 10,
-      chancePercent: calculateRealChance(bets),
+      betAmount: Math.max(5, Math.min(20, Math.round(1000 * Math.max(0.005, (chancePercent / 100) * 0.08)))),
+      chancePercent,
       riskLevel: 'high',
       typeId: 'goalsHigh'
     });
@@ -375,21 +378,22 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       {
         match: `${g1.homeTeam} x ${g1.awayTeam}`,
         bet: `${g1.homeTeam} ${t('accumulators.winOrDraw')}`,
-        odd: calcDoubleChanceOdd(g1.odds.home, g1.odds.draw)
+        odd: g1.odds.doubleChanceHomeOrDraw || calcDoubleChanceOdd(g1.odds.home, g1.odds.draw)
       },
       {
         match: `${g2.homeTeam} x ${g2.awayTeam}`,
         bet: `${g2.homeTeam} ${t('accumulators.winOrDraw')}`,
-        odd: calcDoubleChanceOdd(g2.odds.home, g2.odds.draw)
+        odd: g2.odds.doubleChanceHomeOrDraw || calcDoubleChanceOdd(g2.odds.home, g2.odds.draw)
       }
     ];
 
+    const chancePercent = calculateRealChance(bets);
     baseAccumulators.push({
       emoji: '🛡️',
       title: `${t('accumulators.winsDoubleChance')}${isPremium && lowRiskWinsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: 80,
-      chancePercent: calculateRealChance(bets),
+      betAmount: Math.max(20, Math.min(100, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.25)))),
+      chancePercent,
       riskLevel: 'low',
       typeId: 'winsLow'
     });
@@ -420,12 +424,13 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       }
     ];
 
+    const chancePercent = calculateRealChance(bets);
     baseAccumulators.push({
       emoji: '⚖️',
       title: `${t('accumulators.winsMediumRisk')}${isPremium && mediumRiskWinsCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: 40,
-      chancePercent: calculateRealChance(bets),
+      betAmount: Math.max(10, Math.min(60, Math.round(1000 * Math.max(0.01, (chancePercent / 100) * 0.15)))),
+      chancePercent,
       riskLevel: 'medium',
       typeId: 'winsMedium'
     });
@@ -461,12 +466,13 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       }
     ];
 
+    const chancePercent = calculateRealChance(bets);
     baseAccumulators.push({
       emoji: '🚀',
       title: `${t('accumulators.exactScores')}${isPremium && highRiskScoresCount > 1 ? ` #${i + 1}` : ''}`,
       bets,
-      betAmount: 5,
-      chancePercent: calculateRealChance(bets),
+      betAmount: Math.max(5, Math.min(20, Math.round(1000 * Math.max(0.005, (chancePercent / 100) * 0.08)))),
+      chancePercent,
       riskLevel: 'high',
       typeId: 'exactScores'
     });
