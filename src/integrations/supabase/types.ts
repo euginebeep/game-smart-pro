@@ -185,6 +185,69 @@ export type Database = {
         }
         Relationships: []
       }
+      bet_tracking: {
+        Row: {
+          actual_score: string | null
+          away_team: string
+          bet_label: string
+          bet_type: string
+          checked_at: string | null
+          confidence: number
+          created_at: string | null
+          estimated_probability: number
+          fixture_id: string
+          home_team: string
+          id: string
+          implied_probability: number
+          league: string
+          match_date: string
+          odd: number
+          result: string | null
+          value_edge: number
+          was_skip: boolean | null
+        }
+        Insert: {
+          actual_score?: string | null
+          away_team: string
+          bet_label: string
+          bet_type: string
+          checked_at?: string | null
+          confidence: number
+          created_at?: string | null
+          estimated_probability: number
+          fixture_id: string
+          home_team: string
+          id?: string
+          implied_probability: number
+          league: string
+          match_date: string
+          odd: number
+          result?: string | null
+          value_edge: number
+          was_skip?: boolean | null
+        }
+        Update: {
+          actual_score?: string | null
+          away_team?: string
+          bet_label?: string
+          bet_type?: string
+          checked_at?: string | null
+          confidence?: number
+          created_at?: string | null
+          estimated_probability?: number
+          fixture_id?: string
+          home_team?: string
+          id?: string
+          implied_probability?: number
+          league?: string
+          match_date?: string
+          odd?: number
+          result?: string | null
+          value_edge?: number
+          was_skip?: boolean | null
+        }
+        Relationships: []
+      }
       daily_searches: {
         Row: {
           created_at: string
@@ -516,6 +579,39 @@ export type Database = {
           risk_level: string | null
           total: number | null
           wins: number | null
+        }
+        Relationships: []
+      }
+      bet_stats: {
+        Row: {
+          avg_confidence: number | null
+          avg_edge: number | null
+          avg_estimated_prob: number | null
+          avg_implied_prob: number | null
+          avg_odd: number | null
+          bet_type: string | null
+          hit_rate: number | null
+          losses: number | null
+          total_bets: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
+      recent_results: {
+        Row: {
+          actual_score: string | null
+          away_team: string | null
+          bet_label: string | null
+          bet_type: string | null
+          estimated_probability: number | null
+          home_team: string | null
+          id: string | null
+          implied_probability: number | null
+          league: string | null
+          match_date: string | null
+          odd: number | null
+          result: string | null
+          value_edge: number | null
         }
         Relationships: []
       }
