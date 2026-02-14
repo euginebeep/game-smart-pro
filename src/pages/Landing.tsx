@@ -134,9 +134,9 @@ export default function Landing() {
         getStarted: 'Comece Agora',
       },
       hero: {
-        title: 'Encontre apostas onde',
-        titleHighlight: 'VOCÊ tem vantagem sobre a casa',
-        subtitle: 'O EUGINE analisa mais de 50 jogos por dia e identifica quando a probabilidade REAL é maior que o que a Bet365 oferece. Você só aposta quando tem vantagem matemática.',
+        title: 'Pare de apostar no escuro.',
+        titleHighlight: 'Aposte só quando a matemática está do seu lado.',
+        subtitle: 'O EUGINE analisa mais de 50 jogos por dia e encontra quando a probabilidade REAL é maior que a odd oferecida. Sem emoção. Sem achismo. Só vantagem.',
         emailPlaceholder: 'Seu melhor e-mail',
         ctaButton: 'Ver análise grátis',
         ctaSubtext: 'Grátis. Sem cartão de crédito. Cancele quando quiser.',
@@ -145,28 +145,33 @@ export default function Landing() {
         trust2: '50+ jogos/dia',
         trust3: 'Odds em tempo real',
         hitRateLabel: 'de acerto nos últimos 30 dias',
+        socialProof: 'Mais de 50 jogos analisados hoje. Só os com vantagem chegam até você.',
+      },
+      mechanism: {
+        problem: 'A maioria aposta por impulso. Por emoção. Por palpite de grupo.',
+        solution: 'O EUGINE calcula. Quando a probabilidade real é MAIOR que a odd oferecida, existe valor. Onde existe valor, existe vantagem no longo prazo.',
+        discipline: 'Se não há vantagem matemática, NÃO apostamos. Disciplina é o que separa quem lucra de quem perde.',
       },
       steps: {
         title: 'Como o EUGINE encontra sua vantagem',
-        step1: { 
+        step1: {
           title: '1. Varremos 50+ jogos',
           heading: 'Varremos 50+ jogos por dia',
-          shortDesc: 'Todo dia analisamos jogos de 30+ ligas comparando odds de múltiplas casas.',
-          description: 'Todos os dias analisamos jogos de 30+ ligas buscando discrepâncias nas odds. Quanto mais jogos analisamos, mais oportunidades encontramos.',
+          shortDesc: 'Analisamos todas as principais ligas, comparando odds de múltiplas casas com nosso modelo de probabilidade.',
         },
-        step2: { 
-          title: '2. Encontramos a vantagem',
-          heading: 'Achamos sua vantagem',
-          shortDesc: 'Quando a probabilidade real é maior que o que a casa oferece, você recebe a recomendação.',
-          description: 'Comparamos a probabilidade que a casa calcula com a probabilidade REAL baseada em estatísticas. Quando achamos diferença, avisamos você.',
+        step2: {
+          title: '2. Encontramos onde a casa erra',
+          heading: 'Encontramos onde a casa erra',
+          shortDesc: 'Quando nossa probabilidade calculada é maior que a odd oferecida, existe valor. Aí você recebe o alerta.',
         },
-        step3: { 
-          title: '3. Você aposta com edge',
-          heading: 'Você aposta com edge',
-          shortDesc: 'Cada aposta mostra QUANTO de vantagem você tem. Disciplina + edge = lucro consistente.',
-          description: 'Cada sugestão mostra exatamente QUANTO de vantagem você tem. Ao longo do tempo, isso se transforma em lucro consistente.',
+        step3: {
+          title: '3. Você aposta com vantagem',
+          heading: 'Você aposta com vantagem',
+          shortDesc: 'Cada sugestão mostra QUANTO de edge você tem. Ao longo do tempo, vantagem consistente = resultado consistente.',
         },
       },
+      impactPhrase: 'Você não precisa ganhar todas. Só precisa ter vantagem.',
+      closingLine: 'Inteligência supera sorte. Dados superam opinião. Disciplina supera impulso.',
       stats: {
         title: 'Transparência Total',
         subtitle: 'Publicamos todos os nossos resultados. Sem edição. Sem filtro.',
@@ -178,58 +183,10 @@ export default function Landing() {
       },
       pricing: {
         title: 'Escolha o Plano Perfeito para Você',
-        dayUse: {
-          name: 'DAY USE',
-          badge: 'Premium 24h',
-          price: '$7,77',
-          period: '/dia',
-          features: [
-            'Acesso Premium Completo por 24h',
-            'Análises Avançadas Ilimitadas',
-            'Pagamento Único (PIX)',
-            'Sem Recorrência',
-          ],
-          cta: 'Comprar Day Use',
-        },
-        basic: {
-          name: 'BASIC',
-          price: '$29,90',
-          period: '/mês',
-          features: [
-            '5 Jogos por Dia',
-            'Análise Simples',
-            '1 Dupla Diária',
-          ],
-          cta: 'Começar grátis →',
-        },
-        advanced: {
-          name: 'ADVANCED',
-          badge: 'MAIS POPULAR',
-          price: '$49,90',
-          period: '/mês',
-          features: [
-            '10 Jogos por Dia',
-            'Análise Completa',
-            '3 Duplas Diárias',
-            'Acumuladores',
-          ],
-          cta: 'Assinar Advanced',
-        },
-        premium: {
-          name: 'PREMIUM',
-          badge: 'Melhor Valor',
-          price: '$79,90',
-          period: '/mês',
-          features: [
-            'Jogos Ilimitados',
-            'Análise Premium Completa',
-            'Todas as Duplas e Zebras',
-            'Acumuladores Premium',
-            'Exportação de Relatórios',
-            'Suporte Prioritário',
-          ],
-          cta: 'Assinar Premium',
-        },
+        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/dia', features: ['Acesso Premium Completo por 24h', 'Análises Avançadas Ilimitadas', 'Pagamento Único (PIX)', 'Sem Recorrência'], cta: 'Comprar Day Use' },
+        basic: { name: 'BASIC', price: '$29,90', period: '/mês', features: ['5 Jogos por Dia', 'Análise Simples', '1 Dupla Diária'], cta: 'Começar grátis →' },
+        advanced: { name: 'ADVANCED', badge: 'MAIS POPULAR', price: '$49,90', period: '/mês', features: ['10 Jogos por Dia', 'Análise Completa', '3 Duplas Diárias', 'Acumuladores'], cta: 'Assinar Advanced' },
+        premium: { name: 'PREMIUM', badge: 'Melhor Valor', price: '$79,90', period: '/mês', features: ['Jogos Ilimitados', 'Análise Premium Completa', 'Todas as Duplas e Zebras', 'Acumuladores Premium', 'Exportação de Relatórios', 'Suporte Prioritário'], cta: 'Assinar Premium' },
         comingSoon: 'Em breve',
       },
       footer: {
@@ -239,20 +196,15 @@ export default function Landing() {
         responsible: 'Jogo Responsável',
         contact: 'Contato',
         copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. Todos os direitos reservados.`,
-        disclaimer: 'Este sistema é para fins educacionais. Aposte com responsabilidade.',
+        disclaimer: 'O EUGINE é uma ferramenta de análise estatística. Resultados passados não garantem resultados futuros. Apostas esportivas envolvem risco de perda. Aposte com responsabilidade e apenas valores que você pode perder. O EUGINE não é uma casa de apostas e não processa transações financeiras de apostas. Se precisar de ajuda com apostas problemáticas, procure apoio em jogadoresanonimos.com.br',
       },
     },
     en: {
-      nav: {
-        howItWorks: 'How It Works',
-        plans: 'Plans',
-        login: 'Login',
-        getStarted: 'Get Started',
-      },
+      nav: { howItWorks: 'How It Works', plans: 'Plans', login: 'Login', getStarted: 'Get Started' },
       hero: {
-        title: 'Find bets where',
-        titleHighlight: 'YOU have the edge over the bookmaker',
-        subtitle: 'EUGINE analyzes 50+ matches daily and identifies when the REAL probability is higher than what Bet365 offers. You only bet when you have a mathematical advantage.',
+        title: 'Stop guessing.',
+        titleHighlight: 'Bet only when the math is on your side.',
+        subtitle: "EUGINE scans 50+ matches daily and detects when the REAL probability is higher than the bookmaker's odds. No emotion. No guesswork. Just edge.",
         emailPlaceholder: 'Your best email',
         ctaButton: 'See free analysis',
         ctaSubtext: 'Free. No credit card. Cancel anytime.',
@@ -261,114 +213,42 @@ export default function Landing() {
         trust2: '50+ matches/day',
         trust3: 'Real-time odds',
         hitRateLabel: 'hit rate in the last 30 days',
+        socialProof: '50+ matches analyzed today. Only those with edge reach you.',
+      },
+      mechanism: {
+        problem: 'Most people bet on impulse. On emotion. On group tips.',
+        solution: "EUGINE calculates. When the real probability is HIGHER than the offered odds, there's value. Where there's value, there's long-term edge.",
+        discipline: "If there's no mathematical edge, we DON'T bet. Discipline separates winners from losers.",
       },
       steps: {
         title: 'How EUGINE finds your edge',
-        step1: { 
-          title: '1. We scan 50+ games',
-          heading: 'We scan 50+ games daily',
-          shortDesc: 'Every day we analyze matches from 30+ leagues comparing odds from multiple bookmakers.',
-          description: 'Every day we analyze matches from 30+ leagues looking for odds discrepancies. The more games we analyze, the more opportunities we find.',
-        },
-        step2: { 
-          title: '2. We find the edge',
-          heading: 'We find your edge',
-          shortDesc: 'When the real probability is higher than what the bookmaker offers, you get the recommendation.',
-          description: 'We compare the probability the bookmaker calculates with the REAL probability based on statistics. When we find a gap, we alert you.',
-        },
-        step3: { 
-          title: '3. You bet with edge',
-          heading: 'You bet with edge',
-          shortDesc: 'Each bet shows HOW MUCH edge you have. Discipline + edge = consistent profit.',
-          description: 'Each suggestion shows exactly HOW MUCH edge you have. Over time, this turns into consistent profit.',
-        },
+        step1: { title: '1. We scan 50+ matches', heading: 'We scan 50+ matches daily', shortDesc: 'We analyze all major leagues, comparing odds from multiple bookmakers with our probability model.' },
+        step2: { title: '2. We find where the bookmaker is wrong', heading: 'We find where the bookmaker is wrong', shortDesc: "When our calculated probability exceeds the offered odds, there's value. That's when you get the alert." },
+        step3: { title: '3. You bet with the edge', heading: 'You bet with the edge', shortDesc: 'Each pick shows HOW MUCH edge you have. Over time, consistent edge = consistent results.' },
       },
-      stats: {
-        title: 'Full Transparency',
-        subtitle: 'We publish all our results. No editing. No filter.',
-        hitRate: 'Hit Rate',
-        wins: 'Wins',
-        total: 'Total Analyzed',
-        leagues: 'Leagues Monitored',
-        soon: 'Coming soon',
-      },
+      impactPhrase: "You don't need to win every bet. You just need the edge.",
+      closingLine: 'Intelligence beats luck. Data beats opinion. Discipline beats impulse.',
+      stats: { title: 'Full Transparency', subtitle: 'We publish all our results. No editing. No filter.', hitRate: 'Hit Rate', wins: 'Wins', total: 'Total Analyzed', leagues: 'Leagues Monitored', soon: 'Coming soon' },
       pricing: {
         title: 'Choose the Perfect Plan for You',
-        dayUse: {
-          name: 'DAY USE',
-          badge: 'Premium 24h',
-          price: '$7.77',
-          period: '/day',
-          features: [
-            'Full Premium Access for 24h',
-            'Unlimited Advanced Analysis',
-            'One-Time Payment',
-            'No Recurring Charges',
-          ],
-          cta: 'Buy Day Use',
-        },
-        basic: {
-          name: 'BASIC',
-          price: '$29.90',
-          period: '/month',
-          features: [
-            '5 Games per Day',
-            'Simple Analysis',
-            '1 Daily Double',
-          ],
-          cta: 'Start free →',
-        },
-        advanced: {
-          name: 'ADVANCED',
-          badge: 'MOST POPULAR',
-          price: '$49.90',
-          period: '/month',
-          features: [
-            '10 Games per Day',
-            'Complete Analysis',
-            '3 Daily Doubles',
-            'Accumulators',
-          ],
-          cta: 'Subscribe Advanced',
-        },
-        premium: {
-          name: 'PREMIUM',
-          badge: 'Best Value',
-          price: '$79.90',
-          period: '/month',
-          features: [
-            'Unlimited Games',
-            'Full Premium Analysis',
-            'All Doubles and Zebras',
-            'Premium Accumulators',
-            'Report Export',
-            'Priority Support',
-          ],
-          cta: 'Subscribe Premium',
-        },
+        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7.77', period: '/day', features: ['Full Premium Access for 24h', 'Unlimited Advanced Analysis', 'One-Time Payment', 'No Recurring Charges'], cta: 'Buy Day Use' },
+        basic: { name: 'BASIC', price: '$29.90', period: '/month', features: ['5 Games per Day', 'Simple Analysis', '1 Daily Double'], cta: 'Start free →' },
+        advanced: { name: 'ADVANCED', badge: 'MOST POPULAR', price: '$49.90', period: '/month', features: ['10 Games per Day', 'Complete Analysis', '3 Daily Doubles', 'Accumulators'], cta: 'Subscribe Advanced' },
+        premium: { name: 'PREMIUM', badge: 'Best Value', price: '$79.90', period: '/month', features: ['Unlimited Games', 'Full Premium Analysis', 'All Doubles and Zebras', 'Premium Accumulators', 'Report Export', 'Priority Support'], cta: 'Subscribe Premium' },
         comingSoon: 'Coming soon',
       },
       footer: {
-        about: 'About Us',
-        terms: 'Terms of Use',
-        privacy: 'Privacy Policy',
-        responsible: 'Responsible Gambling',
-        contact: 'Contact',
+        about: 'About Us', terms: 'Terms of Use', privacy: 'Privacy Policy', responsible: 'Responsible Gambling', contact: 'Contact',
         copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. All rights reserved.`,
-        disclaimer: 'This system is for educational purposes. Gamble responsibly.',
+        disclaimer: "EUGINE is a statistical analysis tool. Past results do not guarantee future performance. Sports betting involves risk of loss. Bet responsibly and only with money you can afford to lose. EUGINE is not a bookmaker and does not process betting transactions. If you need help with problem gambling, visit begambleaware.org",
       },
     },
     es: {
-      nav: {
-        howItWorks: 'Cómo Funciona',
-        plans: 'Planes',
-        login: 'Iniciar Sesión',
-        getStarted: 'Comenzar',
-      },
+      nav: { howItWorks: 'Cómo Funciona', plans: 'Planes', login: 'Iniciar Sesión', getStarted: 'Comenzar' },
       hero: {
-        title: 'Encuentra apuestas donde',
-        titleHighlight: 'TÚ tienes ventaja sobre la casa',
-        subtitle: 'EUGINE analiza más de 50 partidos al día e identifica cuando la probabilidad REAL es mayor que lo que ofrece Bet365. Solo apuestas cuando tienes ventaja matemática.',
+        title: 'Deja de apostar a ciegas.',
+        titleHighlight: 'Apuesta solo cuando la matemática está de tu lado.',
+        subtitle: 'EUGINE analiza más de 50 partidos al día y detecta cuando la probabilidad REAL es mayor que la cuota ofrecida. Sin emoción. Sin intuición. Solo ventaja.',
         emailPlaceholder: 'Tu mejor correo',
         ctaButton: 'Ver análisis gratis',
         ctaSubtext: 'Gratis. Sin tarjeta. Cancela cuando quieras.',
@@ -377,114 +257,42 @@ export default function Landing() {
         trust2: '50+ partidos/día',
         trust3: 'Cuotas en tiempo real',
         hitRateLabel: 'de acierto en los últimos 30 días',
+        socialProof: 'Más de 50 partidos analizados hoy. Solo los que tienen ventaja llegan a ti.',
+      },
+      mechanism: {
+        problem: 'La mayoría apuesta por impulso. Por emoción. Por pálpitos.',
+        solution: 'EUGINE calcula. Cuando la probabilidad real es MAYOR que la cuota ofrecida, hay valor. Donde hay valor, hay ventaja a largo plazo.',
+        discipline: 'Si no hay ventaja matemática, NO apostamos. La disciplina separa a los que ganan de los que pierden.',
       },
       steps: {
         title: 'Cómo EUGINE encuentra tu ventaja',
-        step1: { 
-          title: '1. Escaneamos 50+ juegos',
-          heading: 'Escaneamos 50+ partidos al día',
-          shortDesc: 'Cada día analizamos partidos de 30+ ligas comparando cuotas de múltiples casas.',
-          description: 'Cada día analizamos partidos de 30+ ligas buscando discrepancias en las cuotas. Cuantos más partidos analizamos, más oportunidades encontramos.',
-        },
-        step2: { 
-          title: '2. Encontramos la ventaja',
-          heading: 'Encontramos tu ventaja',
-          shortDesc: 'Cuando la probabilidad real es mayor que lo que la casa ofrece, recibes la recomendación.',
-          description: 'Comparamos la probabilidad que la casa calcula con la probabilidad REAL basada en estadísticas. Cuando encontramos una diferencia, te avisamos.',
-        },
-        step3: { 
-          title: '3. Apuestas con ventaja',
-          heading: 'Apuestas con ventaja',
-          shortDesc: 'Cada apuesta muestra CUÁNTA ventaja tienes. Disciplina + ventaja = ganancia consistente.',
-          description: 'Cada sugerencia muestra exactamente CUÁNTA ventaja tienes. Con el tiempo, esto se convierte en ganancia consistente.',
-        },
+        step1: { title: '1. Escaneamos 50+ partidos', heading: 'Escaneamos 50+ partidos al día', shortDesc: 'Analizamos todas las ligas principales, comparando cuotas de múltiples casas con nuestro modelo de probabilidad.' },
+        step2: { title: '2. Encontramos donde la casa se equivoca', heading: 'Encontramos donde la casa se equivoca', shortDesc: 'Cuando nuestra probabilidad calculada es mayor que la cuota ofrecida, hay valor. Ahí recibes la alerta.' },
+        step3: { title: '3. Apuestas con ventaja', heading: 'Apuestas con ventaja', shortDesc: 'Cada sugerencia muestra CUÁNTA ventaja tienes. Con el tiempo, ventaja consistente = resultado consistente.' },
       },
-      stats: {
-        title: 'Transparencia Total',
-        subtitle: 'Publicamos todos nuestros resultados. Sin edición. Sin filtro.',
-        hitRate: 'Tasa de Acierto',
-        wins: 'Aciertos',
-        total: 'Total Analizado',
-        leagues: 'Ligas Monitoreadas',
-        soon: 'Próximamente',
-      },
+      impactPhrase: 'No necesitas ganar todas. Solo necesitas tener ventaja.',
+      closingLine: 'La inteligencia supera a la suerte. Los datos superan a la opinión. La disciplina supera al impulso.',
+      stats: { title: 'Transparencia Total', subtitle: 'Publicamos todos nuestros resultados. Sin edición. Sin filtro.', hitRate: 'Tasa de Acierto', wins: 'Aciertos', total: 'Total Analizado', leagues: 'Ligas Monitoreadas', soon: 'Próximamente' },
       pricing: {
         title: 'Elige el Plan Perfecto para Ti',
-        dayUse: {
-          name: 'DAY USE',
-          badge: 'Premium 24h',
-          price: '$7,77',
-          period: '/día',
-          features: [
-            'Acceso Premium Completo por 24h',
-            'Análisis Avanzados Ilimitados',
-            'Pago Único',
-            'Sin Recurrencia',
-          ],
-          cta: 'Comprar Day Use',
-        },
-        basic: {
-          name: 'BASIC',
-          price: '$29,90',
-          period: '/mes',
-          features: [
-            '5 Juegos por Día',
-            'Análisis Simple',
-            '1 Doble Diario',
-          ],
-          cta: 'Empezar gratis →',
-        },
-        advanced: {
-          name: 'ADVANCED',
-          badge: 'MÁS POPULAR',
-          price: '$49,90',
-          period: '/mes',
-          features: [
-            '10 Juegos por Día',
-            'Análisis Completo',
-            '3 Dobles Diarios',
-            'Acumuladores',
-          ],
-          cta: 'Suscribir Advanced',
-        },
-        premium: {
-          name: 'PREMIUM',
-          badge: 'Mejor Valor',
-          price: '$79,90',
-          period: '/mes',
-          features: [
-            'Juegos Ilimitados',
-            'Análisis Premium Completo',
-            'Todas las Dobles y Zebras',
-            'Acumuladores Premium',
-            'Exportación de Informes',
-            'Soporte Prioritario',
-          ],
-          cta: 'Suscribir Premium',
-        },
+        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/día', features: ['Acceso Premium Completo por 24h', 'Análisis Avanzados Ilimitados', 'Pago Único', 'Sin Recurrencia'], cta: 'Comprar Day Use' },
+        basic: { name: 'BASIC', price: '$29,90', period: '/mes', features: ['5 Juegos por Día', 'Análisis Simple', '1 Doble Diario'], cta: 'Empezar gratis →' },
+        advanced: { name: 'ADVANCED', badge: 'MÁS POPULAR', price: '$49,90', period: '/mes', features: ['10 Juegos por Día', 'Análisis Completo', '3 Dobles Diarios', 'Acumuladores'], cta: 'Suscribir Advanced' },
+        premium: { name: 'PREMIUM', badge: 'Mejor Valor', price: '$79,90', period: '/mes', features: ['Juegos Ilimitados', 'Análisis Premium Completo', 'Todas las Dobles y Zebras', 'Acumuladores Premium', 'Exportación de Informes', 'Soporte Prioritario'], cta: 'Suscribir Premium' },
         comingSoon: 'Próximamente',
       },
       footer: {
-        about: 'Sobre Nosotros',
-        terms: 'Términos de Uso',
-        privacy: 'Política de Privacidad',
-        responsible: 'Juego Responsable',
-        contact: 'Contacto',
+        about: 'Sobre Nosotros', terms: 'Términos de Uso', privacy: 'Política de Privacidad', responsible: 'Juego Responsable', contact: 'Contacto',
         copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. Todos los derechos reservados.`,
-        disclaimer: 'Este sistema es para fines educativos. Juega responsablemente.',
+        disclaimer: 'EUGINE es una herramienta de análisis estadístico. Los resultados pasados no garantizan resultados futuros. Las apuestas deportivas conllevan riesgo de pérdida. Apuesta con responsabilidad y solo con dinero que puedas permitirte perder. Si necesitas ayuda, visita jugarbien.es',
       },
     },
     it: {
-      nav: {
-        howItWorks: 'Come Funziona',
-        plans: 'Piani',
-        login: 'Accedi',
-        getStarted: 'Inizia Ora',
-      },
+      nav: { howItWorks: 'Come Funziona', plans: 'Piani', login: 'Accedi', getStarted: 'Inizia Ora' },
       hero: {
-        title: 'Trova scommesse dove',
-        titleHighlight: 'TU hai il vantaggio sul bookmaker',
-        subtitle: "EUGINE analizza oltre 50 partite al giorno e identifica quando la probabilità REALE è superiore a quella offerta da Bet365. Scommetti solo quando hai un vantaggio matematico.",
+        title: 'Smetti di scommettere al buio.',
+        titleHighlight: 'Scommetti solo quando la matematica è dalla tua parte.',
+        subtitle: 'EUGINE analizza oltre 50 partite al giorno e rileva quando la probabilità REALE è superiore alla quota offerta. Nessuna emozione. Nessuna intuizione. Solo vantaggio.',
         emailPlaceholder: 'La tua email migliore',
         ctaButton: 'Vedi analisi gratis',
         ctaSubtext: 'Gratis. Senza carta di credito. Cancella quando vuoi.',
@@ -493,101 +301,34 @@ export default function Landing() {
         trust2: '50+ partite/giorno',
         trust3: 'Quote in tempo reale',
         hitRateLabel: 'di successo negli ultimi 30 giorni',
+        socialProof: 'Oltre 50 partite analizzate oggi. Solo quelle con vantaggio arrivano a te.',
+      },
+      mechanism: {
+        problem: 'La maggior parte scommette per impulso. Per emozione. Per istinto.',
+        solution: "EUGINE calcola. Quando la probabilità reale è SUPERIORE alla quota offerta, c'è valore. Dove c'è valore, c'è un vantaggio a lungo termine.",
+        discipline: 'Se non c\'è vantaggio matematico, NON scommettiamo. La disciplina separa chi guadagna da chi perde.',
       },
       steps: {
         title: 'Come EUGINE trova il tuo vantaggio',
-        step1: { 
-          title: '1. Analizziamo 50+ partite',
-          heading: 'Analizziamo 50+ partite al giorno',
-          shortDesc: 'Ogni giorno analizziamo partite di 30+ campionati confrontando quote di più bookmaker.',
-          description: 'Ogni giorno analizziamo partite di 30+ campionati cercando discrepanze nelle quote. Più partite analizziamo, più opportunità troviamo.',
-        },
-        step2: { 
-          title: '2. Troviamo il vantaggio',
-          heading: 'Troviamo il tuo vantaggio',
-          shortDesc: 'Quando la probabilità reale è maggiore di quella offerta dal bookmaker, ricevi la raccomandazione.',
-          description: 'Confrontiamo la probabilità calcolata dal bookmaker con la probabilità REALE basata sulle statistiche. Quando troviamo una differenza, ti avvisiamo.',
-        },
-        step3: { 
-          title: '3. Scommetti con vantaggio',
-          heading: 'Scommetti con vantaggio',
-          shortDesc: 'Ogni scommessa mostra QUANTO vantaggio hai. Disciplina + vantaggio = profitto costante.',
-          description: 'Ogni suggerimento mostra esattamente QUANTO vantaggio hai. Nel tempo, questo si trasforma in profitto costante.',
-        },
+        step1: { title: '1. Analizziamo 50+ partite', heading: 'Analizziamo 50+ partite al giorno', shortDesc: 'Analizziamo tutti i principali campionati, confrontando quote di più bookmaker con il nostro modello di probabilità.' },
+        step2: { title: '2. Troviamo dove il bookmaker sbaglia', heading: 'Troviamo dove il bookmaker sbaglia', shortDesc: "Quando la nostra probabilità calcolata supera la quota offerta, c'è valore. È allora che ricevi l'avviso." },
+        step3: { title: '3. Scommetti con vantaggio', heading: 'Scommetti con vantaggio', shortDesc: 'Ogni suggerimento mostra QUANTO vantaggio hai. Nel tempo, vantaggio costante = risultato costante.' },
       },
-      stats: {
-        title: 'Trasparenza Totale',
-        subtitle: 'Pubblichiamo tutti i nostri risultati. Senza modifiche. Senza filtri.',
-        hitRate: 'Tasso di Successo',
-        wins: 'Successi',
-        total: 'Totale Analizzato',
-        leagues: 'Campionati Monitorati',
-        soon: 'In arrivo',
-      },
+      impactPhrase: 'Non devi vincere ogni scommessa. Devi solo avere il vantaggio.',
+      closingLine: "L'intelligenza batte la fortuna. I dati battono l'opinione. La disciplina batte l'impulso.",
+      stats: { title: 'Trasparenza Totale', subtitle: 'Pubblichiamo tutti i nostri risultati. Senza modifiche. Senza filtri.', hitRate: 'Tasso di Successo', wins: 'Successi', total: 'Totale Analizzato', leagues: 'Campionati Monitorati', soon: 'In arrivo' },
       pricing: {
         title: 'Scegli il Piano Perfetto per Te',
-        dayUse: {
-          name: 'DAY USE',
-          badge: 'Premium 24h',
-          price: '$7,77',
-          period: '/giorno',
-          features: [
-            'Accesso Premium Completo per 24h',
-            'Analisi Avanzate Illimitate',
-            'Pagamento Unico',
-            'Senza Ricorrenza',
-          ],
-          cta: 'Acquista Day Use',
-        },
-        basic: {
-          name: 'BASIC',
-          price: '$29,90',
-          period: '/mese',
-          features: [
-            '5 Partite al Giorno',
-            'Analisi Semplice',
-            '1 Doppia Giornaliera',
-          ],
-          cta: 'Inizia gratis →',
-        },
-        advanced: {
-          name: 'ADVANCED',
-          badge: 'PIÙ POPOLARE',
-          price: '$49,90',
-          period: '/mese',
-          features: [
-            '10 Partite al Giorno',
-            'Analisi Completa',
-            '3 Doppie Giornaliere',
-            'Accumulatori',
-          ],
-          cta: 'Abbonati Advanced',
-        },
-        premium: {
-          name: 'PREMIUM',
-          badge: 'Miglior Valore',
-          price: '$79,90',
-          period: '/mese',
-          features: [
-            'Partite Illimitate',
-            'Analisi Premium Completa',
-            'Tutte le Doppie e Zebra',
-            'Accumulatori Premium',
-            'Esportazione Report',
-            'Supporto Prioritario',
-          ],
-          cta: 'Abbonati Premium',
-        },
+        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/giorno', features: ['Accesso Premium Completo per 24h', 'Analisi Avanzate Illimitate', 'Pagamento Unico', 'Senza Ricorrenza'], cta: 'Acquista Day Use' },
+        basic: { name: 'BASIC', price: '$29,90', period: '/mese', features: ['5 Partite al Giorno', 'Analisi Semplice', '1 Doppia Giornaliera'], cta: 'Inizia gratis →' },
+        advanced: { name: 'ADVANCED', badge: 'PIÙ POPOLARE', price: '$49,90', period: '/mese', features: ['10 Partite al Giorno', 'Analisi Completa', '3 Doppie Giornaliere', 'Accumulatori'], cta: 'Abbonati Advanced' },
+        premium: { name: 'PREMIUM', badge: 'Miglior Valore', price: '$79,90', period: '/mese', features: ['Partite Illimitate', 'Analisi Premium Completa', 'Tutte le Doppie e Zebra', 'Accumulatori Premium', 'Esportazione Report', 'Supporto Prioritario'], cta: 'Abbonati Premium' },
         comingSoon: 'Prossimamente',
       },
       footer: {
-        about: 'Chi Siamo',
-        terms: 'Termini di Uso',
-        privacy: 'Politica sulla Privacy',
-        responsible: 'Gioco Responsabile',
-        contact: 'Contatto',
+        about: 'Chi Siamo', terms: 'Termini di Uso', privacy: 'Politica sulla Privacy', responsible: 'Gioco Responsabile', contact: 'Contatto',
         copyright: `© ${new Date().getFullYear()} GS ItalyInvestments. Tutti i diritti riservati.`,
-        disclaimer: 'Questo sistema è a scopo educativo. Gioca responsabilmente.',
+        disclaimer: "EUGINE è uno strumento di analisi statistica. I risultati passati non garantiscono risultati futuri. Le scommesse sportive comportano rischio di perdita. Scommetti responsabilmente e solo con denaro che puoi permetterti di perdere. Se hai bisogno di aiuto, visita giocaresponsabile.it",
       },
     },
   };
@@ -658,7 +399,7 @@ export default function Landing() {
         <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-6 leading-[1.15]">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-6 leading-tight">
             <span className="text-foreground block">{l.hero.title}</span>
             <span className={`block mt-1 ${
               language === 'pt' ? 'text-[hsl(120,100%,35%)]' :
@@ -668,7 +409,7 @@ export default function Landing() {
             }`}>{l.hero.titleHighlight}</span>
           </h1>
 
-          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg max-w-2xl mx-auto mb-8 px-2">
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto mb-8 leading-relaxed px-2">
             {l.hero.subtitle}
           </p>
 
@@ -726,6 +467,9 @@ export default function Landing() {
             <p className="text-muted-foreground/60 text-xs mt-3 text-center">
               {l.hero.ctaSubtext}
             </p>
+            <p className="text-muted-foreground/80 text-[10px] sm:text-xs mt-2 text-center">
+              {l.hero.socialProof}
+            </p>
           </div>
 
           <div className="mt-6">
@@ -734,7 +478,30 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How It Works — Compact for mobile */}
+      {/* Mechanism — Impact copy */}
+      <section className="py-12 sm:py-20">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <ScrollFadeIn>
+            <p className="text-muted-foreground text-sm sm:text-base mb-6">
+              {l.mechanism.problem}
+            </p>
+          </ScrollFadeIn>
+          <ScrollFadeIn delay={200}>
+            <p className="text-foreground font-bold text-lg sm:text-xl mb-6 leading-relaxed">
+              {l.mechanism.solution}
+            </p>
+          </ScrollFadeIn>
+          <ScrollFadeIn delay={400}>
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-5 sm:p-6 inline-block">
+              <p className="text-primary font-bold text-sm sm:text-base">
+                {l.mechanism.discipline}
+              </p>
+            </div>
+          </ScrollFadeIn>
+        </div>
+      </section>
+
+      {/* How It Works — Visual steps */}
       <section id="how-it-works" className="relative px-5 py-16 sm:py-24">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-4">
@@ -894,9 +661,23 @@ export default function Landing() {
         </section>
       )}
 
+      {/* Impact Phrase */}
+      <section className="py-8 sm:py-12">
+        <div className="max-w-2xl mx-auto px-4 text-center">
+          <p className="text-xl sm:text-2xl font-black text-foreground italic">
+            &ldquo;{l.impactPhrase}&rdquo;
+          </p>
+        </div>
+      </section>
+
       {/* Pricing Section — Simplified for ads */}
       <section id="pricing" className="relative px-5 py-20">
         <div className="max-w-6xl mx-auto">
+          {/* Closing line */}
+          <p className="text-sm text-muted-foreground text-center max-w-md mx-auto mb-8">
+            {l.closingLine}
+          </p>
+
           <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-12">
             {l.pricing.title}
           </h2>
@@ -1045,9 +826,11 @@ export default function Landing() {
               <a href="mailto:support@eugineai.com" className="hover:text-foreground transition-colors">{l.footer.contact}</a>
             </div>
 
-            <p className="text-muted-foreground/50 text-xs text-center max-w-lg">
-              {l.footer.disclaimer}
-            </p>
+            <div className="mt-4 pt-4 border-t border-border/30">
+              <p className="text-[10px] sm:text-xs text-muted-foreground/60 max-w-3xl mx-auto text-center leading-relaxed">
+                {l.footer.disclaimer}
+              </p>
+            </div>
 
             <p className="text-muted-foreground/40 text-xs">
               {l.footer.copyright}
