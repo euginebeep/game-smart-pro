@@ -332,6 +332,9 @@ export function useAuth() {
                   isLoading: false,
                 },
               }));
+            }).catch(err => {
+              console.error('Error in onAuthStateChange fetchProfile:', err);
+              setAuthState(prev => ({ ...prev, loading: false }));
             });
           }, 0);
         } else {
@@ -374,6 +377,9 @@ export function useAuth() {
               isLoading: false,
             },
           }));
+        }).catch(err => {
+          console.error('Error in getSession fetchProfile:', err);
+          setAuthState(prev => ({ ...prev, loading: false }));
         });
       } else {
         setAuthState(prev => ({ ...prev, loading: false }));
