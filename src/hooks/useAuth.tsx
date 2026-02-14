@@ -307,6 +307,20 @@ export function useAuth() {
     }
   }, []);
 
+  // Safety timeout: force loading=false after 8s to prevent infinite loading on slow Android networks
+  useEffect(() => {
+    const safetyTimer = setTimeout(() => {
+      setAuthState(prev => {
+        if (prev.loading) {
+          console.warn('[useAuth] Safety timeout: forcing loading=false after 8s');
+          return { ...prev, loading: false };
+        }
+        return prev;
+      });
+    }, 8000);
+    return () => clearTimeout(safetyTimer);
+  }, []);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
