@@ -307,17 +307,45 @@ export function useAuth() {
     }
   }, []);
 
-  // Safety timeout: force loading=false after 8s to prevent infinite loading on slow Android networks
+  // Safety timeout: force loading=false after 10s, but try to recover session first
   useEffect(() => {
-    const safetyTimer = setTimeout(() => {
+    const safetyTimer = setTimeout(async () => {
       setAuthState(prev => {
-        if (prev.loading) {
-          console.warn('[useAuth] Safety timeout: forcing loading=false after 8s');
-          return { ...prev, loading: false };
-        }
+        if (!prev.loading) return prev; // Already resolved, do nothing
+        return prev; // Keep as-is, we'll update below
+      });
+      
+      // Check if still loading
+      setAuthState(prev => {
+        if (!prev.loading) return prev;
+        
+        // Try to get session one more time
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setAuthState(innerPrev => {
+            if (!innerPrev.loading) return innerPrev;
+            console.warn('[useAuth] Safety timeout: forcing loading=false after 10s, session:', !!session);
+            if (session?.user) {
+              // We have a session, set user and stop loading
+              return {
+                ...innerPrev,
+                session,
+                user: session.user,
+                loading: false,
+              };
+            }
+            return { ...innerPrev, loading: false };
+          });
+        }).catch(() => {
+          setAuthState(innerPrev => {
+            if (!innerPrev.loading) return innerPrev;
+            console.warn('[useAuth] Safety timeout: getSession failed, forcing loading=false');
+            return { ...innerPrev, loading: false };
+          });
+        });
+        
         return prev;
       });
-    }, 8000);
+    }, 10000);
     return () => clearTimeout(safetyTimer);
   }, []);
 
