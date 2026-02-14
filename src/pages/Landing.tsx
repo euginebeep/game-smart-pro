@@ -501,7 +501,7 @@ export default function Landing() {
             <span className={`block mt-1 ${
               language === 'pt' ? 'text-[hsl(120,100%,35%)]' :
               language === 'es' ? 'text-[hsl(0,100%,45%)]' :
-              language === 'it' ? 'text-[hsl(0,100%,45%)]' :
+              language === 'it' ? 'text-[hsl(145,100%,32%)]' :
               'text-[hsl(220,100%,50%)]'
             }`}>{l.hero.titleHighlight}</span>
           </h1>
