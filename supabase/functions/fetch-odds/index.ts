@@ -1870,6 +1870,19 @@ const PRIORITY_LEAGUES: Record<number, { name: string; tier: number }> = {
   106: { name: 'Ekstraklasa (Polônia)', tier: 3 },
   253: { name: 'MLS', tier: 4 },
   262: { name: 'Liga MX', tier: 4 },
+  // Tier 4 — Ligas com odds menos eficientes (mais oportunidades de value)
+  169: { name: 'Super Lig 1. Lig (Turquia 2)', tier: 4 },
+  210: { name: 'Fortuna Liga (Eslováquia)', tier: 4 },
+  197: { name: 'First League (Sérvia)', tier: 4 },
+  283: { name: 'Liga Betplay (Colômbia)', tier: 4 },
+  239: { name: 'A-League (Austrália)', tier: 4 },
+  188: { name: 'Super League (Grécia)', tier: 4 },
+  235: { name: 'Russian Premier League', tier: 4 },
+  345: { name: 'Czech Liga', tier: 4 },
+  307: { name: 'Saudi Pro League', tier: 4 },
+  332: { name: 'Liga Portuguesa 2', tier: 4 },
+  333: { name: 'K-League (Coreia)', tier: 4 },
+  98: { name: 'J-League (Japão)', tier: 4 },
 };
 
 function getLeaguePriority(leagueId: number): number {
@@ -1965,7 +1978,15 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível encontrar jogos disponíveis nos próximos 7 dias');
   }
   
-  const fixturesParaProcessar = jogosEncontrados.slice(0, 25);
+  // Processar mais jogos para encontrar os melhores values
+  // Ligas tier 1-2: pegar todos. Ligas tier 3-4: pegar até 15.
+  const tier12Games = jogosEncontrados.filter((f: any) => getLeaguePriority(f.league.id) <= 2);
+  const tier34Games = jogosEncontrados.filter((f: any) => getLeaguePriority(f.league.id) > 2 && getLeaguePriority(f.league.id) <= 4).slice(0, 15);
+  const otherGames = jogosEncontrados.filter((f: any) => getLeaguePriority(f.league.id) > 4).slice(0, 10);
+  
+  const fixturesParaProcessar = [...tier12Games, ...tier34Games, ...otherGames].slice(0, 50);
+  
+  secureLog('info', `Pool expandido: ${tier12Games.length} tier1-2, ${tier34Games.length} tier3-4, ${otherGames.length} outras = ${fixturesParaProcessar.length} total`);
   const allGamesWithData: (Game & { qualityScore: number })[] = [];
   
   secureLog('info', `Processando ${fixturesParaProcessar.length} jogos para seleção inteligente`);
@@ -2149,16 +2170,41 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
     throw new Error('Não foi possível processar os jogos encontrados');
   }
   
-  allGamesWithData.sort((a, b) => b.qualityScore - a.qualityScore);
+  // ===== NOVA SELEÇÃO: Priorizar jogos COM VANTAGEM REAL =====
   
-  const gamesWithOdds: Game[] = allGamesWithData.slice(0, 10).map(({ qualityScore, ...game }) => game);
+  // 1. Rodar a análise em todos os jogos para encontrar value
+  const gamesWithAnalysis = allGamesWithData.map(game => {
+    const analysis = analyzeBet(game as Game, lang);
+    return { ...game, analysis, hasValue: !analysis.isSkip && (analysis.valuePercentage || 0) > 0 };
+  });
   
-  secureLog('info', 'Jogos selecionados por qualidade', { 
+  // 2. Separar: jogos com value vs jogos sem value  
+  const gamesWithValue = gamesWithAnalysis
+    .filter(g => g.hasValue)
+    .sort((a, b) => (b.analysis.valuePercentage || 0) - (a.analysis.valuePercentage || 0));
+    
+  const gamesWithoutValue = gamesWithAnalysis
+    .filter(g => !g.hasValue)
+    .sort((a, b) => b.qualityScore - a.qualityScore);
+  
+  // 3. Selecionar: até 7 com value + até 3 sem value (para variedade)
+  const selectedGames = [
+    ...gamesWithValue.slice(0, 7),
+    ...gamesWithoutValue.slice(0, Math.max(3, 10 - gamesWithValue.length))
+  ].slice(0, 10);
+  
+  const gamesWithOdds: Game[] = selectedGames.map(({ qualityScore, hasValue, ...game }) => game as Game);
+  
+  secureLog('info', 'Seleção por VALUE', { 
     totalAvaliados: allGamesWithData.length,
+    comValue: gamesWithValue.length,
+    semValue: gamesWithoutValue.length,
     selecionados: gamesWithOdds.length,
-    topScores: allGamesWithData.slice(0, 10).map(g => ({ 
-      game: `${g.homeTeam} vs ${g.awayTeam}`, 
-      score: g.qualityScore 
+    topValues: gamesWithValue.slice(0, 5).map(g => ({
+      game: `${g.homeTeam} vs ${g.awayTeam}`,
+      value: (g.analysis.valuePercentage || 0).toFixed(1) + '%',
+      type: g.analysis.type,
+      league: g.league
     }))
   });
   

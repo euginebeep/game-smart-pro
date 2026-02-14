@@ -19,9 +19,11 @@ interface AccumulatorsSectionProps {
   maxAccumulators?: number;
 }
 
-type AccumulatorType = 'goalsLow' | 'goalsMedium' | 'goalsHigh' | 'winsLow' | 'winsMedium' | 'exactScores';
+type AccumulatorType = 'goldBet' | 'safeBet' | 'goalsLow' | 'goalsMedium' | 'goalsHigh' | 'winsLow' | 'winsMedium' | 'exactScores';
 
 const ACCUMULATOR_TYPES: { id: AccumulatorType; labelKey: string; emoji: string; risk: RiskLevel }[] = [
+  { id: 'goldBet', labelKey: 'accumulators.goldBet', emoji: '🏆', risk: 'low' },
+  { id: 'safeBet', labelKey: 'accumulators.safeBet', emoji: '🛡️', risk: 'low' },
   { id: 'goalsLow', labelKey: 'accumulators.goalsLowRisk', emoji: '🛡️', risk: 'low' },
   { id: 'goalsMedium', labelKey: 'accumulators.goalsMediumRisk', emoji: '⚖️', risk: 'medium' },
   { id: 'goalsHigh', labelKey: 'accumulators.goalsHighRisk', emoji: '🚀', risk: 'high' },
@@ -424,6 +426,89 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       chancePercent,
       riskLevel: 'high',
       typeId: 'exactScores'
+    });
+  }
+
+  // ===== APOSTA DE OURO: Jogos com MAIOR vantagem do EUGINE =====
+  const gamesWithEdge = games
+    .filter(g => g.analysis && !g.analysis.isSkip && (g.analysis.valuePercentage || 0) > 5)
+    .sort((a, b) => (b.analysis?.valuePercentage || 0) - (a.analysis?.valuePercentage || 0));
+  
+  if (gamesWithEdge.length >= 2) {
+    const gold1 = gamesWithEdge[0];
+    const gold2 = gamesWithEdge[1];
+    
+    function getRecommendedOdd(game: any): number {
+      const analysis = game.analysis;
+      if (!analysis) return 1.50;
+      const type = analysis.type?.toLowerCase() || '';
+      if (type.includes('over') || type.includes('più') || type.includes('mais') || type.includes('más')) return game.odds.over || 1.85;
+      if (type.includes('under') || type.includes('meno') || type.includes('menos')) return game.odds.under || 1.85;
+      if (type.includes('btts') || type.includes('ambas') || type.includes('entrambe') || type.includes('dois')) return game.odds.bttsYes || game.advancedData?.bttsOdds?.yes || 1.85;
+      if (type.includes('home') || type.includes('casa') || type.includes('vitória')) return game.odds.home || 1.50;
+      if (type.includes('away') || type.includes('fora') || type.includes('trasferta') || type.includes('visitante')) return game.odds.away || 2.00;
+      if (type.includes('draw') || type.includes('empate') || type.includes('pareggio')) return game.odds.draw || 3.00;
+      return 1.70;
+    }
+    
+    const goldBets = [
+      {
+        match: `${gold1.homeTeam} x ${gold1.awayTeam}`,
+        bet: `${gold1.analysis?.type || 'Aposta'} (${t('accumulators.edge') || 'vantagem'}: +${(gold1.analysis?.valuePercentage || 0).toFixed(0)}%)`,
+        odd: getRecommendedOdd(gold1)
+      },
+      {
+        match: `${gold2.homeTeam} x ${gold2.awayTeam}`,
+        bet: `${gold2.analysis?.type || 'Aposta'} (${t('accumulators.edge') || 'vantagem'}: +${(gold2.analysis?.valuePercentage || 0).toFixed(0)}%)`,
+        odd: getRecommendedOdd(gold2)
+      }
+    ];
+
+    baseAccumulators.unshift({
+      emoji: '🏆',
+      title: t('accumulators.goldBet') || 'Aposta de Ouro',
+      typeId: 'goldBet' as AccumulatorType,
+      bets: goldBets,
+      betAmount: Math.max(50, Math.min(150, Math.round(1000 * calculateRealChance(goldBets) / 100 * 0.35))),
+      chancePercent: calculateRealChance(goldBets),
+      riskLevel: 'low' as const,
+    });
+  }
+
+  // ===== APOSTA SEGURA: Over 1.5 gols nos jogos com mais gols =====
+  const highScoringGames = games
+    .filter(g => g.advancedData?.homeStats && g.advancedData?.awayStats)
+    .sort((a, b) => {
+      const avgA = (a.advancedData?.homeStats?.avgGoalsScored || 0) + (a.advancedData?.awayStats?.avgGoalsScored || 0);
+      const avgB = (b.advancedData?.homeStats?.avgGoalsScored || 0) + (b.advancedData?.awayStats?.avgGoalsScored || 0);
+      return avgB - avgA;
+    });
+  
+  if (highScoringGames.length >= 2) {
+    const safe1 = highScoringGames[0];
+    const safe2 = highScoringGames[1];
+    
+    const safeBets = [
+      {
+        match: `${safe1.homeTeam} x ${safe1.awayTeam}`,
+        bet: t('accumulators.atLeast2Goals') || 'Vai ter pelo menos 2 gols',
+        odd: safe1.odds.over15 || Math.round(Math.max(1.12, (safe1.odds.over || 1.85) * 0.65) * 100) / 100
+      },
+      {
+        match: `${safe2.homeTeam} x ${safe2.awayTeam}`,
+        bet: t('accumulators.atLeast2Goals') || 'Vai ter pelo menos 2 gols',
+        odd: safe2.odds.over15 || Math.round(Math.max(1.12, (safe2.odds.over || 1.85) * 0.65) * 100) / 100
+      }
+    ];
+
+    baseAccumulators.unshift({
+      emoji: '🛡️',
+      title: t('accumulators.safeBet') || 'Aposta Segura — Gols quase certos',
+      typeId: 'safeBet' as AccumulatorType,
+      bets: safeBets,
+      betAmount: Math.max(80, Math.min(200, Math.round(1000 * calculateRealChance(safeBets) / 100 * 0.40))),
+      chancePercent: calculateRealChance(safeBets),
+      riskLevel: 'low' as const,
     });
   }
 
