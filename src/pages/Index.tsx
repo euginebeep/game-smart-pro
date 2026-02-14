@@ -53,6 +53,9 @@ const Index = () => {
   
   // Cache key for localStorage (for premium offline access)
   const CACHE_KEY = 'eugine_premium_cache';
+  const SESSION_KEY = 'eugine_session_games';
+  const COOLDOWN_KEY = 'eugine_last_fetch';
+  const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
   /**
    * Handles filtered games callback from GameFilters component
@@ -62,7 +65,31 @@ const Index = () => {
     setFilteredGames(filtered);
   }, []);
 
-  // Load cached data on mount (for offline access)
+  // Restore session data on mount (so back navigation preserves results)
+  useEffect(() => {
+    try {
+      const sessionData = sessionStorage.getItem(SESSION_KEY);
+      if (sessionData) {
+        const parsed = JSON.parse(sessionData);
+        if (parsed.games && parsed.games.length > 0 && games.length === 0) {
+          setGames(parsed.games.map((g: any) => ({ ...g, startTime: new Date(g.startTime) })));
+          setHasFetched(true);
+          setAlertMessage(parsed.alertMessage || '');
+          setIsToday(parsed.isToday ?? true);
+          setUserTier(parsed.userTier || 'free');
+          setIsTrial(parsed.isTrial ?? false);
+          setDailySearchesRemaining(parsed.dailySearchesRemaining ?? null);
+          setIsFreeReport(parsed.isFreeReport ?? false);
+          setIsFreeSource(parsed.isFreeSource ?? false);
+          if (parsed.limitConfig) setLimitConfig(parsed.limitConfig);
+        }
+      }
+    } catch (e) {
+      console.error('Error loading session cache:', e);
+    }
+  }, []);
+
+  // Load cached data on mount (for premium offline access)
   useEffect(() => {
     if (userTier === 'premium') {
       try {
@@ -71,7 +98,6 @@ const Index = () => {
           const parsedCache = JSON.parse(cached);
           const cacheDate = new Date(parsedCache.cachedAt);
           const now = new Date();
-          // Cache is valid for 24 hours
           if ((now.getTime() - cacheDate.getTime()) < 24 * 60 * 60 * 1000) {
             if (parsedCache.games && parsedCache.games.length > 0 && games.length === 0) {
               setGames(parsedCache.games.map((g: any) => ({ ...g, startTime: new Date(g.startTime) })));
@@ -88,6 +114,21 @@ const Index = () => {
   }, [userTier]);
 
   const handleFetchGames = useCallback(async () => {
+    // Cooldown check: 5 minutes between searches
+    const lastFetch = sessionStorage.getItem(COOLDOWN_KEY);
+    if (lastFetch && games.length > 0) {
+      const elapsed = Date.now() - parseInt(lastFetch, 10);
+      if (elapsed < COOLDOWN_MS) {
+        const remainingMin = Math.ceil((COOLDOWN_MS - elapsed) / 60000);
+        const cooldownMsg = language === 'pt' ? `Aguarde ${remainingMin} minuto(s) para buscar novamente.`
+          : language === 'es' ? `Espera ${remainingMin} minuto(s) para buscar de nuevo.`
+          : language === 'it' ? `Attendi ${remainingMin} minuto(i) per cercare di nuovo.`
+          : `Wait ${remainingMin} minute(s) before searching again.`;
+        setError(cooldownMsg);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
     setDailyLimitReached(false);
@@ -114,12 +155,32 @@ const Index = () => {
       if (result.isFreeSource !== undefined) {
         setIsFreeSource(result.isFreeSource);
       }
+      const newLimitConfig: typeof limitConfig = {};
       if (result.maxAccumulators !== undefined || result.maxZebras !== undefined || result.maxDoubles !== undefined) {
-        setLimitConfig({
-          maxAccumulators: result.maxAccumulators,
-          maxZebras: result.maxZebras,
-          maxDoubles: result.maxDoubles
-        });
+        newLimitConfig.maxAccumulators = result.maxAccumulators;
+        newLimitConfig.maxZebras = result.maxZebras;
+        newLimitConfig.maxDoubles = result.maxDoubles;
+        setLimitConfig(newLimitConfig);
+      }
+
+      // Save cooldown timestamp
+      sessionStorage.setItem(COOLDOWN_KEY, Date.now().toString());
+
+      // Save to sessionStorage so back navigation preserves results
+      try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+          games: result.games,
+          alertMessage: result.alertMessage,
+          isToday: result.isToday,
+          userTier: result.userTier,
+          isTrial: result.isTrial,
+          dailySearchesRemaining: result.dailySearchesRemaining,
+          isFreeReport: result.isFreeReport,
+          isFreeSource: result.isFreeSource,
+          limitConfig: newLimitConfig,
+        }));
+      } catch (e) {
+        console.error('Error saving session cache:', e);
       }
       
       // Cache full data for premium users (offline access)
@@ -137,7 +198,6 @@ const Index = () => {
         }
       }
     } catch (err) {
-      // Verificar se é erro de limite diário
       if (typeof err === 'object' && err !== null && 'dailyLimitReached' in err) {
         const fetchError = err as FetchOddsError;
         setDailyLimitReached(true);
@@ -151,7 +211,7 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
-  }, [t, language]);
+  }, [t, language, games.length]);
 
   // Rebuscar quando o idioma mudar (se já tiver buscado antes)
   useEffect(() => {
