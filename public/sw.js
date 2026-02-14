@@ -1,7 +1,6 @@
-const CACHE_NAME = 'eugine-v1';
+const CACHE_NAME = 'eugine-v2';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
 ];
 
@@ -24,7 +23,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
-  if (request.url.includes('/functions/') || request.url.includes('supabase.co') || request.url.includes('api-sports.io') || request.url.includes('/~oauth')) return;
+  // Skip all API/backend calls and OAuth
+  const url = request.url;
+  if (
+    url.includes('/functions/') || 
+    url.includes('supabase.co') || 
+    url.includes('supabase.in') ||
+    url.includes('api-sports.io') || 
+    url.includes('/~oauth') ||
+    url.includes('/rest/') ||
+    url.includes('/auth/') ||
+    url.includes('/realtime/')
+  ) return;
 
   event.respondWith(
     fetch(request)
