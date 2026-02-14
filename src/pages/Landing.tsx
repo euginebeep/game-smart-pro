@@ -578,11 +578,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="mb-6 flex justify-center">
-            <ActiveUsersCounter />
-          </div>
-
-          <button 
+          <button
             onClick={() => navigate('/auth?source=free')}
             className="btn-primary text-base sm:text-xl py-5 px-10 inline-flex items-center gap-2"
           >
@@ -601,9 +597,14 @@ export default function Landing() {
             border: '1px solid hsla(185, 100%, 50%, 0.2)',
           }}
         >
-          <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-10">
-            {l.steps.title}
-          </h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+            <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center">
+              {l.steps.title}
+            </h2>
+            <div className="scale-125 sm:scale-150 origin-center">
+              <ActiveUsersCounter />
+            </div>
+          </div>
 
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-12">
             {stepTitles.map((title: string, idx: number) => (
