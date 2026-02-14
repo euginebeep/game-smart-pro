@@ -135,8 +135,8 @@ export default function Landing() {
         getStarted: 'Get Started',
       },
       hero: {
-        title: 'STOP GUESSING. START',
-        titleHighlight: 'WINNING WITH DATA ANALYSIS.',
+        title: 'STOP GUESSING.',
+        titleHighlight: 'START WINNING WITH DATA ANALYSIS.',
         subtitle: 'Our AI analyzes over 40 markets and 7 factors per game to give you the best recommendation. Simple, direct, and profitable.',
         cta: 'GET FREE ANALYSIS',
       },
@@ -229,8 +229,8 @@ export default function Landing() {
         getStarted: 'Comenzar',
       },
       hero: {
-        title: 'DEJA DE ADIVINAR. EMPIEZA A',
-        titleHighlight: 'GANAR CON ANÁLISIS DE DATOS.',
+        title: 'DEJA DE ADIVINAR.',
+        titleHighlight: 'EMPIEZA A GANAR CON ANÁLISIS DE DATOS.',
         subtitle: 'Nuestra IA analiza más de 40 mercados y 7 factores por juego para darte la mejor recomendación. Simple, directo y rentable.',
         cta: 'OBTENER ANÁLISIS GRATIS',
       },
@@ -323,8 +323,8 @@ export default function Landing() {
         getStarted: 'Inizia Ora',
       },
       hero: {
-        title: 'SMETTI DI INDOVINARE. INIZIA A',
-        titleHighlight: "VINCERE CON L'ANALISI DEI DATI.",
+        title: 'SMETTI DI INDOVINARE.',
+        titleHighlight: "INIZIA A VINCERE CON L'ANALISI DEI DATI.",
         subtitle: "La nostra IA analizza oltre 40 mercati e 7 fattori per partita per darti la migliore raccomandazione. Semplice, diretto e redditizio.",
         cta: 'OTTIENI ANALISI GRATIS',
       },
@@ -498,7 +498,12 @@ export default function Landing() {
         <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-6 leading-[1.15]">
             <span className="text-foreground block">{l.hero.title}</span>
-            <span className="text-primary block mt-1">{l.hero.titleHighlight}</span>
+            <span className={`block mt-1 ${
+              language === 'pt' ? 'text-[hsl(142,71%,45%)]' :
+              language === 'es' ? 'text-[hsl(0,84%,50%)]' :
+              language === 'it' ? 'text-[hsl(142,71%,45%)]' :
+              'text-[hsl(217,89%,50%)]'
+            }`}>{l.hero.titleHighlight}</span>
           </h1>
 
           <p className="text-muted-foreground text-sm sm:text-base lg:text-lg xl:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 px-2">
