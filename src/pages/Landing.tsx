@@ -25,6 +25,11 @@ import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// Real app screenshots
+import stepCardsImg from '@/assets/step-cards.png';
+import stepAnalysisMainImg from '@/assets/step-analysis-main.png';
+import stepAnalysisFactorsImg from '@/assets/step-analysis-factors.png';
+
 export default function Landing() {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -699,29 +704,88 @@ export default function Landing() {
       </section>
 
       {/* How It Works — Compact for mobile */}
-      <section id="how-it-works" className="relative px-5 py-16 sm:py-20">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-10">
+      <section id="how-it-works" className="relative px-5 py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-4">
             {l.steps.title}
           </h2>
+          <p className="text-muted-foreground text-sm sm:text-base text-center mb-12 max-w-2xl mx-auto">
+            {language === 'pt' ? 'Veja como funciona na prática — telas reais do sistema' :
+             language === 'es' ? 'Mira cómo funciona en la práctica — pantallas reales del sistema' :
+             language === 'it' ? 'Guarda come funziona nella pratica — schermate reali del sistema' :
+             'See how it works in practice — real screenshots from the system'}
+          </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {stepData.map((step, idx) => (
-              <div 
-                key={idx}
-                className="text-center p-6 rounded-2xl bg-secondary/20 border border-border/50 hover:border-primary/30 transition-all duration-300"
-              >
-                <div className="text-4xl mb-4">
-                  {idx === 0 ? '🔍' : idx === 1 ? '📊' : '💰'}
-                </div>
-                <h3 className="text-foreground font-bold text-base sm:text-lg mb-2">
-                  {step.heading}
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {step.shortDesc}
-                </p>
+          {/* Step 1 — Game Selection */}
+          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-14">
+            <div className="w-full md:w-1/2 order-2 md:order-1">
+              <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl shadow-primary/5">
+                <img src={stepCardsImg} alt="EUGINE game cards" className="w-full h-auto" loading="lazy" />
               </div>
-            ))}
+            </div>
+            <div className="w-full md:w-1/2 order-1 md:order-2">
+              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-3">
+                {language === 'pt' ? 'PASSO 1' : language === 'es' ? 'PASO 1' : language === 'it' ? 'PASSO 1' : 'STEP 1'}
+              </span>
+              <h3 className="text-foreground font-bold text-xl sm:text-2xl mb-3">{stepData[0]?.heading}</h3>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
+                {stepData[0]?.shortDesc}
+              </p>
+              <p className="text-muted-foreground/70 text-xs sm:text-sm leading-relaxed">
+                {language === 'pt' ? '↑ Cada card mostra o jogo, as odds e o nível de confiança do EUGINE. Verde = vantagem detectada.' :
+                 language === 'es' ? '↑ Cada tarjeta muestra el partido, las cuotas y el nivel de confianza de EUGINE. Verde = ventaja detectada.' :
+                 language === 'it' ? '↑ Ogni card mostra la partita, le quote e il livello di fiducia di EUGINE. Verde = vantaggio rilevato.' :
+                 '↑ Each card shows the match, odds and EUGINE confidence level. Green = edge detected.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Step 2 — Full Analysis */}
+          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-14">
+            <div className="w-full md:w-1/2">
+              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-3">
+                {language === 'pt' ? 'PASSO 2' : language === 'es' ? 'PASO 2' : language === 'it' ? 'PASSO 2' : 'STEP 2'}
+              </span>
+              <h3 className="text-foreground font-bold text-xl sm:text-2xl mb-3">{stepData[1]?.heading}</h3>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
+                {stepData[1]?.shortDesc}
+              </p>
+              <p className="text-muted-foreground/70 text-xs sm:text-sm leading-relaxed">
+                {language === 'pt' ? '↑ A análise compara a probabilidade da casa com a do EUGINE. A barra verde mostra sua vantagem real (edge).' :
+                 language === 'es' ? '↑ El análisis compara la probabilidad de la casa con la de EUGINE. La barra verde muestra tu ventaja real (edge).' :
+                 language === 'it' ? '↑ L\'analisi confronta la probabilità del bookmaker con quella di EUGINE. La barra verde mostra il tuo vantaggio reale (edge).' :
+                 '↑ The analysis compares the bookmaker\'s probability with EUGINE\'s. The green bar shows your real edge.'}
+              </p>
+            </div>
+            <div className="w-full md:w-1/2">
+              <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl shadow-primary/5">
+                <img src={stepAnalysisMainImg} alt="EUGINE analysis" className="w-full h-auto" loading="lazy" />
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3 — Factors & Decision */}
+          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+            <div className="w-full md:w-1/2 order-2 md:order-1">
+              <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl shadow-primary/5">
+                <img src={stepAnalysisFactorsImg} alt="EUGINE analysis factors" className="w-full h-auto" loading="lazy" />
+              </div>
+            </div>
+            <div className="w-full md:w-1/2 order-1 md:order-2">
+              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-3">
+                {language === 'pt' ? 'PASSO 3' : language === 'es' ? 'PASO 3' : language === 'it' ? 'PASSO 3' : 'STEP 3'}
+              </span>
+              <h3 className="text-foreground font-bold text-xl sm:text-2xl mb-3">{stepData[2]?.heading}</h3>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
+                {stepData[2]?.shortDesc}
+              </p>
+              <p className="text-muted-foreground/70 text-xs sm:text-sm leading-relaxed">
+                {language === 'pt' ? '↑ Veja os 7 fatores que o EUGINE analisa: forma, H2H, odds, gols, posse, cantos e cartões. Tudo transparente.' :
+                 language === 'es' ? '↑ Mira los 7 factores que EUGINE analiza: forma, H2H, cuotas, goles, posesión, córners y tarjetas. Todo transparente.' :
+                 language === 'it' ? '↑ Guarda i 7 fattori che EUGINE analizza: forma, H2H, quote, gol, possesso, calci d\'angolo e cartellini. Tutto trasparente.' :
+                 '↑ See the 7 factors EUGINE analyzes: form, H2H, odds, goals, possession, corners and cards. Fully transparent.'}
+              </p>
+            </div>
           </div>
         </div>
       </section>
