@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { GameCard } from '@/components/GameCard';
 import { MatchCard } from '@/components/MatchCard';
@@ -57,6 +57,24 @@ const Index = () => {
   const SESSION_KEY = 'eugine_session_games';
   const COOLDOWN_KEY = 'eugine_last_fetch';
   const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
+  // Cooldown timer tick every second
+  useEffect(() => {
+    const tick = () => {
+      const lastFetch = sessionStorage.getItem(COOLDOWN_KEY);
+      if (lastFetch && games.length > 0) {
+        const elapsed = Date.now() - parseInt(lastFetch, 10);
+        const remaining = Math.max(0, COOLDOWN_MS - elapsed);
+        setCooldownRemaining(remaining);
+      } else {
+        setCooldownRemaining(0);
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [games.length]);
 
   /**
    * Handles filtered games callback from GameFilters component
@@ -251,6 +269,7 @@ const Index = () => {
           subscriptionLoading={subscription.isLoading}
           subscriptionEnd={subscription.subscriptionEnd}
           isAdmin={isAdmin}
+          cooldownRemaining={cooldownRemaining}
         />
 
         {/* Trial Banner - only show for non-subscribers */}

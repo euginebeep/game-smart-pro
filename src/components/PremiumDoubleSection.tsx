@@ -41,6 +41,10 @@ export function PremiumDoubleSection({ games }: PremiumDoubleSectionProps) {
   const totalOdd = bets.reduce((acc, bet) => acc * bet.odd, 1);
   const betAmount = 50;
   const profit = (betAmount * totalOdd) - betAmount;
+  // Calculate real chance using (1/odd) * 0.93 margin
+  const individualProbs = bets.map(bet => (1 / bet.odd) * 0.93);
+  const combinedProb = individualProbs.reduce((acc, p) => acc * p, 1);
+  const successChance = Math.round(combinedProb * 100);
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
@@ -94,7 +98,7 @@ export function PremiumDoubleSection({ games }: PremiumDoubleSectionProps) {
           <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
             <div className="bg-primary/20 rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-primary/30">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('premiumDouble.chanceOfSuccess')}</p>
-              <p className="text-2xl sm:text-3xl font-black text-primary">75%</p>
+              <p className="text-2xl sm:text-3xl font-black text-primary">{successChance}%</p>
             </div>
             <div className="bg-primary/20 rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-primary/30">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('premiumDouble.return')}</p>
