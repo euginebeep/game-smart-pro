@@ -36,6 +36,20 @@ const WELCOME_MSG: Record<string, string> = {
   it: 'Ciao! 👋 Sono l\'assistente di EUGINE. Come posso aiutarti oggi?',
 };
 
+const HEADER_TITLE: Record<string, string> = {
+  pt: 'Assistente EUGINE',
+  en: 'EUGINE Assistant',
+  es: 'Asistente EUGINE',
+  it: 'Assistente EUGINE',
+};
+
+const PLACEHOLDER: Record<string, string> = {
+  pt: 'Faça sua pergunta...',
+  en: 'Ask your question...',
+  es: 'Haz tu pregunta...',
+  it: 'Fai la tua domanda...',
+};
+
 export function EugineChat() {
   const { language } = useLanguage();
   const avatar = avatarByLang[language] || avatarPt;
@@ -177,7 +191,7 @@ export function EugineChat() {
           <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-border">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-sm">Assistente EUGINE</span>
+              <span className="font-semibold text-sm">{HEADER_TITLE[language] || HEADER_TITLE.pt}</span>
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             </div>
             <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
@@ -234,7 +248,7 @@ export function EugineChat() {
                 ref={inputRef}
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Faça sua pergunta..."
+                placeholder={PLACEHOLDER[language] || PLACEHOLDER.pt}
                 disabled={isLoading}
                 className="flex-1 bg-muted rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
               />
