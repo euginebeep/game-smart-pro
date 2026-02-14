@@ -81,6 +81,8 @@ export function useAuth() {
 
   const previousTierRef = useRef<string | null>(null);
   const profileFetchedRef = useRef(false);
+  // Track whether initial auth has been resolved (by getSession)
+  const initialResolvedRef = useRef(false);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -268,20 +270,39 @@ export function useAuth() {
   }, []);
 
   // MAIN AUTH INITIALIZATION
-  // Key principle: set loading=false as soon as we know if user exists or not.
-  // Profile loads in background - don't block the UI for it.
+  // Key principle: getSession() is the AUTHORITY for the initial load.
+  // onAuthStateChange only updates AFTER initial resolution, or if it brings a valid session.
+  // This prevents Android PWA issue where INITIAL_SESSION fires with null before localStorage is ready.
   useEffect(() => {
     let mounted = true;
 
-    // 1. Set up auth state listener FIRST
+    // 1. Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
         
         console.log('[useAuth] onAuthStateChange:', event, !!session);
         
-        // IMMEDIATELY set user and loading=false
-        // This unblocks ProtectedRoute right away
+        // If initial state hasn't been resolved yet by getSession:
+        // - Only accept this event if it brings a valid session (login/signup)
+        // - Ignore INITIAL_SESSION with null (Android PWA localStorage race)
+        if (!initialResolvedRef.current) {
+          if (session?.user) {
+            // Great - we got a session before getSession resolved. Use it.
+            initialResolvedRef.current = true;
+            setAuthState(prev => ({
+              ...prev,
+              session,
+              user: session.user,
+              loading: false,
+            }));
+            loadProfileInBackground(session.user.id);
+          }
+          // If no session, DON'T set loading=false. Wait for getSession().
+          return;
+        }
+        
+        // After initial resolution, all events update normally
         setAuthState(prev => ({
           ...prev,
           session,
@@ -289,7 +310,6 @@ export function useAuth() {
           loading: false,
         }));
 
-        // Load profile in background (non-blocking)
         if (session?.user) {
           loadProfileInBackground(session.user.id);
         } else {
@@ -309,13 +329,13 @@ export function useAuth() {
       }
     );
 
-    // 2. Also check current session (in case onAuthStateChange is slow)
+    // 2. getSession() is the DEFINITIVE initial check
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
       console.log('[useAuth] getSession result:', !!session);
+      initialResolvedRef.current = true;
       
-      // Set user and stop loading
       setAuthState(prev => ({
         ...prev,
         session: session ?? prev.session,
@@ -329,20 +349,35 @@ export function useAuth() {
     }).catch(err => {
       console.error('[useAuth] getSession error:', err);
       if (mounted) {
+        initialResolvedRef.current = true;
         setAuthState(prev => ({ ...prev, loading: false }));
       }
     });
 
-    // 3. Safety timeout - absolute fallback for Android PWA edge cases
+    // 3. Safety timeout - absolute fallback (8s for slow Android PWA)
     const safetyTimer = setTimeout(() => {
-      if (mounted) {
-        setAuthState(prev => {
-          if (!prev.loading) return prev;
-          console.warn('[useAuth] Safety timeout: forcing loading=false');
-          return { ...prev, loading: false };
+      if (mounted && !initialResolvedRef.current) {
+        console.warn('[useAuth] Safety timeout: forcing resolution');
+        initialResolvedRef.current = true;
+        // Try one last getSession before giving up
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (!mounted) return;
+          setAuthState(prev => ({
+            ...prev,
+            session: session ?? prev.session,
+            user: session?.user ?? prev.user,
+            loading: false,
+          }));
+          if (session?.user) {
+            loadProfileInBackground(session.user.id);
+          }
+        }).catch(() => {
+          if (mounted) {
+            setAuthState(prev => ({ ...prev, loading: false }));
+          }
         });
       }
-    }, 5000);
+    }, 8000);
 
     return () => {
       mounted = false;
