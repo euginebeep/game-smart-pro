@@ -2755,6 +2755,31 @@ serve(async (req) => {
       filteredData.userCountry = userCountry;
       filteredData.registrationSource = registrationSource;
       
+      // ===== SALVAR NO TRACKING AUTOMATICAMENTE =====
+      try {
+        const gamesToTrack = (filteredData.games || []).filter((g: any) => g.analysis && !g.analysis.isSkip);
+        for (const game of gamesToTrack) {
+          await supabaseAdmin.from('bet_tracking').upsert({
+            fixture_id: String(game.id),
+            home_team: game.homeTeam,
+            away_team: game.awayTeam,
+            league: game.league,
+            match_date: new Date(game.startTime).toISOString().split('T')[0],
+            bet_type: game.analysis.type || 'unknown',
+            bet_label: game.analysis.type || '',
+            odd: game.analysis.profit ? (game.analysis.profit / 40) + 1 : 1.50,
+            implied_probability: game.analysis.impliedProbability || 50,
+            estimated_probability: game.analysis.estimatedProbability || 50,
+            value_edge: game.analysis.valuePercentage || 0,
+            confidence: game.analysis.confidence || 50,
+            was_skip: false,
+          }, { onConflict: 'fixture_id' });
+        }
+        secureLog('info', 'Tracking saved', { count: gamesToTrack.length });
+      } catch (trackErr) {
+        secureLog('warn', 'Error saving tracking', { error: String(trackErr) });
+      }
+      
       return new Response(
         JSON.stringify(filteredData),
         { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
