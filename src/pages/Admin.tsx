@@ -472,7 +472,7 @@ export default function Admin() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total de Usuários</CardDescription>
@@ -500,6 +500,17 @@ export default function Admin() {
               <CardDescription>Premium</CardDescription>
               <CardTitle className="text-3xl text-amber-500">
                 {users.filter(u => u.subscription_tier === 'premium' && u.subscription_status === 'active').length}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-green-500/30">
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1">
+                <Wifi className="h-3 w-3 text-green-500" />
+                Online Agora
+              </CardDescription>
+              <CardTitle className="text-3xl text-green-500">
+                {users.filter(u => u.is_online).length}
               </CardTitle>
             </CardHeader>
           </Card>

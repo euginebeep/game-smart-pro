@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { 
   RefreshCw, TrendingUp, Target, BarChart3, PieChart, Trophy, XCircle, Clock, 
-  Filter, ArrowUpRight, ArrowDownRight, Minus, Activity
+  Filter, ArrowUpRight, ArrowDownRight, Minus, Activity, PlayCircle, CheckCircle2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -47,6 +47,7 @@ const PIE_COLORS = ['#22c55e', '#ef4444', '#f59e0b'];
 export function BacktestDashboard() {
   const [bets, setBets] = useState<BetRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkingResults, setCheckingResults] = useState(false);
   const [filterLeague, setFilterLeague] = useState('all');
   const [filterBetType, setFilterBetType] = useState('all');
   const [filterResult, setFilterResult] = useState('all');
@@ -173,6 +174,54 @@ export function BacktestDashboard() {
       hitRate: rangeResolved.length > 0 ? (rangeWins / rangeResolved.length) * 100 : 0,
     };
   }).filter(d => d.total > 0);
+
+  // Cumulative ROI over time (sorted by match_date)
+  const roiOverTime = (() => {
+    const resolvedSorted = [...filteredBets]
+      .filter(b => b.result === 'win' || b.result === 'loss')
+      .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
+    
+    let cumRoi = 0;
+    let cumWins = 0;
+    let cumTotal = 0;
+    return resolvedSorted.map(b => {
+      cumTotal++;
+      if (b.result === 'win') {
+        cumRoi += (b.odd - 1);
+        cumWins++;
+      } else {
+        cumRoi -= 1;
+      }
+      return {
+        date: new Date(b.match_date).toLocaleDateString('pt-BR'),
+        roi: parseFloat(cumRoi.toFixed(2)),
+        hitRate: parseFloat(((cumWins / cumTotal) * 100).toFixed(1)),
+        match: `${b.home_team} vs ${b.away_team}`,
+      };
+    });
+  })();
+
+  // Check results function
+  const checkResults = async () => {
+    setCheckingResults(true);
+    try {
+      const response = await supabase.functions.invoke('check-results');
+      if (response.error) throw response.error;
+      const data = response.data;
+      if (data.updated > 0) {
+        toast.success(`${data.updated} resultado(s) atualizado(s)!`);
+        fetchBets();
+      } else if (data.checked > 0) {
+        toast.info(`${data.checked} jogos verificados, nenhum finalizado ainda.`);
+      } else {
+        toast.info('Nenhuma aposta pendente para verificar.');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao verificar resultados');
+    } finally {
+      setCheckingResults(false);
+    }
+  };
 
   const clearFilters = () => {
     setFilterLeague('all');
@@ -306,6 +355,18 @@ export function BacktestDashboard() {
             <Button variant="outline" size="sm" onClick={fetchBets}>
               <RefreshCw className="h-3 w-3 mr-1" /> Atualizar
             </Button>
+            <Button 
+              onClick={checkResults} 
+              disabled={checkingResults || pending === 0}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              size="sm"
+            >
+              {checkingResults ? (
+                <><RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Verificando...</>
+              ) : (
+                <><CheckCircle2 className="h-3 w-3 mr-1" /> Verificar Resultados ({pending})</>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -392,7 +453,43 @@ export function BacktestDashboard() {
         </Card>
       </div>
 
-      {/* Confidence vs Hit Rate Chart */}
+      {/* Cumulative ROI Over Time */}
+      {roiOverTime.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Evolução do ROI Acumulado
+            </CardTitle>
+            <CardDescription>ROI acumulado (unidades) e taxa de acerto ao longo do tempo</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={roiOverTime}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                <YAxis yAxisId="roi" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <YAxis yAxisId="rate" orientation="right" domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1a2035', border: '1px solid rgba(0,255,255,0.2)', borderRadius: 8 }}
+                  formatter={(value: number, name: string) => {
+                    if (name === 'ROI (unidades)') return [`${value > 0 ? '+' : ''}${value.toFixed(2)}u`, name];
+                    return [`${value.toFixed(1)}%`, name];
+                  }}
+                  labelFormatter={(label, payload) => {
+                    const item = payload?.[0]?.payload;
+                    return item?.match ? `${label} — ${item.match}` : label;
+                  }}
+                />
+                <Legend />
+                <Line yAxisId="roi" type="monotone" dataKey="roi" stroke={COLORS.primary} strokeWidth={2} dot={false} name="ROI (unidades)" />
+                <Line yAxisId="rate" type="monotone" dataKey="hitRate" stroke={COLORS.win} strokeWidth={1.5} dot={false} strokeDasharray="5 5" name="Taxa Acerto %" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {confData.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
