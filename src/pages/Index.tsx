@@ -15,6 +15,7 @@ import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
 import { ReportExportSection } from '@/components/ReportExportSection';
 import { GameFilters } from '@/components/GameFilters';
 import { FreeUserBanner } from '@/components/FreeUserBanner';
+import { TrackingStats } from '@/components/TrackingStats';
 import { fetchOdds, FetchOddsError } from '@/services/oddsAPI';
 import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
@@ -377,6 +378,22 @@ const Index = () => {
 
                 {/* Section 4: Zebra of the Day */}
                 <ZebraSection games={games} userTier={userTier} maxZebras={limitConfig.maxZebras} />
+              </div>
+
+              {/* Seção de Transparência / Resultados */}
+              <div className="glass-card p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-lg">📊</span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-foreground">
+                    {t('tracking.title') || 'Nossos Resultados'}
+                  </h3>
+                </div>
+                <p className="text-muted-foreground text-sm mb-6">
+                  {t('tracking.subtitle') || 'Transparência total. Aqui você vê o desempenho real das nossas sugestões.'}
+                </p>
+                <TrackingStats />
               </div>
 
               {/* Pricing Section - Outside export area */}
