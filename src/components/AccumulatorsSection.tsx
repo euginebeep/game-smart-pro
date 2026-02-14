@@ -176,13 +176,21 @@ interface AccumulatorData {
 }
 
 // ===== Calculate real chance based on odds =====
-function calculateRealChance(bets: { odd: number }[]): number {
-  const marginFactor = 0.93;
-  const combinedProb = bets.reduce((prob, bet) => {
-    const impliedProb = (1 / bet.odd) * marginFactor;
-    return prob * impliedProb;
-  }, 1);
-  return Math.max(1, Math.round(combinedProb * 100));
+function calculateRealChance(bets: Array<{ odd: number }>): number {
+  if (!bets || bets.length === 0) return 0;
+  
+  let combinedProb = 1;
+  for (const bet of bets) {
+    if (bet.odd > 0) {
+      combinedProb *= (1 / bet.odd);
+    }
+  }
+  
+  // Remover margem da casa (overround ~5-8%)
+  const margin = 0.93;
+  const realProb = combinedProb * margin;
+  
+  return Math.round(Math.min(99, Math.max(1, realProb * 100)));
 }
 
 // ===== Calculate Double Chance odd =====
