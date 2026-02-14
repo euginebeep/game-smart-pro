@@ -21,27 +21,27 @@ export function FavoritesDoubleSection({ games }: FavoritesDoubleSectionProps) {
       bet: `${t('accumulators.victory')} ${sortedByFavorite[0].homeTeam}`,
       odd: sortedByFavorite[0].odds.home,
       league: sortedByFavorite[0].league,
-      confidence: sortedByFavorite[0].analysis?.confidence || 0
     },
     {
       match: `${sortedByFavorite[1].homeTeam} x ${sortedByFavorite[1].awayTeam}`,
       bet: `${t('accumulators.victory')} ${sortedByFavorite[1].homeTeam}`,
       odd: sortedByFavorite[1].odds.home,
       league: sortedByFavorite[1].league,
-      confidence: sortedByFavorite[1].analysis?.confidence || 0
     }
   ] : [
-    { match: 'Real Madrid x Getafe', bet: `${t('accumulators.victory')} Real Madrid`, odd: 1.65, league: 'La Liga', confidence: 72 },
-    { match: 'Bayern x Augsburg', bet: `${t('accumulators.victory')} Bayern`, odd: 1.60, league: 'Bundesliga', confidence: 70 }
+    { match: 'Real Madrid x Getafe', bet: `${t('accumulators.victory')} Real Madrid`, odd: 1.65, league: 'La Liga' },
+    { match: 'Bayern x Augsburg', bet: `${t('accumulators.victory')} Bayern`, odd: 1.60, league: 'Bundesliga' }
   ];
 
   const totalOdd = bets.reduce((acc, bet) => acc * bet.odd, 1);
   const betAmount = 100;
   const profit = (betAmount * totalOdd) - betAmount;
-  // Calculate combined success chance from individual analysis confidence scores
-  // Using geometric mean for combined probability of independent events
-  const avgConfidence = bets.reduce((acc, bet) => acc + bet.confidence, 0) / bets.length;
-  const successChance = Math.round(avgConfidence);
+  
+  // Calculate real chance using (1/odd) * 0.93 margin for each bet
+  // Combined probability = product of individual probabilities (independent events)
+  const individualProbs = bets.map(bet => (1 / bet.odd) * 0.93);
+  const combinedProb = individualProbs.reduce((acc, p) => acc * p, 1);
+  const successChance = Math.round(combinedProb * 100);
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
