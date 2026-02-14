@@ -305,11 +305,21 @@ export default function About() {
         </div>
 
         {/* Footer */}
-        <div className="text-center pt-8 border-t border-slate-700/50">
-          <p className="text-slate-500 text-sm">
-            EUGINE Analytics • GS ITALYINVESTMENTS © 2015-2026
-          </p>
-        </div>
+        <footer className="text-center pt-8 border-t border-border/30">
+          <div className="flex flex-col items-center gap-3">
+            <span className="text-sm font-semibold text-foreground">EUGINE</span>
+            <p className="text-muted-foreground text-xs">
+              by <span className="font-semibold">GS ItalyInvestments</span>
+            </p>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
+              <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{t('main.terms')}</a>
+              <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{t('main.privacy')}</a>
+            </div>
+            <p className="text-muted-foreground/40 text-[10px]">
+              © {new Date().getFullYear()} GS ItalyInvestments
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   );
