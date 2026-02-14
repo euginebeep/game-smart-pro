@@ -73,6 +73,11 @@ serve(async (req) => {
     const priceId = TIER_PRICES[currency][tier];
     logStep("Tier and currency selected", { tier, currency, language, priceId });
 
+    // Validar se o price ID é real (não placeholder)
+    if (priceId.startsWith('price_dayuse_')) {
+      throw new Error('Day Use ainda não está disponível. Em breve!');
+    }
+
     // Use getClaims for signing-keys compatible auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
@@ -123,7 +128,7 @@ serve(async (req) => {
       logStep("Existing customer found", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "https://eugine-analytics.com";
+    const origin = req.headers.get("origin") || "https://www.eugineai.com";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

@@ -1,9 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
@@ -17,9 +17,9 @@
     --popover: 230 45% 12%;
     --popover-foreground: 0 0% 100%;
 
-    /* Primary - Cyan/Electric Blue */
-    --primary: 185 100% 50%;
-    --primary-foreground: 230 60% 10%;
+    /* Primary - Sky Blue (professional) */
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 230 40% 18%;
     --secondary-foreground: 0 0% 100%;
@@ -27,9 +27,9 @@
     --muted: 230 30% 22%;
     --muted-foreground: 220 15% 65%;
 
-    /* Accent - Bright Cyan */
-    --accent: 185 100% 55%;
-    --accent-foreground: 230 60% 10%;
+    /* Accent - Amber (warm highlight) */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -42,22 +42,22 @@
 
     --border: 230 30% 20%;
     --input: 230 40% 15%;
-    --ring: 185 100% 50%;
+    --ring: 199 89% 48%;
 
     --radius: 0.75rem;
 
-    /* EUGINE v4.0 Custom Gradients - Cyan Theme */
+    /* Custom Gradients */
     --gradient-main: linear-gradient(180deg, hsl(230 60% 10%) 0%, hsl(230 70% 5%) 100%);
     --gradient-card: linear-gradient(180deg, hsla(230, 45%, 14%, 0.9) 0%, hsla(230, 50%, 10%, 0.9) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(185 100% 50%) 0%, hsl(260 80% 60%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(160 70% 40%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(160 70% 45%) 100%);
-    --gradient-glow: linear-gradient(135deg, hsla(185, 100%, 50%, 0.3) 0%, hsla(260, 80%, 60%, 0.1) 100%);
+    --gradient-glow: linear-gradient(135deg, hsla(199, 89%, 48%, 0.3) 0%, hsla(160, 70%, 40%, 0.1) 100%);
     
-    /* Shadows - Cyan Theme */
-    --shadow-glow: 0 0 40px hsla(185, 100%, 50%, 0.2);
-    --shadow-glow-lg: 0 0 80px hsla(185, 100%, 50%, 0.3);
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsla(199, 89%, 48%, 0.15);
+    --shadow-glow-lg: 0 0 80px hsla(199, 89%, 48%, 0.2);
     --shadow-card: 0 25px 50px -12px hsla(0, 0%, 0%, 0.6);
-    --shadow-cyan: 0 4px 30px hsla(185, 100%, 50%, 0.25);
+    --shadow-cyan: 0 4px 20px hsla(199, 89%, 48%, 0.2);
   }
 
   * {
@@ -79,12 +79,16 @@
   }
 
   .glass-card {
-    @apply bg-card/90 backdrop-blur-xl border border-border rounded-2xl;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 12px;
     transition: all 0.3s ease;
   }
 
   .glass-card:hover {
-    @apply border-primary/40 -translate-y-1;
+    border-color: hsla(199, 89%, 48%, 0.3);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-glow), var(--shadow-card);
   }
 
@@ -168,26 +172,26 @@
     animation: spin 1s linear infinite;
   }
 
-  /* Neon Glow Effects - Cyan Theme */
+  /* Neon Glow Effects */
   .neon-border {
     border: 2px solid hsl(var(--primary));
     box-shadow: 
-      0 0 10px hsla(185, 100%, 50%, 0.4),
-      0 0 30px hsla(185, 100%, 50%, 0.2),
-      inset 0 0 30px hsla(185, 100%, 50%, 0.05);
+      0 0 10px hsla(199, 89%, 48%, 0.3),
+      0 0 30px hsla(199, 89%, 48%, 0.15),
+      inset 0 0 30px hsla(199, 89%, 48%, 0.05);
   }
 
   .neon-text {
     text-shadow: 
-      0 0 10px hsla(185, 100%, 50%, 0.5),
-      0 0 20px hsla(185, 100%, 50%, 0.3);
+      0 0 10px hsla(199, 89%, 48%, 0.4),
+      0 0 20px hsla(199, 89%, 48%, 0.2);
   }
 
-  /* Subtle grid pattern background */
+  /* Subtle dot pattern background */
   .circuit-pattern {
     background-image: 
-      radial-gradient(circle at 25% 25%, hsla(185, 100%, 50%, 0.03) 1px, transparent 1px),
-      radial-gradient(circle at 75% 75%, hsla(260, 80%, 60%, 0.02) 1px, transparent 1px);
+      radial-gradient(circle at 25% 25%, hsla(199, 89%, 48%, 0.02) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, hsla(160, 70%, 40%, 0.015) 1px, transparent 1px);
     background-size: 50px 50px;
   }
 
@@ -222,7 +226,7 @@
 
   .tab-button.active {
     @apply bg-primary text-primary-foreground;
-    box-shadow: 0 0 20px hsla(185, 100%, 50%, 0.5);
+    box-shadow: 0 0 20px hsla(199, 89%, 48%, 0.5);
   }
 
   /* Confidence indicator styles */
@@ -268,7 +272,7 @@
   /* Price Card Highlighted */
   .price-card-highlighted {
     @apply border-primary scale-[1.05];
-    box-shadow: 0 0 30px hsla(185, 100%, 50%, 0.3);
+    box-shadow: 0 0 30px hsla(199, 89%, 48%, 0.3);
   }
 }
 
@@ -315,7 +319,7 @@
 @keyframes fadeInUp {
   0% {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(12px);
   }
   100% {
     opacity: 1;
@@ -363,10 +367,10 @@
 
 @keyframes glowPulse {
   0%, 100% {
-    box-shadow: 0 0 20px hsla(185, 100%, 50%, 0.3);
+    box-shadow: 0 0 15px hsla(199, 89%, 48%, 0.2);
   }
   50% {
-    box-shadow: 0 0 40px hsla(185, 100%, 50%, 0.5);
+    box-shadow: 0 0 30px hsla(199, 89%, 48%, 0.35);
   }
 }
 
