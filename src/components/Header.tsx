@@ -2,6 +2,7 @@ import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield, Chev
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
+import { ActiveUsersCounter } from './ActiveUsersCounter';
 
 interface HeaderProps {
   onFetch: () => void;
@@ -63,21 +64,24 @@ export function Header({
           </div>
         </div>
 
-        {/* Center: Navigation - desktop only */}
-        <nav className="hidden lg:flex items-center gap-1">
-          <Link 
-            to="/"
-            className="px-3 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
-          >
-            Dashboard
-          </Link>
-          <Link 
-            to="/about"
-            className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-          >
-            {language === 'pt' ? 'Sobre' : language === 'es' ? 'Acerca' : language === 'it' ? 'Chi siamo' : 'About'}
-          </Link>
-        </nav>
+        {/* Center: Navigation + Active Users - desktop only */}
+        <div className="hidden lg:flex items-center gap-3">
+          <nav className="flex items-center gap-1">
+            <Link 
+              to="/"
+              className="px-3 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link 
+              to="/about"
+              className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              {language === 'pt' ? 'Sobre' : language === 'es' ? 'Acerca' : language === 'it' ? 'Chi siamo' : 'About'}
+            </Link>
+          </nav>
+          <ActiveUsersCounter />
+        </div>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2 sm:gap-3">

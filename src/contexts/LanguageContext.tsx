@@ -56,7 +56,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       value = value?.[k];
     }
     
-    return value || key;
+    return typeof value === 'string' ? value : key;
   }, [language]);
 
   return (
