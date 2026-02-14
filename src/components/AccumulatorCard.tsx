@@ -75,6 +75,12 @@ export function AccumulatorCard({
             <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             {t(config.labelKey)}
           </div>
+          {/* Mini-explicação para iniciantes */}
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-1">
+            {riskLevel === 'low' && t('accumulators.explainLowRisk')}
+            {riskLevel === 'medium' && t('accumulators.explainMediumRisk')}
+            {riskLevel === 'high' && t('accumulators.explainHighRisk')}
+          </p>
         </div>
       </div>
 
@@ -104,22 +110,39 @@ export function AccumulatorCard({
           </p>
         </div>
         <div className="bg-secondary/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-border">
-          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('accumulators.chance')}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1 flex items-center justify-center gap-1">
+            {t('accumulators.chance')}
+            <span 
+              className="inline-flex w-3.5 h-3.5 rounded-full bg-muted-foreground/20 text-[8px] text-muted-foreground items-center justify-center cursor-help" 
+              title={t('accumulators.chanceExplain')}
+            >
+              ?
+            </span>
+          </p>
           <p className={`text-xl sm:text-2xl font-black ${config.textClass}`}>
             {chancePercent}%
           </p>
         </div>
       </div>
 
-      {/* Profit */}
+      {/* Profit — linguagem clara */}
       <div className={`rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 ${config.bgClass} border ${config.borderClass}`}>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <TrendingUp className={`w-4 h-4 sm:w-5 sm:h-5 ${config.textClass} flex-shrink-0`} />
-          <p className="text-xs sm:text-sm">
-            <span className="text-muted-foreground">$ {betAmount} → </span>
-            <span className={`font-bold ${config.textClass}`}>
-              $ {profit.toFixed(2)}
-            </span>
+        <div className="flex flex-col gap-0.5">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
+            {t('accumulators.youBet')}
+          </p>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <TrendingUp className={`w-4 h-4 sm:w-5 sm:h-5 ${config.textClass} flex-shrink-0`} />
+            <p className="text-xs sm:text-sm">
+              <span className="text-muted-foreground font-medium">$ {betAmount}</span>
+              <span className="text-muted-foreground mx-1">→</span>
+              <span className={`font-bold text-sm sm:text-base ${config.textClass}`}>
+                $ {potentialReturn.toFixed(2)}
+              </span>
+            </p>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            {t('accumulators.potentialProfit')}: <span className={`font-semibold ${config.textClass}`}>$ {profit.toFixed(2)}</span>
           </p>
         </div>
       </div>

@@ -10,6 +10,20 @@ interface GameCardProps {
   userTier?: 'free' | 'basic' | 'advanced' | 'premium';
 }
 
+function humanizeAnalysisType(type: string, game: Game, t: (key: string) => string): string {
+  const upper = type.toUpperCase();
+  
+  if (upper.includes('SKIP')) return t('analysis.skip') || 'Jogo arriscado — melhor pular';
+  if (upper.includes('OVER') || upper.includes('PIÙ DI 2.5') || upper.includes('MAIS DE 2.5') || upper.includes('MÁS DE 2.5')) return t('analysis.over25') || 'Vai ter mais de 2 gols';
+  if (upper.includes('UNDER') || upper.includes('MENOS') || upper.includes('MENO')) return t('analysis.under25') || 'Vai ter menos de 3 gols';
+  if (upper.includes('BTTS') || upper.includes('AMBAS') || upper.includes('ENTRAMBE') || upper.includes('AMBOS')) return t('analysis.btts') || 'Os dois times marcam gol';
+  if (upper.includes('VITÓRIA CASA') || upper.includes('HOME WIN') || upper.includes('VITTORIA CASA') || upper.includes('VICTORIA LOCAL')) return `${t('analysis.homeWin') || 'Vitória do'} ${game.homeTeam}`;
+  if (upper.includes('VITÓRIA FORA') || upper.includes('AWAY WIN') || upper.includes('VITTORIA TRASFERTA') || upper.includes('VICTORIA VISITANTE')) return `${t('analysis.awayWin') || 'Vitória do'} ${game.awayTeam}`;
+  if (upper.includes('EMPATE') || upper.includes('DRAW') || upper.includes('PAREGGIO')) return t('analysis.draw') || 'Empate';
+  
+  return type;
+}
+
 export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
   const [expanded, setExpanded] = useState(false);
   const { t, language } = useLanguage();
@@ -135,7 +149,7 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
           <div className="flex items-center gap-2 mb-2 sm:mb-3">
             <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             <h3 className="font-bold text-primary uppercase tracking-wide text-xs sm:text-sm">
-              {analysis.type}
+              {humanizeAnalysisType(analysis.type, game, t)}
             </h3>
           </div>
           <p className="text-foreground/90 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
