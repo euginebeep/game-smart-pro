@@ -197,6 +197,10 @@ Deno.serve(async (req) => {
       }
     }
 
+    const winsCount = results.filter(r => r.result === 'win').length;
+    const lossesCount = results.filter(r => r.result === 'loss').length;
+    const dayHitRate = updated > 0 ? ((winsCount / updated) * 100).toFixed(1) : '0';
+
     const summary = {
       total_pending: pendingBets.length,
       checked,
@@ -204,9 +208,80 @@ Deno.serve(async (req) => {
       errors,
       still_pending: pendingBets.length - updated,
       results,
+      hitRate: dayHitRate,
     };
 
     console.log(`Check complete: ${updated}/${checked} updated, ${errors} errors`);
+
+    // Send email notification to admin if results were updated
+    if (updated > 0) {
+      try {
+        const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+        if (RESEND_API_KEY) {
+          // Get admin emails
+          const { data: adminRoles } = await supabase
+            .from('user_roles')
+            .select('user_id')
+            .eq('role', 'admin');
+
+          if (adminRoles && adminRoles.length > 0) {
+            const adminIds = adminRoles.map(r => r.user_id);
+            const { data: adminProfiles } = await supabase
+              .from('profiles')
+              .select('email')
+              .in('user_id', adminIds);
+
+            const adminEmails = adminProfiles?.map(p => p.email).filter(Boolean) || [];
+
+            if (adminEmails.length > 0) {
+              const resultsHtml = results.map(r => 
+                `<tr><td style="padding:6px 12px;border-bottom:1px solid #333">${r.match}</td><td style="padding:6px 12px;border-bottom:1px solid #333">${r.score}</td><td style="padding:6px 12px;border-bottom:1px solid #333;color:${r.result === 'win' ? '#22c55e' : '#ef4444'}">${r.result === 'win' ? '✅ Acerto' : '❌ Erro'}</td></tr>`
+              ).join('');
+
+              const emailHtml = `
+                <div style="font-family:sans-serif;background:#0a0f1c;color:#e2e8f0;padding:30px;border-radius:12px">
+                  <h2 style="color:#00ffff">📊 Relatório de Resultados - EUGINE</h2>
+                  <p style="font-size:14px;color:#94a3b8">Verificação automática concluída</p>
+                  <div style="display:flex;gap:20px;margin:20px 0">
+                    <div style="background:#1a2035;padding:15px 20px;border-radius:8px;text-align:center">
+                      <div style="font-size:24px;font-weight:bold;color:#22c55e">${winsCount}</div>
+                      <div style="font-size:12px;color:#94a3b8">Acertos</div>
+                    </div>
+                    <div style="background:#1a2035;padding:15px 20px;border-radius:8px;text-align:center">
+                      <div style="font-size:24px;font-weight:bold;color:#ef4444">${lossesCount}</div>
+                      <div style="font-size:12px;color:#94a3b8">Erros</div>
+                    </div>
+                    <div style="background:#1a2035;padding:15px 20px;border-radius:8px;text-align:center">
+                      <div style="font-size:24px;font-weight:bold;color:#00ffff">${dayHitRate}%</div>
+                      <div style="font-size:12px;color:#94a3b8">Taxa Acerto</div>
+                    </div>
+                  </div>
+                  <table style="width:100%;border-collapse:collapse;margin-top:15px">
+                    <thead><tr style="background:#1a2035"><th style="padding:8px 12px;text-align:left;color:#00ffff">Jogo</th><th style="padding:8px 12px;text-align:left;color:#00ffff">Placar</th><th style="padding:8px 12px;text-align:left;color:#00ffff">Resultado</th></tr></thead>
+                    <tbody>${resultsHtml}</tbody>
+                  </table>
+                  <p style="margin-top:20px;font-size:12px;color:#64748b">Pendentes restantes: ${pendingBets.length - updated}</p>
+                </div>
+              `;
+
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  from: 'EUGINE <noreply@eugineai.com>',
+                  to: adminEmails,
+                  subject: `📊 EUGINE Resultados: ${winsCount}W/${lossesCount}L (${dayHitRate}% acerto)`,
+                  html: emailHtml,
+                }),
+              });
+              console.log(`📧 Email sent to ${adminEmails.length} admin(s)`);
+            }
+          }
+        }
+      } catch (emailErr) {
+        console.error('Error sending admin notification email:', emailErr);
+      }
+    }
 
     return new Response(
       JSON.stringify(summary),
