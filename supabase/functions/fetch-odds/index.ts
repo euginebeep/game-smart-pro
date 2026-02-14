@@ -145,6 +145,18 @@ interface Game {
     away: number;
     over: number;
     under: number;
+    over15?: number;
+    under15?: number;
+    over35?: number;
+    under35?: number;
+    over45?: number;
+    under45?: number;
+    bttsYes?: number;
+    bttsNo?: number;
+    doubleChanceHomeOrDraw?: number;
+    doubleChanceAwayOrDraw?: number;
+    doubleChanceHomeOrAway?: number;
+    drawNoBet?: number;
   };
   dayType: 'today' | 'tomorrow' | 'future';
   dayLabel: string;
@@ -759,6 +771,117 @@ const alertTranslations: Record<string, Record<string, string>> = {
   it: { today: '🔴 PARTITE DI OGGI', tomorrow: '📅 PARTITE DI DOMANI', future: '📅 PARTITE DEL' },
 };
 
+// ============= MODELO DE POISSON PARA PROBABILIDADES DE GOLS =============
+
+function factorial(n: number): number {
+  if (n <= 1) return 1;
+  let result = 1;
+  for (let i = 2; i <= n; i++) result *= i;
+  return result;
+}
+
+function poissonProb(lambda: number, k: number): number {
+  if (lambda <= 0) return k === 0 ? 1 : 0;
+  return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+}
+
+interface GoalProbabilities {
+  over15: number;
+  over25: number;
+  over35: number;
+  over45: number;
+  btts: number;
+  under15: number;
+  under25: number;
+  under35: number;
+  homeWin: number;
+  awayWin: number;
+  draw: number;
+  expectedHomeGoals: number;
+  expectedAwayGoals: number;
+}
+
+function calculatePoissonProbabilities(homeExpectedGoals: number, awayExpectedGoals: number): GoalProbabilities {
+  let over15 = 0, over25 = 0, over35 = 0, over45 = 0;
+  let btts = 0;
+  let homeWin = 0, awayWin = 0, draw = 0;
+
+  for (let h = 0; h <= 8; h++) {
+    for (let a = 0; a <= 8; a++) {
+      const prob = poissonProb(homeExpectedGoals, h) * poissonProb(awayExpectedGoals, a);
+      const totalGoals = h + a;
+
+      if (totalGoals > 1) over15 += prob;
+      if (totalGoals > 2) over25 += prob;
+      if (totalGoals > 3) over35 += prob;
+      if (totalGoals > 4) over45 += prob;
+      if (h > 0 && a > 0) btts += prob;
+      if (h > a) homeWin += prob;
+      if (a > h) awayWin += prob;
+      if (h === a) draw += prob;
+    }
+  }
+
+  return {
+    over15: Math.round(over15 * 100),
+    over25: Math.round(over25 * 100),
+    over35: Math.round(over35 * 100),
+    over45: Math.round(over45 * 100),
+    btts: Math.round(btts * 100),
+    under15: Math.round((1 - over15) * 100),
+    under25: Math.round((1 - over25) * 100),
+    under35: Math.round((1 - over35) * 100),
+    homeWin: Math.round(homeWin * 100),
+    awayWin: Math.round(awayWin * 100),
+    draw: Math.round(draw * 100),
+    expectedHomeGoals: homeExpectedGoals,
+    expectedAwayGoals: awayExpectedGoals,
+  };
+}
+
+function getExpectedGoals(game: Game): { home: number; away: number } {
+  const adv = game.advancedData;
+  
+  if (adv?.homeStats?.homeGoalsAvg && adv?.awayStats?.awayGoalsAvg) {
+    return {
+      home: adv.homeStats.homeGoalsAvg,
+      away: adv.awayStats.awayGoalsAvg,
+    };
+  }
+  
+  if (adv?.homeStats?.avgGoalsScored && adv?.awayStats?.avgGoalsScored) {
+    return {
+      home: adv.homeStats.avgGoalsScored,
+      away: adv.awayStats.avgGoalsScored,
+    };
+  }
+  
+  if (game.odds.over > 0 && game.odds.under > 0) {
+    const overProb = 1 / game.odds.over;
+    const totalExpected = overProb > 0.5 ? 3.0 : 2.2;
+    return { home: totalExpected * 0.55, away: totalExpected * 0.45 };
+  }
+  
+  return { home: 1.3, away: 1.1 };
+}
+
+// ============= KELLY CRITERION PARA STAKE =============
+
+function kellyStake(estimatedProb: number, odd: number, bankroll: number = 1000): number {
+  const p = Math.min(0.95, Math.max(0.01, estimatedProb / 100));
+  const q = 1 - p;
+  const b = odd - 1;
+  
+  if (b <= 0) return 0;
+  
+  const kelly = (b * p - q) / b;
+  const fractionalKelly = Math.max(0, kelly * 0.25);
+  const maxStake = bankroll * 0.10;
+  const stake = Math.min(maxStake, bankroll * fractionalKelly);
+  
+  return Math.round(stake);
+}
+
 // ============= MOTOR DE ANÁLISE AVANÇADO V2 =============
 
 function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
@@ -1050,11 +1173,23 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
     }
   }
   
+  // ===== 8. MODELO DE POISSON — Sobrescrever scores com probabilidades reais =====
+  const expectedGoals = getExpectedGoals(game);
+  const poissonProbs = calculatePoissonProbabilities(expectedGoals.home, expectedGoals.away);
+  
+  // Usar Poisson como base forte (peso 60%) e manter scores anteriores como ajuste (40%)
+  over25Score = Math.round(poissonProbs.over25 * 0.6 + over25Score * 0.4);
+  under25Score = Math.round(poissonProbs.under25 * 0.6 + under25Score * 0.4);
+  bttsScore = Math.round(poissonProbs.btts * 0.6 + bttsScore * 0.4);
+  homeWinScore = Math.round(poissonProbs.homeWin * 0.6 + homeWinScore * 0.4);
+  awayWinScore = Math.round(poissonProbs.awayWin * 0.6 + awayWinScore * 0.4);
+  drawScore = Math.round(poissonProbs.draw * 0.6 + drawScore * 0.4);
+
   // ===== DETERMINAR MELHOR APOSTA COM VALUE =====
   const allScores = [
     { type: t.over25, score: over25Score, odd: game.odds.over, betType: 'over25' as const },
     { type: t.under25, score: under25Score, odd: game.odds.under, betType: 'under25' as const },
-    { type: t.btts, score: bttsScore, odd: game.advancedData?.bttsOdds?.yes || Math.round(Math.max(1.30, (1 / (((game.advancedData?.homeStats?.bttsPercentage || 50) + (game.advancedData?.awayStats?.bttsPercentage || 50)) / 200))) * 100) / 100, betType: 'btts' as const },
+    { type: t.btts, score: bttsScore, odd: game.odds.bttsYes || game.advancedData?.bttsOdds?.yes || Math.round((1 / Math.max(0.01, poissonProbs.btts / 100)) * 100) / 100, betType: 'btts' as const },
     { type: t.homeWin, score: homeWinScore, odd: game.odds.home, betType: 'home' as const },
     { type: t.awayWin, score: awayWinScore, odd: game.odds.away, betType: 'away' as const },
     { type: t.draw, score: drawScore, odd: game.odds.draw, betType: 'draw' as const },
@@ -1872,6 +2007,26 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
             overOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Over 2.5')?.odd) || 0;
             underOdd = parseFloat(goalsOU.values.find((v: any) => v.value === 'Under 2.5')?.odd) || 0;
           }
+
+          // ===== NOVOS MERCADOS: Extrair odds reais =====
+          const over15Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 1.5')?.odd) || 0;
+          const under15Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 1.5')?.odd) || 0;
+          const over35Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 3.5')?.odd) || 0;
+          const under35Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 3.5')?.odd) || 0;
+          const over45Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Over 4.5')?.odd) || 0;
+          const under45Odd = parseFloat(goalsOU?.values?.find((v: any) => v.value === 'Under 4.5')?.odd) || 0;
+
+          const bttsBet = bookmaker.bets?.find((b: any) => b.name === 'Both Teams Score');
+          const bttsYesOdd = parseFloat(bttsBet?.values?.find((v: any) => v.value === 'Yes')?.odd) || 0;
+          const bttsNoOdd = parseFloat(bttsBet?.values?.find((v: any) => v.value === 'No')?.odd) || 0;
+
+          const dcBet = bookmaker.bets?.find((b: any) => b.name === 'Double Chance');
+          const dcHomeDrawOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Home/Draw')?.odd) || 0;
+          const dcAwayDrawOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Draw/Away')?.odd) || 0;
+          const dcHomeAwayOdd = parseFloat(dcBet?.values?.find((v: any) => v.value === 'Home/Away')?.odd) || 0;
+
+          const dnbBet = bookmaker.bets?.find((b: any) => b.name === 'Draw No Bet');
+          const dnbOdd = parseFloat(dnbBet?.values?.find((v: any) => v.value === 'Home')?.odd) || 0;
         }
       }
       
@@ -1953,7 +2108,21 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
           brazilTime: brazilTimeStr,
           localTime: localTimeStr,
           bookmaker: bookmakerName,
-          odds: { home: homeOdd, draw: drawOdd, away: awayOdd, over: overOdd, under: underOdd },
+          odds: {
+            home: homeOdd, draw: drawOdd, away: awayOdd, over: overOdd, under: underOdd,
+            over15: over15Odd || undefined,
+            under15: under15Odd || undefined,
+            over35: over35Odd || undefined,
+            under35: under35Odd || undefined,
+            over45: over45Odd || undefined,
+            under45: under45Odd || undefined,
+            bttsYes: bttsYesOdd || undefined,
+            bttsNo: bttsNoOdd || undefined,
+            doubleChanceHomeOrDraw: dcHomeDrawOdd || undefined,
+            doubleChanceAwayOrDraw: dcAwayDrawOdd || undefined,
+            doubleChanceHomeOrAway: dcHomeAwayOdd || undefined,
+            drawNoBet: dnbOdd || undefined,
+          },
           dayType,
           dayLabel: '',
           advancedData,

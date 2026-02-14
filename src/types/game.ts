@@ -21,6 +21,18 @@ export interface Game {
     away: number;
     over: number;
     under: number;
+    over15?: number;
+    under15?: number;
+    over35?: number;
+    under35?: number;
+    over45?: number;
+    under45?: number;
+    bttsYes?: number;
+    bttsNo?: number;
+    doubleChanceHomeOrDraw?: number;
+    doubleChanceAwayOrDraw?: number;
+    doubleChanceHomeOrAway?: number;
+    drawNoBet?: number;
   };
   dayType?: 'today' | 'tomorrow' | 'future';
   dayLabel?: string;
