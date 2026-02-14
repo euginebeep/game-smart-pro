@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      accumulator_tracking: {
+        Row: {
+          accumulator_type: string
+          actual_return: number | null
+          bets: Json
+          calculated_chance: number | null
+          checked_at: string | null
+          created_at: string | null
+          date_of_matches: string
+          id: string
+          result: string | null
+          risk_level: string
+          shown_chance: number
+          suggested_stake: number | null
+          total_odd: number
+          user_id: string | null
+        }
+        Insert: {
+          accumulator_type: string
+          actual_return?: number | null
+          bets: Json
+          calculated_chance?: number | null
+          checked_at?: string | null
+          created_at?: string | null
+          date_of_matches: string
+          id?: string
+          result?: string | null
+          risk_level: string
+          shown_chance: number
+          suggested_stake?: number | null
+          total_odd: number
+          user_id?: string | null
+        }
+        Update: {
+          accumulator_type?: string
+          actual_return?: number | null
+          bets?: Json
+          calculated_chance?: number | null
+          checked_at?: string | null
+          created_at?: string | null
+          date_of_matches?: string
+          id?: string
+          result?: string | null
+          risk_level?: string
+          shown_chance?: number
+          suggested_stake?: number | null
+          total_odd?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       active_sessions: {
         Row: {
           created_at: string
@@ -454,7 +505,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      accumulator_stats: {
+        Row: {
+          accumulator_type: string | null
+          avg_calculated_chance: number | null
+          avg_shown_chance: number | null
+          avg_total_odd: number | null
+          hit_rate_percent: number | null
+          losses: number | null
+          risk_level: string | null
+          total: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_expired_cache: { Args: never; Returns: undefined }
