@@ -499,10 +499,10 @@ export default function Landing() {
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight mb-6 leading-[1.15]">
             <span className="text-foreground block">{l.hero.title}</span>
             <span className={`block mt-1 ${
-              language === 'pt' ? 'text-[hsl(142,71%,45%)]' :
-              language === 'es' ? 'text-[hsl(0,84%,50%)]' :
-              language === 'it' ? 'text-[hsl(142,71%,45%)]' :
-              'text-[hsl(217,89%,50%)]'
+              language === 'pt' ? 'text-[hsl(120,100%,35%)]' :
+              language === 'es' ? 'text-[hsl(0,100%,45%)]' :
+              language === 'it' ? 'text-[hsl(0,100%,45%)]' :
+              'text-[hsl(220,100%,50%)]'
             }`}>{l.hero.titleHighlight}</span>
           </h1>
 
