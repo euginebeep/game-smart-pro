@@ -129,8 +129,7 @@ export function EugineChat() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center animate-bounce overflow-hidden"
-          style={{ animationDuration: '2s' }}
+          className="fixed right-4 top-1/2 -translate-y-1/2 z-50 w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center overflow-hidden animate-[bounce_2s_infinite]"
           aria-label="Abrir chat"
         >
           <img src={avatar} alt="Assistente EUGINE" className="w-full h-full object-cover" />
