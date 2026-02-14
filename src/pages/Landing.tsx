@@ -1,6 +1,7 @@
 /**
  * Landing Page - EUGINE
- * Professional sales landing with value-oriented messaging
+ * Optimized for paid traffic (TikTok, Meta, Google, Native Ads)
+ * 80%+ mobile traffic — every element must justify its existence
  */
 
 import { useState, useEffect } from 'react';
@@ -13,19 +14,16 @@ import {
   Target,
   TrendingUp,
   BarChart3,
-  Shield
+  Shield,
+  Globe,
+  Activity,
+  Clock
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
 import { supabase } from '@/integrations/supabase/client';
-
-// Import step images
-import step1Image from '@/assets/step-analysis-main.png';
-import step2Image from '@/assets/step-analysis-factors.png';
-import step3Image from '@/assets/step-corners.png';
-import step3ImageAlt from '@/assets/step-cards.png';
-import step3ImageAlt2 from '@/assets/step-players.png';
+import { toast } from 'sonner';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -33,7 +31,12 @@ export default function Landing() {
   const [activeTab, setActiveTab] = useState(1);
   const [stats, setStats] = useState({ hitRate: 0, wins: 0, total: 0 });
   const [statsLoaded, setStatsLoaded] = useState(false);
+  
+  // Lead capture state
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadLoading, setLeadLoading] = useState(false);
 
+  // Load stats
   useEffect(() => {
     async function loadStats() {
       try {
@@ -43,14 +46,48 @@ export default function Landing() {
           const totalWins = data.reduce((sum: number, s: any) => sum + (s.wins || 0), 0);
           const hitRate = totalBets > 0 ? Math.round((totalWins / totalBets) * 100) : 0;
           setStats({ hitRate, wins: totalWins, total: totalBets });
-          setStatsLoaded(true);
+          if (totalBets > 10) setStatsLoaded(true);
         }
       } catch (err) {
-        console.error('Error loading stats:', err);
+        // Silent
       }
     }
     loadStats();
   }, []);
+
+  // UTM Tracking
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const utmSource = params.get('utm_source');
+    if (utmSource) {
+      sessionStorage.setItem('utm_source', utmSource);
+      sessionStorage.setItem('utm_campaign', params.get('utm_campaign') || '');
+      sessionStorage.setItem('utm_medium', params.get('utm_medium') || '');
+      sessionStorage.setItem('utm_content', params.get('utm_content') || '');
+    }
+  }, []);
+
+  // Lead capture handler
+  async function handleLeadCapture() {
+    if (!leadEmail || !leadEmail.includes('@')) {
+      toast.error(l.hero.emailError);
+      return;
+    }
+    setLeadLoading(true);
+    try {
+      await supabase.from('leads' as any).upsert({
+        email: leadEmail,
+        source: new URLSearchParams(window.location.search).get('utm_source') || 'organic',
+        campaign: new URLSearchParams(window.location.search).get('utm_campaign') || '',
+        medium: new URLSearchParams(window.location.search).get('utm_medium') || '',
+      }, { onConflict: 'email' });
+      navigate(`/auth?email=${encodeURIComponent(leadEmail)}&source=lead`);
+    } catch {
+      navigate(`/auth?email=${encodeURIComponent(leadEmail)}`);
+    } finally {
+      setLeadLoading(false);
+    }
+  }
 
   const labels: Record<string, any> = {
     pt: {
@@ -64,23 +101,33 @@ export default function Landing() {
         title: 'Encontre apostas onde',
         titleHighlight: 'VOCÊ tem vantagem sobre a casa',
         subtitle: 'O EUGINE analisa mais de 50 jogos por dia e identifica quando a probabilidade REAL é maior que o que a Bet365 oferece. Você só aposta quando tem vantagem matemática.',
-        cta: 'Ver análise grátis de hoje',
+        emailPlaceholder: 'Seu melhor e-mail',
+        ctaButton: 'Ver análise grátis',
+        ctaSubtext: 'Grátis. Sem cartão de crédito. Cancele quando quiser.',
+        emailError: 'Digite um e-mail válido',
+        trust1: '30+ ligas',
+        trust2: '50+ jogos/dia',
+        trust3: 'Odds em tempo real',
+        hitRateLabel: 'de acerto nos últimos 30 dias',
       },
       steps: {
         title: 'Como o EUGINE encontra sua vantagem',
         step1: { 
           title: '1. Varremos 50+ jogos',
           heading: 'Varremos 50+ jogos por dia',
+          shortDesc: 'Todo dia analisamos jogos de 30+ ligas comparando odds de múltiplas casas.',
           description: 'Todos os dias analisamos jogos de 30+ ligas buscando discrepâncias nas odds. Quanto mais jogos analisamos, mais oportunidades encontramos.',
         },
         step2: { 
           title: '2. Encontramos a vantagem',
-          heading: 'Encontramos onde a casa errou',
+          heading: 'Achamos sua vantagem',
+          shortDesc: 'Quando a probabilidade real é maior que o que a casa oferece, você recebe a recomendação.',
           description: 'Comparamos a probabilidade que a casa calcula com a probabilidade REAL baseada em estatísticas. Quando achamos diferença, avisamos você.',
         },
         step3: { 
           title: '3. Você aposta com edge',
-          heading: 'Você aposta com vantagem matemática',
+          heading: 'Você aposta com edge',
+          shortDesc: 'Cada aposta mostra QUANTO de vantagem você tem. Disciplina + edge = lucro consistente.',
           description: 'Cada sugestão mostra exatamente QUANTO de vantagem você tem. Ao longo do tempo, isso se transforma em lucro consistente.',
         },
       },
@@ -117,7 +164,7 @@ export default function Landing() {
             'Análise Simples',
             '1 Dupla Diária',
           ],
-          cta: 'Começar grátis',
+          cta: 'Começar grátis →',
         },
         advanced: {
           name: 'ADVANCED',
@@ -135,7 +182,6 @@ export default function Landing() {
         premium: {
           name: 'PREMIUM',
           badge: 'Melhor Valor',
-          originalPrice: '$199,00',
           price: '$79,90',
           period: '/mês',
           features: [
@@ -146,8 +192,9 @@ export default function Landing() {
             'Exportação de Relatórios',
             'Suporte Prioritário',
           ],
-          cta: 'Assinar agora — 7 dias grátis',
+          cta: 'Assinar Premium',
         },
+        comingSoon: 'Em breve',
       },
       footer: {
         about: 'Sobre Nós',
@@ -170,23 +217,33 @@ export default function Landing() {
         title: 'Find bets where',
         titleHighlight: 'YOU have the edge over the bookmaker',
         subtitle: 'EUGINE analyzes 50+ matches daily and identifies when the REAL probability is higher than what Bet365 offers. You only bet when you have a mathematical advantage.',
-        cta: 'See today\'s free analysis',
+        emailPlaceholder: 'Your best email',
+        ctaButton: 'See free analysis',
+        ctaSubtext: 'Free. No credit card. Cancel anytime.',
+        emailError: 'Enter a valid email',
+        trust1: '30+ leagues',
+        trust2: '50+ matches/day',
+        trust3: 'Real-time odds',
+        hitRateLabel: 'hit rate in the last 30 days',
       },
       steps: {
         title: 'How EUGINE finds your edge',
         step1: { 
           title: '1. We scan 50+ games',
           heading: 'We scan 50+ games daily',
+          shortDesc: 'Every day we analyze matches from 30+ leagues comparing odds from multiple bookmakers.',
           description: 'Every day we analyze matches from 30+ leagues looking for odds discrepancies. The more games we analyze, the more opportunities we find.',
         },
         step2: { 
           title: '2. We find the edge',
-          heading: 'We find where the bookmaker got it wrong',
+          heading: 'We find your edge',
+          shortDesc: 'When the real probability is higher than what the bookmaker offers, you get the recommendation.',
           description: 'We compare the probability the bookmaker calculates with the REAL probability based on statistics. When we find a gap, we alert you.',
         },
         step3: { 
           title: '3. You bet with edge',
-          heading: 'You bet with a mathematical advantage',
+          heading: 'You bet with edge',
+          shortDesc: 'Each bet shows HOW MUCH edge you have. Discipline + edge = consistent profit.',
           description: 'Each suggestion shows exactly HOW MUCH edge you have. Over time, this turns into consistent profit.',
         },
       },
@@ -223,7 +280,7 @@ export default function Landing() {
             'Simple Analysis',
             '1 Daily Double',
           ],
-          cta: 'Start free',
+          cta: 'Start free →',
         },
         advanced: {
           name: 'ADVANCED',
@@ -241,7 +298,6 @@ export default function Landing() {
         premium: {
           name: 'PREMIUM',
           badge: 'Best Value',
-          originalPrice: '$199.00',
           price: '$79.90',
           period: '/month',
           features: [
@@ -252,8 +308,9 @@ export default function Landing() {
             'Report Export',
             'Priority Support',
           ],
-          cta: 'Subscribe now — 7 days free',
+          cta: 'Subscribe Premium',
         },
+        comingSoon: 'Coming soon',
       },
       footer: {
         about: 'About Us',
@@ -276,23 +333,33 @@ export default function Landing() {
         title: 'Encuentra apuestas donde',
         titleHighlight: 'TÚ tienes ventaja sobre la casa',
         subtitle: 'EUGINE analiza más de 50 partidos al día e identifica cuando la probabilidad REAL es mayor que lo que ofrece Bet365. Solo apuestas cuando tienes ventaja matemática.',
-        cta: 'Ver análisis gratis de hoy',
+        emailPlaceholder: 'Tu mejor correo',
+        ctaButton: 'Ver análisis gratis',
+        ctaSubtext: 'Gratis. Sin tarjeta. Cancela cuando quieras.',
+        emailError: 'Ingresa un correo válido',
+        trust1: '30+ ligas',
+        trust2: '50+ partidos/día',
+        trust3: 'Cuotas en tiempo real',
+        hitRateLabel: 'de acierto en los últimos 30 días',
       },
       steps: {
         title: 'Cómo EUGINE encuentra tu ventaja',
         step1: { 
           title: '1. Escaneamos 50+ juegos',
           heading: 'Escaneamos 50+ partidos al día',
+          shortDesc: 'Cada día analizamos partidos de 30+ ligas comparando cuotas de múltiples casas.',
           description: 'Cada día analizamos partidos de 30+ ligas buscando discrepancias en las cuotas. Cuantos más partidos analizamos, más oportunidades encontramos.',
         },
         step2: { 
           title: '2. Encontramos la ventaja',
-          heading: 'Encontramos donde la casa se equivocó',
+          heading: 'Encontramos tu ventaja',
+          shortDesc: 'Cuando la probabilidad real es mayor que lo que la casa ofrece, recibes la recomendación.',
           description: 'Comparamos la probabilidad que la casa calcula con la probabilidad REAL basada en estadísticas. Cuando encontramos una diferencia, te avisamos.',
         },
         step3: { 
           title: '3. Apuestas con ventaja',
-          heading: 'Apuestas con ventaja matemática',
+          heading: 'Apuestas con ventaja',
+          shortDesc: 'Cada apuesta muestra CUÁNTA ventaja tienes. Disciplina + ventaja = ganancia consistente.',
           description: 'Cada sugerencia muestra exactamente CUÁNTA ventaja tienes. Con el tiempo, esto se convierte en ganancia consistente.',
         },
       },
@@ -329,7 +396,7 @@ export default function Landing() {
             'Análisis Simple',
             '1 Doble Diario',
           ],
-          cta: 'Empezar gratis',
+          cta: 'Empezar gratis →',
         },
         advanced: {
           name: 'ADVANCED',
@@ -347,7 +414,6 @@ export default function Landing() {
         premium: {
           name: 'PREMIUM',
           badge: 'Mejor Valor',
-          originalPrice: '$199,00',
           price: '$79,90',
           period: '/mes',
           features: [
@@ -358,8 +424,9 @@ export default function Landing() {
             'Exportación de Informes',
             'Soporte Prioritario',
           ],
-          cta: 'Suscribir ahora — 7 días gratis',
+          cta: 'Suscribir Premium',
         },
+        comingSoon: 'Próximamente',
       },
       footer: {
         about: 'Sobre Nosotros',
@@ -382,23 +449,33 @@ export default function Landing() {
         title: 'Trova scommesse dove',
         titleHighlight: 'TU hai il vantaggio sul bookmaker',
         subtitle: "EUGINE analizza oltre 50 partite al giorno e identifica quando la probabilità REALE è superiore a quella offerta da Bet365. Scommetti solo quando hai un vantaggio matematico.",
-        cta: "Vedi l'analisi gratuita di oggi",
+        emailPlaceholder: 'La tua email migliore',
+        ctaButton: 'Vedi analisi gratis',
+        ctaSubtext: 'Gratis. Senza carta di credito. Cancella quando vuoi.',
+        emailError: 'Inserisci una email valida',
+        trust1: '30+ campionati',
+        trust2: '50+ partite/giorno',
+        trust3: 'Quote in tempo reale',
+        hitRateLabel: 'di successo negli ultimi 30 giorni',
       },
       steps: {
         title: 'Come EUGINE trova il tuo vantaggio',
         step1: { 
           title: '1. Analizziamo 50+ partite',
           heading: 'Analizziamo 50+ partite al giorno',
+          shortDesc: 'Ogni giorno analizziamo partite di 30+ campionati confrontando quote di più bookmaker.',
           description: 'Ogni giorno analizziamo partite di 30+ campionati cercando discrepanze nelle quote. Più partite analizziamo, più opportunità troviamo.',
         },
         step2: { 
           title: '2. Troviamo il vantaggio',
-          heading: 'Troviamo dove il bookmaker ha sbagliato',
+          heading: 'Troviamo il tuo vantaggio',
+          shortDesc: 'Quando la probabilità reale è maggiore di quella offerta dal bookmaker, ricevi la raccomandazione.',
           description: 'Confrontiamo la probabilità calcolata dal bookmaker con la probabilità REALE basata sulle statistiche. Quando troviamo una differenza, ti avvisiamo.',
         },
         step3: { 
           title: '3. Scommetti con vantaggio',
-          heading: 'Scommetti con vantaggio matematico',
+          heading: 'Scommetti con vantaggio',
+          shortDesc: 'Ogni scommessa mostra QUANTO vantaggio hai. Disciplina + vantaggio = profitto costante.',
           description: 'Ogni suggerimento mostra esattamente QUANTO vantaggio hai. Nel tempo, questo si trasforma in profitto costante.',
         },
       },
@@ -435,7 +512,7 @@ export default function Landing() {
             'Analisi Semplice',
             '1 Doppia Giornaliera',
           ],
-          cta: 'Inizia gratis',
+          cta: 'Inizia gratis →',
         },
         advanced: {
           name: 'ADVANCED',
@@ -453,7 +530,6 @@ export default function Landing() {
         premium: {
           name: 'PREMIUM',
           badge: 'Miglior Valore',
-          originalPrice: '$199,00',
           price: '$79,90',
           period: '/mese',
           features: [
@@ -464,8 +540,9 @@ export default function Landing() {
             'Esportazione Report',
             'Supporto Prioritario',
           ],
-          cta: 'Abbonati ora — 7 giorni gratis',
+          cta: 'Abbonati Premium',
         },
+        comingSoon: 'Prossimamente',
       },
       footer: {
         about: 'Chi Siamo',
@@ -485,13 +562,11 @@ export default function Landing() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const stepImages = [step1Image, step2Image, step3Image];
-  const stepExtraImages: (string[] | null)[] = [null, null, [step3ImageAlt, step3ImageAlt2]];
   const stepTitles = [l.steps.step1.title, l.steps.step2.title, l.steps.step3.title];
   const stepData = [
-    { heading: l.steps.step1.heading, description: l.steps.step1.description },
-    { heading: l.steps.step2.heading, description: l.steps.step2.description },
-    { heading: l.steps.step3.heading, description: l.steps.step3.description },
+    { heading: l.steps.step1.heading, shortDesc: l.steps.step1.shortDesc, description: l.steps.step1.description },
+    { heading: l.steps.step2.heading, shortDesc: l.steps.step2.shortDesc, description: l.steps.step2.description },
+    { heading: l.steps.step3.heading, shortDesc: l.steps.step3.shortDesc, description: l.steps.step3.description },
   ];
 
   return (
@@ -499,7 +574,7 @@ export default function Landing() {
       className="min-h-screen text-foreground overflow-x-hidden relative"
       style={{ background: 'linear-gradient(180deg, hsl(230 50% 8%) 0%, hsl(222 47% 11%) 50%, hsl(230 50% 8%) 100%)' }}
     >
-      {/* Subtle glow — no particles */}
+      {/* Subtle glow */}
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 20%, hsla(199, 89%, 48%, 0.06) 0%, transparent 60%)' }} />
       <div className="fixed inset-0 circuit-pattern pointer-events-none opacity-30" />
 
@@ -541,8 +616,8 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative px-5 pt-16 pb-20 lg:pt-20 lg:pb-32">
+      {/* Hero Section — Optimized for mobile */}
+      <section className="relative px-5 pt-12 pb-16 lg:pt-20 lg:pb-28">
         <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -557,177 +632,147 @@ export default function Landing() {
             }`}>{l.hero.titleHighlight}</span>
           </h1>
 
-          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg xl:text-xl max-w-2xl mx-auto mb-8 sm:mb-10 px-2">
+          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg max-w-2xl mx-auto mb-8 px-2">
             {l.hero.subtitle}
           </p>
 
-          {/* Hero Screenshot */}
-          <div className="relative max-w-md mx-auto mb-10">
-            <div 
-              className="relative rounded-2xl overflow-hidden transition-transform duration-500 hover:scale-[1.02]"
-              style={{
-                boxShadow: '0 0 60px hsla(185, 100%, 50%, 0.15), 0 25px 50px rgba(0,0,0,0.5)',
-                border: '1px solid hsla(185, 100%, 50%, 0.25)',
-              }}
-            >
-              <img 
-                src={step1Image} 
-                alt="EUGINE Dashboard" 
-                className="w-full h-auto object-cover"
-              />
+          {/* Trust Signals — mobile-friendly */}
+          <div className="flex items-center justify-center gap-4 sm:gap-6 mb-6">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs sm:text-sm">
+              <Globe className="w-4 h-4 text-primary" />
+              {l.hero.trust1}
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs sm:text-sm">
+              <Activity className="w-4 h-4 text-primary" />
+              {l.hero.trust2}
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs sm:text-sm">
+              <Clock className="w-4 h-4 text-primary" />
+              {l.hero.trust3}
             </div>
           </div>
 
-          <button
-            onClick={() => navigate('/auth?source=free')}
-            className="btn-primary text-base sm:text-xl py-5 px-10 inline-flex items-center gap-2"
-          >
-            {l.hero.cta}
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          {/* Live stats if available */}
+          {statsLoaded && stats.hitRate > 0 && (
+            <div className="flex items-center justify-center gap-2 mb-6 animate-fade-in">
+              <Target className="w-5 h-5 text-primary" />
+              <span className="text-primary text-2xl font-black">{stats.hitRate}%</span>
+              <span className="text-muted-foreground text-sm">{l.hero.hitRateLabel}</span>
+            </div>
+          )}
+
+          {/* Lead Capture Form — inline */}
+          <div className="max-w-md mx-auto mb-4">
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder={l.hero.emailPlaceholder}
+                value={leadEmail}
+                onChange={(e) => setLeadEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLeadCapture()}
+                className="flex-1 px-4 py-3.5 rounded-xl bg-secondary/80 border border-border text-foreground placeholder-muted-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <button
+                onClick={handleLeadCapture}
+                disabled={leadLoading}
+                className="btn-primary px-5 sm:px-8 py-3.5 rounded-xl text-sm sm:text-base font-bold whitespace-nowrap flex items-center gap-2"
+              >
+                {leadLoading ? (
+                  <span className="animate-spin">⏳</span>
+                ) : (
+                  <>
+                    {l.hero.ctaButton}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="text-muted-foreground/60 text-xs mt-3 text-center">
+              {l.hero.ctaSubtext}
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <ActiveUsersCounter />
+          </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="relative px-5 py-20">
-        <div 
-          className="max-w-6xl mx-auto p-8 lg:p-16 rounded-3xl"
-          style={{
-            background: 'linear-gradient(180deg, hsl(230 45% 12%) 0%, hsl(230 50% 10%) 100%)',
-            border: '1px solid hsla(185, 100%, 50%, 0.2)',
-          }}
-        >
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-            <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center">
-              {l.steps.title}
-            </h2>
-            <div className="scale-125 sm:scale-150 origin-center">
-              <ActiveUsersCounter />
-            </div>
-          </div>
+      {/* How It Works — Compact for mobile */}
+      <section id="how-it-works" className="relative px-5 py-16 sm:py-20">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-10">
+            {l.steps.title}
+          </h2>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-12">
-            {stepTitles.map((title: string, idx: number) => (
-              <button
-                key={idx}
-                onClick={() => setActiveTab(idx + 1)}
-                className={`flex-1 px-4 py-4 text-base lg:text-lg font-semibold rounded-xl transition-all duration-300 ${
-                  activeTab === idx + 1 
-                    ? 'bg-primary text-primary-foreground shadow-[0_0_25px_hsla(185,100%,50%,0.7)]' 
-                    : 'bg-card/50 text-muted-foreground border border-border hover:text-foreground hover:border-primary/30'
-                }`}
-              >
-                {title}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative">
-            {stepData.map((step: any, idx: number) => (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {stepData.map((step, idx) => (
               <div 
                 key={idx}
-                className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 lg:gap-16 items-center transition-all duration-500 ${
-                  activeTab === idx + 1 ? 'opacity-100' : 'hidden opacity-0'
-                }`}
+                className="text-center p-6 rounded-2xl bg-secondary/20 border border-border/50 hover:border-primary/30 transition-all duration-300"
               >
-                <div className="order-2 md:order-1 flex flex-col justify-start">
-                  <h3 
-                    className="text-xl sm:text-2xl lg:text-3xl font-black leading-tight mb-4"
-                    style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-                  >
-                    {step.heading}
-                  </h3>
-                  <div className="bg-card/80 p-4 sm:p-5 lg:p-6 rounded-xl border border-border/50 backdrop-blur-sm">
-                    <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
+                <div className="text-4xl mb-4">
+                  {idx === 0 ? '🔍' : idx === 1 ? '📊' : '💰'}
                 </div>
-                
-                <div className="order-1 md:order-2 flex flex-col items-center gap-4">
-                  <div 
-                    className="relative w-full max-w-[520px] rounded-2xl overflow-hidden transition-transform duration-500 hover:scale-[1.02]"
-                    style={{
-                      boxShadow: '0 0 40px hsla(185, 100%, 50%, 0.15), 0 20px 60px rgba(0,0,0,0.5)',
-                      border: '1px solid hsla(185, 100%, 50%, 0.2)',
-                    }}
-                  >
-                    <img src={stepImages[idx]} alt={stepTitles[idx]} className="w-full h-auto object-cover rounded-2xl" />
-                  </div>
-                  {stepExtraImages[idx] && (
-                    <div className="flex gap-3 w-full max-w-[520px]">
-                      {stepExtraImages[idx]!.map((img: string, i: number) => (
-                        <div 
-                          key={i}
-                          className="flex-1 rounded-xl overflow-hidden transition-transform duration-300 hover:scale-105"
-                          style={{
-                            boxShadow: '0 0 20px hsla(185, 100%, 50%, 0.1), 0 10px 30px rgba(0,0,0,0.4)',
-                            border: '1px solid hsla(185, 100%, 50%, 0.15)',
-                          }}
-                        >
-                          <img src={img} alt={`Detail ${i + 1}`} className="w-full h-auto object-cover rounded-xl" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <h3 className="text-foreground font-bold text-base sm:text-lg mb-2">
+                  {step.heading}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {step.shortDesc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Stats Section — Social Proof */}
-      <section className="py-16 sm:py-20">
-        <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-4">
-            {l.stats.title}
-          </h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
-            {l.stats.subtitle}
-          </p>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-            <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
-              <Target className="w-7 h-7 text-primary mx-auto mb-2" />
-              <p className="text-3xl sm:text-4xl font-black text-primary">
-                {statsLoaded ? `${stats.hitRate}%` : l.stats.soon}
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.hitRate}</p>
-            </div>
-            <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
-              <CheckCircle className="w-7 h-7 text-emerald-400 mx-auto mb-2" />
-              <p className="text-3xl sm:text-4xl font-black text-emerald-400">
-                {statsLoaded ? stats.wins : l.stats.soon}
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.wins}</p>
-            </div>
-            <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
-              <BarChart3 className="w-7 h-7 text-foreground mx-auto mb-2" />
-              <p className="text-3xl sm:text-4xl font-black text-foreground">
-                {statsLoaded ? stats.total : l.stats.soon}
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.total}</p>
-            </div>
-            <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
-              <TrendingUp className="w-7 h-7 text-amber-400 mx-auto mb-2" />
-              <p className="text-3xl sm:text-4xl font-black text-amber-400">30+</p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.leagues}</p>
+      {/* Stats Section — Only show with real data */}
+      {statsLoaded && stats.total > 10 && (
+        <section className="py-16 sm:py-20">
+          <div className="max-w-5xl mx-auto px-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-4">
+              {l.stats.title}
+            </h2>
+            <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
+              {l.stats.subtitle}
+            </p>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+              <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
+                <Target className="w-7 h-7 text-primary mx-auto mb-2" />
+                <p className="text-3xl sm:text-4xl font-black text-primary">{stats.hitRate}%</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.hitRate}</p>
+              </div>
+              <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
+                <CheckCircle className="w-7 h-7 text-emerald-400 mx-auto mb-2" />
+                <p className="text-3xl sm:text-4xl font-black text-emerald-400">{stats.wins}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.wins}</p>
+              </div>
+              <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
+                <BarChart3 className="w-7 h-7 text-foreground mx-auto mb-2" />
+                <p className="text-3xl sm:text-4xl font-black text-foreground">{stats.total}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.total}</p>
+              </div>
+              <div className="text-center p-5 rounded-xl bg-secondary/30 border border-border/50">
+                <TrendingUp className="w-7 h-7 text-amber-400 mx-auto mb-2" />
+                <p className="text-3xl sm:text-4xl font-black text-amber-400">30+</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.stats.leagues}</p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Pricing Section */}
+      {/* Pricing Section — Simplified for ads */}
       <section id="pricing" className="relative px-5 py-20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-12">
             {l.pricing.title}
           </h2>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Day Use */}
-            <div className="relative glass-card p-8 flex flex-col border-2 border-success/50 transition-all duration-300 hover:-translate-y-2.5 hover:border-primary hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.2)]">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {/* Day Use — Disabled */}
+            <div className="relative glass-card p-8 flex flex-col border-2 border-success/50 opacity-70 transition-all duration-300">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-success text-success-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
                   {l.pricing.dayUse.badge}
@@ -749,14 +794,14 @@ export default function Landing() {
                 ))}
               </ul>
               <button 
-                onClick={() => navigate('/auth')}
-                className="w-full h-14 mt-auto rounded-lg font-bold bg-success text-success-foreground hover:bg-success/90 transition-all hover:shadow-lg flex items-center justify-center"
+                disabled
+                className="w-full h-14 mt-auto rounded-lg font-bold opacity-50 cursor-not-allowed bg-muted text-muted-foreground flex items-center justify-center"
               >
-                {l.pricing.dayUse.cta}
+                {l.pricing.comingSoon}
               </button>
             </div>
 
-            {/* Basic */}
+            {/* Basic — Green CTA */}
             <div className="glass-card p-8 flex flex-col border-2 border-transparent transition-all duration-300 hover:-translate-y-2.5 hover:border-primary hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.2)]">
               <div className="text-center mb-6">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.basic.name}</h3>
@@ -775,20 +820,19 @@ export default function Landing() {
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="btn-outline w-full h-14 mt-auto flex items-center justify-center"
+                className="w-full h-14 mt-auto rounded-lg font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all hover:shadow-lg flex items-center justify-center"
               >
                 {l.pricing.basic.cta}
               </button>
             </div>
 
-            {/* Advanced - MOST POPULAR */}
-            <div className="relative glass-card p-8 flex flex-col price-card-highlighted transition-all duration-300 hover:-translate-y-2.5 hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.3)]">
-              <div className="absolute -top-3 right-5 z-10">
+            {/* Advanced — MOST POPULAR — scaled up */}
+            <div className="relative glass-card p-8 flex flex-col price-card-highlighted transition-all duration-300 hover:-translate-y-2.5 hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.3)] sm:scale-105 origin-top">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                 <span 
-                  className="bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full inline-block"
-                  style={{ transform: 'rotate(15deg)' }}
+                  className="bg-primary text-primary-foreground text-xs font-bold px-5 py-1.5 rounded-full inline-block animate-pulse"
                 >
-                  {l.pricing.advanced.badge}
+                  ⭐ {l.pricing.advanced.badge}
                 </span>
               </div>
               <div className="text-center mb-6 pt-4">
@@ -808,13 +852,13 @@ export default function Landing() {
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="btn-primary w-full h-14 mt-auto flex items-center justify-center"
+                className="btn-primary w-full h-14 mt-auto flex items-center justify-center text-base font-bold"
               >
                 {l.pricing.advanced.cta}
               </button>
             </div>
 
-            {/* Premium */}
+            {/* Premium — Amber CTA, no strikethrough price */}
             <div 
               className="relative glass-card p-8 flex flex-col border-2 border-accent/50 transition-all duration-300 hover:-translate-y-2.5 hover:border-accent hover:shadow-[0_20px_40px_hsla(260,80%,60%,0.3)]" 
               style={{ background: 'linear-gradient(180deg, hsla(260, 80%, 60%, 0.1) 0%, hsla(230, 45%, 12%, 1) 100%)' }}
@@ -827,22 +871,21 @@ export default function Landing() {
               <div className="text-center mb-6 pt-4 relative z-10">
                 <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.premium.name}</h3>
                 <div className="flex flex-col items-center">
-                  <span className="text-muted-foreground text-lg line-through">{l.pricing.premium.originalPrice}</span>
-                  <span className="text-accent text-4xl sm:text-5xl font-black">{l.pricing.premium.price}</span>
+                  <span className="text-amber-400 text-4xl sm:text-5xl font-black">{l.pricing.premium.price}</span>
                   <span className="text-muted-foreground text-base font-semibold">{l.pricing.premium.period}</span>
                 </div>
               </div>
               <ul className="space-y-3 flex-grow mb-8 relative z-10">
                 {l.pricing.premium.features.map((f: string, i: number) => (
                   <li key={i} className="flex items-start gap-3 text-foreground">
-                    <CheckCircle className="w-5 h-5 text-accent mt-0.5 shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
               <button 
                 onClick={() => navigate('/auth')}
-                className="w-full h-14 mt-auto rounded-lg font-bold bg-accent text-accent-foreground hover:bg-accent/90 transition-all hover:shadow-lg relative z-10 flex items-center justify-center"
+                className="w-full h-14 mt-auto rounded-lg font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all hover:shadow-lg relative z-10 flex items-center justify-center"
               >
                 {l.pricing.premium.cta}
               </button>

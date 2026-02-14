@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { trackConversion } from '@/lib/trackConversion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -108,7 +109,10 @@ const applyPhoneMask = (value: string, countryCode: string): string => {
 export default function Auth() {
   const { t, language } = useLanguage();
   const [mode, setMode] = useState<AuthMode>('login');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('email') || '';
+  });
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -132,7 +136,7 @@ export default function Auth() {
   
   // Capture registration source from URL params
   const searchParams = new URLSearchParams(window.location.search);
-  const registrationSource = searchParams.get('source') || 'organic';
+  const registrationSource = searchParams.get('source') || sessionStorage.getItem('utm_source') || 'organic';
 
   // Get selected country data
   const countryData = COUNTRIES.find(c => c.code === selectedCountry) || COUNTRIES[0];
@@ -441,6 +445,14 @@ export default function Auth() {
             console.error('Failed to send welcome email:', emailErr);
           }
           
+          // Mark lead as converted
+          try {
+            await supabase.from('leads' as any).update({ converted: true }).eq('email', email.trim());
+          } catch {}
+
+          // Track conversion for ad pixels
+          trackConversion('Lead');
+
           toast({
             title: t('auth.success.accountCreated'),
             description: t('auth.success.accountCreatedDesc'),
