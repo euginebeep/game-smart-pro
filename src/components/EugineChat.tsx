@@ -127,13 +127,15 @@ export function EugineChat() {
     <>
       {/* Floating Button */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed right-4 top-1/2 -translate-y-1/2 z-50 w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center overflow-hidden animate-[bounce_2s_infinite]"
-          aria-label="Abrir chat"
-        >
-          <img src={avatar} alt="Assistente EUGINE" className="w-full h-full object-cover" />
-        </button>
+        <div className="fixed right-4 top-0 bottom-0 z-50 pointer-events-none flex items-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="pointer-events-auto sticky top-1/2 w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center overflow-hidden animate-[bounce_2s_infinite]"
+            aria-label="Abrir chat"
+          >
+            <img src={avatar} alt="Assistente EUGINE" className="w-full h-full object-cover" />
+          </button>
+        </div>
       )}
 
       {/* Chat Window */}
