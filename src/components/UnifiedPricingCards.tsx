@@ -3,7 +3,7 @@ import { Check, Zap, Loader2, CreditCard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import MoneyExplosion from './MoneyExplosion';
+
 
 interface UnifiedPricingCardsProps {
   showManageButton?: boolean;
@@ -14,7 +14,7 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
   const { subscription, createCheckout, createDayUseCheckout, openCustomerPortal } = useAuth();
   const { t, language } = useLanguage();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
-  const [premiumHovered, setPremiumHovered] = useState(false);
+  
 
   const handleSubscribe = async (tier: 'basic' | 'advanced' | 'premium') => {
     setLoadingTier(tier);
@@ -175,10 +175,8 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
               ${isCurrentPlan ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}
             `}
             style={plan.isPremium ? { background: 'linear-gradient(180deg, hsla(260, 80%, 60%, 0.1) 0%, hsla(230, 45%, 12%, 1) 100%)' } : {}}
-            onMouseEnter={() => plan.isPremium && setPremiumHovered(true)}
-            onMouseLeave={() => plan.isPremium && setPremiumHovered(false)}
           >
-            {plan.isPremium && <MoneyExplosion isActive={premiumHovered} />}
+
             
             {/* Badges */}
             {plan.badge && !plan.isPopular && (

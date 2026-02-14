@@ -1,61 +1,50 @@
-import { Zap, TrendingUp, Shield, Clock } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function EmptyState() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
-  const features = [
-    {
-      icon: TrendingUp,
-      title: t('empty.feature1Title'),
-      description: t('empty.feature1Desc')
+  const labels = {
+    pt: {
+      title: 'Analise os jogos de hoje',
+      subtitle: 'Clique em Buscar Jogos para receber análises com probabilidades reais.',
+      cta: 'Buscar Jogos',
+      stats: '23 ligas monitoradas • Odds de 6+ casas • Atualizado a cada 10min',
     },
-    {
-      icon: Shield,
-      title: t('empty.feature2Title'),
-      description: t('empty.feature2Desc')
+    en: {
+      title: 'Analyze today\'s games',
+      subtitle: 'Click Fetch Games to receive analysis with real probabilities.',
+      cta: 'Fetch Games',
+      stats: '23 leagues monitored • Odds from 6+ bookmakers • Updated every 10min',
     },
-    {
-      icon: Clock,
-      title: t('empty.feature3Title'),
-      description: t('empty.feature3Desc')
-    }
-  ];
+    es: {
+      title: 'Analiza los juegos de hoy',
+      subtitle: 'Haz clic en Buscar Juegos para recibir análisis con probabilidades reales.',
+      cta: 'Buscar Juegos',
+      stats: '23 ligas monitoreadas • Odds de 6+ casas • Actualizado cada 10min',
+    },
+    it: {
+      title: 'Analizza le partite di oggi',
+      subtitle: 'Clicca su Cerca Partite per ricevere analisi con probabilità reali.',
+      cta: 'Cerca Partite',
+      stats: '23 campionati monitorati • Quote da 6+ bookmaker • Aggiornato ogni 10min',
+    },
+  };
+
+  const l = labels[language] || labels.pt;
 
   return (
-    <div className="glass-card p-8 lg:p-12 text-center animate-fade-in-up">
-      <div className="flex justify-center mb-6">
-        <div 
-          className="w-20 h-20 rounded-2xl flex items-center justify-center animate-pulse-slow"
-          style={{
-            background: 'linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(160 84% 39%) 100%)',
-            boxShadow: '0 0 40px hsla(160, 84%, 39%, 0.3)'
-          }}
-        >
-          <Zap className="w-10 h-10 text-white" />
-        </div>
-      </div>
-
-      <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-3">
-        {t('empty.title')}
+    <div className="flex flex-col items-center justify-center py-20 sm:py-28 text-center">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3">
+        {l.title}
       </h2>
-      <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
-        {t('empty.description')} <span className="text-primary font-semibold">"{t('empty.buttonText')}"</span> {t('empty.descriptionEnd')}
+      <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md">
+        {l.subtitle}
       </p>
 
-      <div className="grid sm:grid-cols-3 gap-6">
-        {features.map((feature, index) => (
-          <div 
-            key={feature.title}
-            className="p-4 rounded-2xl bg-secondary/30 border border-border animate-fade-in-up"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <feature.icon className="w-8 h-8 text-accent mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
-            <p className="text-sm text-muted-foreground">{feature.description}</p>
-          </div>
-        ))}
-      </div>
+      <p className="text-muted-foreground/50 text-xs sm:text-sm mt-10 tracking-wide">
+        {l.stats}
+      </p>
     </div>
   );
 }

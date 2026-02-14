@@ -20,8 +20,6 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
-import MoneyExplosion from '@/components/MoneyExplosion';
-import ParticlesBackground from '@/components/ParticlesBackground';
 
 // Import step images
 import step1Image from '@/assets/step1-escolha-jogo.png';
@@ -32,7 +30,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState(1);
-  const [premiumHovered, setPremiumHovered] = useState(false);
+  
 
   const labels = {
     pt: {
@@ -429,8 +427,8 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
-      {/* Animated Particles Background */}
-      <ParticlesBackground />
+      {/* Subtle gradient background */}
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 20%, hsla(199, 89%, 48%, 0.06) 0%, transparent 60%)' }} />
       
       {/* Circuit Pattern Background */}
       <div className="fixed inset-0 circuit-pattern pointer-events-none opacity-30" />
@@ -448,10 +446,7 @@ export default function Landing() {
               <Brain className="w-5 h-5 text-background" />
             </div>
           </div>
-          <span className="font-display text-xl font-bold tracking-wide">
-            <span className="text-foreground">EUGINE</span>
-            <span className="text-primary ml-1">v4.0</span>
-          </span>
+          <span className="font-display text-xl font-bold tracking-wide text-foreground">EUGINE</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
@@ -779,10 +774,7 @@ export default function Landing() {
             <div 
               className="relative glass-card p-8 flex flex-col border-2 border-accent/50 transition-all duration-300 hover:-translate-y-2.5 hover:border-accent hover:shadow-[0_20px_40px_hsla(260,80%,60%,0.3)]" 
               style={{ background: 'linear-gradient(180deg, hsla(260, 80%, 60%, 0.1) 0%, hsla(230, 45%, 12%, 1) 100%)' }}
-              onMouseEnter={() => setPremiumHovered(true)}
-              onMouseLeave={() => setPremiumHovered(false)}
             >
-              <MoneyExplosion isActive={premiumHovered} />
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                 <span className="bg-accent text-accent-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
                   {(l.pricing.premium as any).badge}
@@ -816,34 +808,35 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative px-5 py-10 border-t border-border/50">
+      <footer className="relative px-5 py-12 border-t border-border/50">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col items-center gap-6">
+            {/* Brand */}
+            <div className="text-center">
+              <span className="font-display text-lg font-bold text-foreground">EUGINE</span>
+              <p className="text-muted-foreground text-xs mt-1">by GS ItalyInvestments</p>
+            </div>
+
+            {/* Links */}
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="/about" className="hover:text-foreground transition-colors">{l.footer.about}</a>
               <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{l.footer.terms}</a>
               <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{l.footer.privacy}</a>
             </div>
 
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Youtube className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
+            {/* Disclaimer */}
+            <p className="text-muted-foreground/50 text-xs text-center max-w-lg">
+              {language === 'pt' ? 'Este sistema é para fins educacionais. Aposte com responsabilidade.' :
+               language === 'es' ? 'Este sistema es para fines educativos. Juega responsablemente.' :
+               language === 'it' ? 'Questo sistema è a scopo educativo. Gioca responsabilmente.' :
+               'This system is for educational purposes. Gamble responsibly.'}
+            </p>
 
-          <p className="text-center text-muted-foreground text-sm mt-8">
-            {l.footer.copyright}
-          </p>
+            {/* Copyright */}
+            <p className="text-muted-foreground/40 text-xs">
+              © {new Date().getFullYear()} GS ItalyInvestments. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

@@ -1,4 +1,4 @@
-import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield, Clock, Info } from 'lucide-react';
+import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield, ChevronDown, Info } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
@@ -17,30 +17,10 @@ interface HeaderProps {
 }
 
 const tierConfig = {
-  free: {
-    label: 'Trial',
-    icon: Sparkles,
-    className: 'bg-slate-500/20 border-slate-500/30 text-slate-300',
-    iconClassName: 'text-slate-400',
-  },
-  basic: {
-    label: 'Basic',
-    icon: Zap,
-    className: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
-    iconClassName: 'text-blue-400',
-  },
-  advanced: {
-    label: 'Advanced',
-    icon: TrendingUp,
-    className: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400',
-    iconClassName: 'text-emerald-400',
-  },
-  premium: {
-    label: 'Premium',
-    icon: Crown,
-    className: 'bg-amber-500/20 border-amber-500/30 text-amber-400',
-    iconClassName: 'text-amber-400',
-  },
+  free: { label: 'Trial', className: 'bg-muted/60 text-muted-foreground border-border' },
+  basic: { label: 'Basic', className: 'bg-sky-500/15 text-sky-400 border-sky-500/30' },
+  advanced: { label: 'Advanced', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+  premium: { label: 'Premium', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
 };
 
 export function Header({ 
@@ -59,168 +39,98 @@ export function Header({
   const navigate = useNavigate();
   
   const currentTier = tierConfig[subscriptionTier] || tierConfig.free;
-  const TierIcon = currentTier.icon;
-  
-  // Calculate days until subscription expires
-  const getDaysUntilExpiry = () => {
-    if (!subscriptionEnd) return null;
-    const endDate = new Date(subscriptionEnd);
-    const now = new Date();
-    const diffTime = endDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
-  };
-  
-  const daysRemaining = getDaysUntilExpiry();
-  
-  const today = new Date().toLocaleDateString(
-    language === 'pt' ? 'pt-BR' : 
-    language === 'es' ? 'es-ES' : 
-    language === 'it' ? 'it-IT' : 'en-US',
-    {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }
-  );
 
   return (
-    <header className="mb-6 sm:mb-8 lg:mb-12">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6">
-        {/* Logo and Title */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          {/* Animated Logo */}
+    <header className="mb-6 sm:mb-8 lg:mb-10">
+      <div className="flex items-center justify-between gap-4 py-3 border-b border-border/50">
+        {/* Left: Logo */}
+        <div className="flex items-center gap-3">
           <div 
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center animate-pulse-slow shrink-0"
+            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
             style={{
-              background: 'linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(160 84% 39%) 100%)',
-              boxShadow: '0 0 30px hsla(160, 84%, 39%, 0.4)'
+              background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(160 70% 40%) 100%)',
             }}
           >
-            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <TrendingUp className="w-4.5 h-4.5 text-primary-foreground" />
           </div>
-          
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black gradient-text tracking-tight whitespace-nowrap font-display">
-              EUGINE v4.0
+            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">
+              EUGINE
             </h1>
-            <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-0.5">
-              {t('main.subtitle')}
+            <p className="text-muted-foreground text-[11px] font-medium leading-none mt-0.5">
+              Sports Analytics
             </p>
           </div>
-
-          {/* About Link - Desktop Only */}
-          <Link 
-            to="/about"
-            className="hidden lg:flex items-center gap-1.5 ml-4 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors text-sm"
-          >
-            <Info className="w-4 h-4" />
-            <span>{language === 'pt' ? 'Sobre' : language === 'es' ? 'Acerca' : language === 'it' ? 'Chi siamo' : 'About'}</span>
-          </Link>
         </div>
 
-        {/* Right Side Actions */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 lg:gap-4 w-full sm:w-auto">
-          {/* Language Selector */}
-          <div className="hidden sm:block">
-            <LanguageSelector />
-          </div>
+        {/* Center: Navigation - desktop only */}
+        <nav className="hidden lg:flex items-center gap-1">
+          <Link 
+            to="/"
+            className="px-3 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+          >
+            Dashboard
+          </Link>
+          <Link 
+            to="/about"
+            className="px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          >
+            {language === 'pt' ? 'Sobre' : language === 'es' ? 'Acerca' : language === 'it' ? 'Chi siamo' : 'About'}
+          </Link>
+        </nav>
 
-          {/* Subscription Tier Badge */}
-          <div className={`badge flex items-center gap-1.5 transition-all duration-300 ${currentTier.className}`}>
-            {subscriptionLoading ? (
-              <>
-                <Loader2 className="w-3 h-3 animate-spin" />
-                <span className="text-xs">...</span>
-              </>
-            ) : (
-              <>
-                <TierIcon className={`w-3 h-3 ${currentTier.iconClassName}`} />
-                <span className="text-xs font-medium">{currentTier.label}</span>
-              </>
-            )}
-          </div>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Language Selector (dropdown) */}
+          <LanguageSelector />
 
-          {/* Subscription Expiry Badge (for active subscribers) */}
-          {!subscriptionLoading && subscriptionTier !== 'free' && daysRemaining !== null && (
-            <div className={`badge flex items-center gap-1.5 ${
-              daysRemaining <= 3 
-                ? 'bg-red-500/20 border-red-500/30 text-red-400' 
-                : daysRemaining <= 7 
-                  ? 'bg-amber-500/20 border-amber-500/30 text-amber-400' 
-                  : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
-            }`}>
-              <Clock className="w-3 h-3" />
-              <span className="text-xs">
-                {daysRemaining} {daysRemaining === 1 ? t('main.dayLeft') : t('main.daysLeft')}
-              </span>
-            </div>
-          )}
-
-          {/* Live Badge */}
-          <div className="badge badge-live text-[10px] sm:text-xs">
-            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-destructive rounded-full animate-pulse-slow" />
-            <span className="uppercase tracking-wide">
-              {t('main.liveOdds')} • {today}
+          {/* Tier Badge */}
+          {!subscriptionLoading && (
+            <span className={`hidden sm:inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold border ${currentTier.className}`}>
+              {currentTier.label}
             </span>
-          </div>
+          )}
 
-          {/* Daily Searches Remaining Badge (Trial Users) */}
+          {/* Trial searches remaining */}
           {isTrial && dailySearchesRemaining !== null && dailySearchesRemaining !== undefined && dailySearchesRemaining >= 0 && (
-            <div className={`badge flex items-center gap-1.5 ${dailySearchesRemaining === 0 ? 'bg-red-500/20 border-red-500/30 text-red-400' : 'bg-amber-500/20 border-amber-500/30 text-amber-400'}`}>
+            <span className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${dailySearchesRemaining === 0 ? 'bg-destructive/15 text-destructive border-destructive/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'}`}>
               <Search className="w-3 h-3" />
-              <span className="text-xs">
-                {dailySearchesRemaining}/3 {t('main.searchesToday')}
-              </span>
-            </div>
+              {dailySearchesRemaining}/3
+            </span>
           )}
 
-          {/* API Remaining - hidden on mobile */}
-          {apiRemaining !== null && (
-            <div className="badge badge-info hidden sm:flex">
-              <span className="text-xs">
-                API: {apiRemaining} {t('main.apiRequests')}
-              </span>
-            </div>
-          )}
-
-          {/* Fetch Button */}
+          {/* Fetch CTA */}
           <button
             onClick={onFetch}
             disabled={loading || (isTrial && dailySearchesRemaining === 0)}
-            className="btn-primary flex items-center justify-center gap-2 text-sm sm:text-base px-6 py-2.5 min-w-[140px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary flex items-center gap-2 text-sm px-5 py-2 min-w-[130px] justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Zap className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin' : ''}`} />
-            <span className="text-center">{loading ? t('main.fetching') : t('main.fetchGames')}</span>
+            <Zap className={`w-3.5 h-3.5 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? t('main.fetching') : t('main.fetchGames')}</span>
           </button>
 
-          {/* Admin Button */}
+          {/* Admin */}
           {isAdmin && (
             <button
               onClick={() => navigate('/admin')}
-              className="p-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 hover:text-purple-300 transition-colors border border-purple-500/30"
-              title="Painel Admin"
+              className="p-2 rounded-md bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              title="Admin"
             >
-              <Shield className="w-5 h-5" />
+              <Shield className="w-4 h-4" />
             </button>
           )}
 
-          {/* Sign Out Button */}
+          {/* Sign Out */}
           {onSignOut && (
             <button
               onClick={onSignOut}
-              className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white transition-colors"
+              className="p-2 rounded-md bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               title={t('common.signOut')}
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
             </button>
           )}
         </div>
-      </div>
-      
-      {/* Mobile Language Selector */}
-      <div className="flex justify-center mt-4 sm:hidden">
-        <LanguageSelector />
       </div>
     </header>
   );

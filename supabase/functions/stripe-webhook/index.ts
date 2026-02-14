@@ -14,9 +14,18 @@ const logStep = (step: string, details?: any) => {
 
 // Mapeamento de price IDs para tiers
 const PRICE_TO_TIER: Record<string, string> = {
+  // BRL
   'price_1SprZDBQSLreveKU8QmxRF80': 'basic',
   'price_1Spry1BQSLreveKU7NcHTNVx': 'advanced',
   'price_1SpryWBQSLreveKU7x6v5S9f': 'premium',
+  // USD
+  'price_1SptWYBQSLreveKUetIBcgIW': 'basic',
+  'price_1SpttwBQSLreveKUGOKhunsn': 'advanced',
+  'price_1SptvkBQSLreveKUNeLpNdBJ': 'premium',
+  // EUR
+  'price_1SptvxBQSLreveKUCrsr9k8q': 'basic',
+  'price_1SpuHlBQSLreveKUJvXZgTEv': 'advanced',
+  'price_1SpuaxBQSLreveKUKskrtfH8': 'premium',
 };
 
 serve(async (req) => {

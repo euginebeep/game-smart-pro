@@ -326,13 +326,24 @@ const Index = () => {
         </main>
 
         {/* Footer */}
-        <footer className="mt-8 sm:mt-12 lg:mt-16 text-center px-2">
-          <p className="text-muted-foreground text-xs sm:text-sm">
-            EUGINE v4.0 • {t('main.footer')} <span className="text-primary font-semibold">GS ITALYINVESTMENTS</span>
-          </p>
-          <p className="text-muted-foreground/60 text-[10px] sm:text-xs mt-1 sm:mt-2">
-            {t('main.disclaimer')}
-          </p>
+        <footer className="mt-8 sm:mt-12 lg:mt-16 py-8 border-t border-border/30">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <span className="text-sm font-semibold text-foreground">EUGINE</span>
+            <p className="text-muted-foreground text-xs">
+              by <span className="font-semibold">GS ItalyInvestments</span>
+            </p>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
+              <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{t('main.terms') || 'Termos'}</a>
+              <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{t('main.privacy') || 'Privacidade'}</a>
+              <a href="/about" className="hover:text-foreground transition-colors">{t('main.about') || 'Sobre'}</a>
+            </div>
+            <p className="text-muted-foreground/40 text-[10px] sm:text-xs max-w-md">
+              {t('main.disclaimer')}
+            </p>
+            <p className="text-muted-foreground/30 text-[10px]">
+              © {new Date().getFullYear()} GS ItalyInvestments
+            </p>
+          </div>
         </footer>
       </div>
     </div>

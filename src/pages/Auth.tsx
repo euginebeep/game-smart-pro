@@ -521,7 +521,6 @@ export default function Auth() {
           
           <h1 className="font-display text-3xl font-bold">
             <span className="text-foreground">EUGINE</span>
-            <span className="text-primary text-lg ml-2">v4.0</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-2">{t('auth.systemName')}</p>
           <div className="mt-3 flex justify-center">
