@@ -6,7 +6,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const ALLOWED_ORIGINS = [
   'https://game-smart-pro.eugine.app',
-  'https://eugine-analytics.com',
   'https://eugineai.com',
   'https://www.eugineai.com',
   'https://game-smart-pro.lovable.app',

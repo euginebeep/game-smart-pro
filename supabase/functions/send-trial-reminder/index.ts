@@ -99,7 +99,7 @@ serve(async (req) => {
                         Após o término do trial, você não poderá mais acessar as previsões e análises de apostas.
                       </p>
                     </div>
-                    <a href="https://eugine-analytics.com" style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 8px; margin-top: 20px;">
+                    <a href="https://www.eugineai.com" style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: bold; padding: 14px 30px; border-radius: 8px; margin-top: 20px;">
                       Ver Planos de Assinatura
                     </a>
                     <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
