@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import AnalysisPage from "./pages/AnalysisPage";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PremiumChatWrapper } from "./components/PremiumChatWrapper";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PremiumChatWrapper />
         <Routes>
           {/* Public Landing Page - First page users see */}
           <Route path="/" element={<Landing />} />
