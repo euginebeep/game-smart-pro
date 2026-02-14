@@ -380,6 +380,36 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          email_daily_picks: boolean | null
+          email_results: boolean | null
+          preferred_time: string | null
+          timezone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_daily_picks?: boolean | null
+          email_results?: boolean | null
+          preferred_time?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_daily_picks?: boolean | null
+          email_results?: boolean | null
+          preferred_time?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       odds_cache: {
         Row: {
           cache_key: string
