@@ -1054,7 +1054,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   const allScores = [
     { type: t.over25, score: over25Score, odd: game.odds.over, betType: 'over25' as const },
     { type: t.under25, score: under25Score, odd: game.odds.under, betType: 'under25' as const },
-    { type: t.btts, score: bttsScore, odd: (game.odds.home + game.odds.away) / 2, betType: 'btts' as const },
+    { type: t.btts, score: bttsScore, odd: game.advancedData?.bttsOdds?.yes || Math.round(Math.max(1.30, (1 / (((game.advancedData?.homeStats?.bttsPercentage || 50) + (game.advancedData?.awayStats?.bttsPercentage || 50)) / 200))) * 100) / 100, betType: 'btts' as const },
     { type: t.homeWin, score: homeWinScore, odd: game.odds.home, betType: 'home' as const },
     { type: t.awayWin, score: awayWinScore, odd: game.odds.away, betType: 'away' as const },
     { type: t.draw, score: drawScore, odd: game.odds.draw, betType: 'draw' as const },
@@ -1062,7 +1062,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   
   // Calcular value para cada aposta
   const scoresWithValue = allScores.map(bet => {
-    const estimatedProb = Math.min(100, Math.max(0, bet.score));
+    const estimatedProb = Math.min(95, Math.max(5, Math.round(100 / (1 + Math.exp(-0.06 * (bet.score - 50))))));
     const impliedProb = calculateImpliedProbability(bet.odd);
     const value = calculateValue(estimatedProb, bet.odd);
     
@@ -1079,7 +1079,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   const best = scoresWithValue[0];
   
   // Calcular confiança (0-100)
-  const confidence = Math.min(100, Math.max(30, best.score));
+  const confidence = Math.min(95, Math.max(5, Math.round(100 / (1 + Math.exp(-0.06 * (best.score - 50))))));
   
   // Verificar se deve fazer skip
   const skipCheck = shouldSkipBet(confidence, best.value);
@@ -1315,8 +1315,14 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number):
       avgGoalsConceded: goalsAgainst / totalGames,
       cleanSheets,
       failedToScore,
-      bttsPercentage: 100 - cleanSheets - failedToScore + (cleanSheets * failedToScore / 100),
-      over25Percentage: (goalsFor + goalsAgainst) / totalGames >= 2.5 ? 65 : 45,
+      bttsPercentage: Math.min(95, Math.max(5, Math.round((1 - failedToScore / 100) * (1 - cleanSheets / 100) * 100))),
+      over25Percentage: (() => {
+        const lambda = (goalsFor + goalsAgainst) / totalGames;
+        const p0 = Math.exp(-lambda);
+        const p1 = lambda * Math.exp(-lambda);
+        const p2 = (lambda * lambda / 2) * Math.exp(-lambda);
+        return Math.min(95, Math.max(5, Math.round((1 - p0 - p1 - p2) * 100)));
+      })(),
       homeGoalsAvg: homeGoals / homeGames,
       awayGoalsAvg: awayGoals / awayGames,
       homeGoalsConcededAvg: homeGoalsConceded / homeGames,
