@@ -818,6 +818,42 @@ export default function Landing() {
               </p>
             </div>
           </div>
+
+          {/* CTA after How It Works */}
+          <ScrollFadeIn className="mt-16">
+            <div className="max-w-lg mx-auto text-center p-8 rounded-2xl border border-primary/20 bg-card/60" style={{ boxShadow: '0 0 40px hsla(199, 89%, 48%, 0.1)' }}>
+              <h3 className="text-foreground font-bold text-xl sm:text-2xl mb-3">
+                {language === 'pt' ? 'Comece agora — é grátis' :
+                 language === 'es' ? 'Empieza ahora — es gratis' :
+                 language === 'it' ? 'Inizia ora — è gratis' :
+                 'Start now — it\'s free'}
+              </h3>
+              <p className="text-muted-foreground text-sm mb-5">
+                {language === 'pt' ? 'Receba análises com vantagem matemática no seu email.' :
+                 language === 'es' ? 'Recibe análisis con ventaja matemática en tu correo.' :
+                 language === 'it' ? 'Ricevi analisi con vantaggio matematico nella tua email.' :
+                 'Get analyses with mathematical edge in your inbox.'}
+              </p>
+              <div className="flex gap-2 max-w-sm mx-auto">
+                <input
+                  type="email"
+                  placeholder={l.hero.emailPlaceholder}
+                  value={leadEmail}
+                  onChange={(e) => setLeadEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLeadCapture()}
+                  className="flex-1 px-4 py-3 rounded-xl bg-secondary/80 border border-border text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <button
+                  onClick={handleLeadCapture}
+                  disabled={leadLoading}
+                  className="btn-primary px-6 py-3 rounded-xl text-sm font-bold whitespace-nowrap flex items-center gap-2"
+                >
+                  {leadLoading ? '⏳' : <><ArrowRight className="w-4 h-4" /> {language === 'pt' ? 'Começar' : language === 'es' ? 'Empezar' : language === 'it' ? 'Inizia' : 'Start'}</>}
+                </button>
+              </div>
+              <p className="text-muted-foreground/50 text-xs mt-3">{l.hero.ctaSubtext}</p>
+            </div>
+          </ScrollFadeIn>
         </div>
       </section>
 

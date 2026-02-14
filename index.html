@@ -20,6 +20,15 @@
     
     <link rel="icon" type="image/png" href="https://storage.googleapis.com/gpt-engineer-file-uploads/AXTgPMN3ylebr4wpLL3BznXt8sm1/uploads/1768419764214-ChatGPT Image 14 de jan. de 2026, 14_16_15.png">
 
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0EA5E9" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="EUGINE" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+
     <!-- Meta Pixel (Facebook/Instagram) — descomentar e adicionar ID real -->
     <!-- <script>
     !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -60,5 +69,17 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((reg) => {
+              console.log('[EUGINE] Service Worker registrado:', reg.scope);
+              setInterval(() => { reg.update(); }, 30 * 60 * 1000);
+            })
+            .catch((err) => { console.warn('[EUGINE] Service Worker falhou:', err); });
+        });
+      }
+    </script>
   </body>
 </html>
