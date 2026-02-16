@@ -212,11 +212,10 @@ function calculateEugineChance(bets: Array<{ odd: number; estimatedProb?: number
     }
   }
   
-  // Para odds muito altas (>8), limitar edge absoluto a +10 pontos
-  const totalOdd = bets.reduce((acc, b) => acc * b.odd, 1);
-  if (totalOdd > 8) {
-    const maxForHighOdds = bookmakerChance + 10;
-    eugineChance = Math.min(eugineChance, Math.round(maxForHighOdds));
+  // Limitar edge absoluto a +10 pontos percentuais SEMPRE
+  if (bookmakerChance > 0) {
+    const maxEdge = bookmakerChance + 10;
+    eugineChance = Math.min(eugineChance, Math.round(maxEdge));
   }
   
   return Math.max(1, eugineChance);
