@@ -7,6 +7,7 @@ interface AccumulatorBet {
   match: string;
   bet: string;
   odd: number;
+  estimatedProb?: number;
 }
 
 interface AccumulatorCardProps {
@@ -15,6 +16,7 @@ interface AccumulatorCardProps {
   bets: AccumulatorBet[];
   betAmount: number;
   chancePercent: number;
+  bookmakerChance?: number;
   riskLevel: RiskLevel;
   delay?: number;
 }
@@ -49,6 +51,7 @@ export function AccumulatorCard({
   bets, 
   betAmount, 
   chancePercent, 
+  bookmakerChance,
   riskLevel,
   delay = 0 
 }: AccumulatorCardProps) {
@@ -56,7 +59,6 @@ export function AccumulatorCard({
   const config = riskConfig[riskLevel];
   const Icon = config.icon;
   
-  // Calculate total odd (multiply all individual odds)
   const totalOdd = bets.reduce((acc, bet) => acc * bet.odd, 1);
   const potentialReturn = betAmount * totalOdd;
   const profit = potentialReturn - betAmount;
@@ -75,7 +77,6 @@ export function AccumulatorCard({
             <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             {t(config.labelKey)}
           </div>
-          {/* Mini-explicação para iniciantes */}
           <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-1">
             {riskLevel === 'low' && t('accumulators.explainLowRisk')}
             {riskLevel === 'medium' && t('accumulators.explainMediumRisk')}
@@ -114,18 +115,33 @@ export function AccumulatorCard({
             {t('accumulators.chance')}
             <span 
               className="inline-flex w-3.5 h-3.5 rounded-full bg-muted-foreground/20 text-[8px] text-muted-foreground items-center justify-center cursor-help" 
-              title={t('accumulators.chanceExplain')}
+              title={t('accumulators.chanceExplain') || 'Probabilidade calculada pelo EUGINE usando modelo Poisson.'}
             >
               ?
             </span>
           </p>
-          <p className={`text-xl sm:text-2xl font-black ${config.textClass}`}>
+          <p className={`text-xl sm:text-2xl font-black ${
+            chancePercent >= 50 ? 'text-emerald-400' :
+            chancePercent >= 30 ? 'text-primary' :
+            chancePercent >= 15 ? 'text-amber-400' :
+            'text-red-400'
+          }`}>
             {chancePercent}%
           </p>
+          {bookmakerChance != null && bookmakerChance !== chancePercent && (
+            <p className="text-[9px] text-muted-foreground mt-0.5">
+              {t('accumulators.bookmakerSays') || 'Casa diz'}: {bookmakerChance}%
+              {chancePercent > bookmakerChance && (
+                <span className="text-emerald-400 font-bold ml-1">
+                  +{chancePercent - bookmakerChance}%
+                </span>
+              )}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Profit — linguagem clara */}
+      {/* Profit */}
       <div className={`rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 ${config.bgClass} border ${config.borderClass}`}>
         <div className="flex flex-col gap-0.5">
           <p className="text-[10px] sm:text-xs text-muted-foreground">
