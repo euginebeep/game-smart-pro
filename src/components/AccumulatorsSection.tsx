@@ -134,12 +134,12 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
             key={`${acc.typeId}-${idx}`}
             emoji={acc.emoji}
             title={acc.title}
+            typeId={acc.typeId}
             bets={acc.bets}
             betAmount={acc.betAmount}
             chancePercent={acc.chancePercent}
             bookmakerChance={acc.bookmakerChance}
             riskLevel={acc.riskLevel}
-            delay={idx}
           />
         ))}
       </div>
