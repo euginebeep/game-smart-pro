@@ -428,7 +428,7 @@ const translations: Record<Language, any> = {
           name: "Day Use",
           features: [
             "Acesso Premium por 24 horas",
-            "Pagamento único R$ 7,70",
+            "Pagamento único $ 7,70",
             "Todas as funcionalidades Premium",
             "Exportar relatórios",
           ],

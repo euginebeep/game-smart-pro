@@ -421,8 +421,8 @@ function calculateDynamicWeights(leagueName: string, betType: 'result' | 'over_u
 
 // ============= VALUE BETTING FUNCTIONS =============
 
-const MIN_VALUE_THRESHOLD = 5; // 5% de edge mínimo
-const MIN_CONFIDENCE_THRESHOLD = 65; // 65% de confiança mínima
+const MIN_VALUE_THRESHOLD = 2; // 2 pontos percentuais de edge mínimo
+const MIN_CONFIDENCE_THRESHOLD = 8; // 8% de probabilidade mínima
 
 function calculateImpliedProbability(odds: number): number {
   if (odds <= 1) return 100;
@@ -431,19 +431,75 @@ function calculateImpliedProbability(odds: number): number {
 
 function calculateValue(estimatedProb: number, odds: number): number {
   const impliedProb = calculateImpliedProbability(odds);
-  // Value = (Prob Estimada / Prob Implícita - 1) * 100
-  const value = ((estimatedProb / impliedProb) - 1) * 100;
-  return Math.round(value * 100) / 100;
+  // Value = diferença simples em pontos percentuais
+  // Se EUGINE diz 55% e casa diz 50%, edge = +5 pontos
+  return Math.round((estimatedProb - impliedProb) * 100) / 100;
 }
 
 function shouldSkipBet(confidence: number, value: number): { skip: boolean; reason?: string } {
-  if (confidence < MIN_CONFIDENCE_THRESHOLD) {
-    return { skip: true, reason: `Confiança baixa (${confidence}% < ${MIN_CONFIDENCE_THRESHOLD}%)` };
+  // Com calibração, value agora é em pontos percentuais (ex: +5 = 5% de edge)
+  // Edge mínimo de 2 pontos para valer o risco
+  if (value < 2) {
+    return { skip: true, reason: 'Vantagem insuficiente para justificar aposta' };
   }
-  if (value < MIN_VALUE_THRESHOLD) {
-    return { skip: true, reason: `Sem edge suficiente (Value ${value.toFixed(1)}% < ${MIN_VALUE_THRESHOLD}%)` };
+  // Confiança muito baixa (prob calibrada < 8%)
+  if (confidence < 8) {
+    return { skip: true, reason: 'Probabilidade muito baixa' };
   }
   return { skip: false };
+}
+
+// ============================================================================
+// CALIBRAÇÃO DE PROBABILIDADE — FUNÇÃO CRÍTICA
+// ============================================================================
+// O score interno (0-100) mede CONFIANÇA nos fatores analisados.
+// NÃO é probabilidade. Para converter em probabilidade real:
+// 1. Calcula a probabilidade implícita da odd (o que a casa diz)
+// 2. Usa o score para determinar QUANTO o EUGINE discorda da casa
+// 3. Limita o edge máximo por faixa de odd (mercado eficiente)
+// ============================================================================
+
+function calculateCalibratedProbability(score: number, odd: number): number {
+  if (!odd || odd <= 1.0) return 50;
+  
+  // 1. Probabilidade implícita da odd (o que a casa calcula)
+  const impliedProb = (1 / odd) * 100;
+  
+  // 2. Edge máximo permitido por faixa de odd
+  // Quanto menor a odd, mais eficiente o mercado, menor o edge possível
+  let maxEdgePoints: number;
+  if (odd <= 1.20) {
+    maxEdgePoints = 3;    // Super favorito — mercado quase perfeito
+  } else if (odd <= 1.40) {
+    maxEdgePoints = 5;    // Favorito forte
+  } else if (odd <= 1.60) {
+    maxEdgePoints = 7;    // Favorito moderado
+  } else if (odd <= 2.00) {
+    maxEdgePoints = 10;   // Leve favorito
+  } else if (odd <= 2.50) {
+    maxEdgePoints = 12;   // Jogo equilibrado — mais espaço
+  } else if (odd <= 3.50) {
+    maxEdgePoints = 14;   // Underdog leve
+  } else if (odd <= 5.00) {
+    maxEdgePoints = 12;   // Underdog
+  } else if (odd <= 8.00) {
+    maxEdgePoints = 8;    // Underdog forte
+  } else {
+    maxEdgePoints = 5;    // Zebra — casas raramente erram tanto
+  }
+  
+  // 3. Converter score (0-100) em fator de ajuste
+  // score 50 = neutro, score 80 = positivo forte, score 30 = negativo
+  const adjustmentFactor = Math.max(-1, Math.min(1, (score - 50) / 50));
+  
+  // 4. Calcular edge em pontos percentuais
+  const edgePoints = adjustmentFactor * maxEdgePoints;
+  
+  // 5. Probabilidade calibrada = implícita + edge
+  const calibrated = impliedProb + edgePoints;
+  
+  // 6. Limitar entre 2% e 95%
+  return Math.round(Math.min(95, Math.max(2, calibrated)));
 }
 
 // ============= FORMA PONDERADA (últimos 3 com 60%, últimos 5 com 40%) =============
@@ -1196,9 +1252,10 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   
   // Calcular value para cada aposta
   const scoresWithValue = allScores.map(bet => {
-    const estimatedProb = Math.min(95, Math.max(5, Math.round(100 / (1 + Math.exp(-0.06 * (bet.score - 50))))));
+    // CALIBRADO: usa odd como âncora, score como ajuste
+    const estimatedProb = calculateCalibratedProbability(bet.score, bet.odd);
     const impliedProb = calculateImpliedProbability(bet.odd);
-    const value = calculateValue(estimatedProb, bet.odd);
+    const value = estimatedProb - impliedProb; // Edge em pontos percentuais simples
     
     return {
       ...bet,
@@ -1212,8 +1269,8 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   scoresWithValue.sort((a, b) => b.score - a.score);
   const best = scoresWithValue[0];
   
-  // Calcular confiança (0-100)
-  const confidence = Math.min(95, Math.max(5, Math.round(100 / (1 + Math.exp(-0.06 * (best.score - 50))))));
+  // Confidence agora é a probabilidade calibrada, não o score bruto
+  const confidence = best.estimatedProb;
   
   // Verificar se deve fazer skip
   const skipCheck = shouldSkipBet(confidence, best.value);
@@ -1277,8 +1334,9 @@ function analyzeSimple(game: Game, lang: string = 'pt'): BettingAnalysis {
   
   // Análise básica baseada apenas em odds
   if (game.odds.over > 0 && game.odds.over < 2.0) {
-    const estimatedProb = 55;
-    const value = calculateValue(estimatedProb, game.odds.over);
+    const estimatedProb = calculateCalibratedProbability(60, game.odds.over);
+    const impliedProbOver = calculateImpliedProbability(game.odds.over);
+    const value = estimatedProb - impliedProbOver;
     
     return {
       type: t.over25,
@@ -1293,8 +1351,9 @@ function analyzeSimple(game: Game, lang: string = 'pt'): BettingAnalysis {
   }
   
   const avgOdd = (game.odds.home + game.odds.away) / 2;
-  const estimatedProb = 50;
-  const value = calculateValue(estimatedProb, avgOdd);
+  const estimatedProb = calculateCalibratedProbability(50, avgOdd);
+  const impliedProbAvg = calculateImpliedProbability(avgOdd);
+  const value = estimatedProb - impliedProbAvg;
   
   return {
     type: t.btts,
