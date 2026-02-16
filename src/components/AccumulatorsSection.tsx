@@ -146,7 +146,7 @@ export function AccumulatorsSection({ games, userTier = 'free', maxAccumulators 
       
       {filteredAccumulators.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
-          <p>{t('accumulators.noResults') || 'Nenhum acumulador selecionado'}</p>
+          <p>{t('accumulators.notEnoughGames') || 'Poucos jogos com vantagem hoje. Volte mais tarde ou aposte individualmente.'}</p>
           <Button variant="link" onClick={selectAll} className="mt-2">
             {t('accumulators.showAll') || 'Mostrar todos'}
           </Button>
@@ -262,6 +262,30 @@ function estimateBttsOdd(overOdd: number): number {
   return Math.round(Math.max(1.30, overOdd * 0.98) * 100) / 100;
 }
 
+// Deduplication: select unique games from pool
+function getUniqueGames(pool: Game[], count: number, usedFixtures?: Set<string>): Game[] {
+  const selected: Game[] = [];
+  const used = usedFixtures || new Set<string>();
+  
+  for (const game of pool) {
+    const fixtureKey = `${game.homeTeam}-${game.awayTeam}`;
+    if (!used.has(fixtureKey)) {
+      selected.push(game);
+      used.add(fixtureKey);
+      if (selected.length >= count) break;
+    }
+  }
+  
+  return selected;
+}
+
+// Validate that all bets in an accumulator are from different matches
+function validateAccumulatorBets(bets: Array<{ match: string }>): boolean {
+  const matches = bets.map(b => b.match);
+  const uniqueMatches = new Set(matches);
+  return uniqueMatches.size === bets.length;
+}
+
 // ===== MAIN GENERATOR =====
 
 function generateAccumulators(games: Game[], t: (key: string) => string, isPremium: boolean): AccumulatorData[] {
@@ -277,8 +301,6 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
   const gamesPool = gamesWithEdge.length >= 4 ? gamesWithEdge : validGames.filter(g => g.analysis && !g.analysis.isSkip);
   // Ultimate fallback
   const effectivePool = gamesPool.length >= 2 ? gamesPool : validGames;
-
-  const getGame = (index: number) => effectivePool[index % Math.max(1, effectivePool.length)];
   
   const sortedByConfidence = [...effectivePool].sort((a, b) => 
     (b.analysis?.confidence || 0) - (a.analysis?.confidence || 0)
@@ -298,107 +320,72 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
 
   const baseAccumulators: AccumulatorData[] = [];
 
+  // Helper to build a 2-leg accumulator from unique games
+  function tryBuild2Leg(
+    pool: Game[], 
+    buildBets: (g1: Game, g2: Game) => AccumulatorBet[], 
+    config: { emoji: string; titleKey: string; risk: RiskLevel; typeId: AccumulatorType; betFactor: number; minBet: number; maxBet: number },
+    index: number,
+    totalCount: number
+  ): boolean {
+    const unique = getUniqueGames(pool, 2 + index * 2);
+    const g1 = unique[index * 2];
+    const g2 = unique[index * 2 + 1];
+    if (!g1 || !g2) return false;
+    
+    const bets = buildBets(g1, g2);
+    if (!validateAccumulatorBets(bets)) return false;
+    
+    const eugineChance = calculateEugineChance(bets);
+    const bookmakerChance = calculateBookmakerChance(bets);
+    console.log(`[EUGINE] Acumulada ${config.typeId}:`, { bets: bets.map(b => ({ match: b.match, odd: b.odd, estimatedProb: b.estimatedProb })), eugineChance, bookmakerChance });
+    
+    baseAccumulators.push({
+      emoji: config.emoji,
+      title: `${t(config.titleKey)}${totalCount > 1 ? ` #${index + 1}` : ''}`,
+      bets,
+      betAmount: Math.max(config.minBet, Math.min(config.maxBet, Math.round(1000 * Math.max(0.01, (eugineChance / 100) * config.betFactor)))),
+      chancePercent: eugineChance,
+      bookmakerChance,
+      riskLevel: config.risk,
+      typeId: config.typeId
+    });
+    return true;
+  }
+
   // ===== LOW RISK — GOALS (Over 1.5) =====
   const lowRiskGoalsCount = isPremium ? 3 : 1;
   for (let i = 0; i < lowRiskGoalsCount; i++) {
-    const g1 = bestGoalGames[i * 2] || getGame(i * 2);
-    const g2 = bestGoalGames[i * 2 + 1] || getGame(i * 2 + 1);
-    
-    const bets: AccumulatorBet[] = [
-      {
-        match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: t('accumulators.atLeast2Goals') || 'Almeno 2 gol',
-        odd: g1.odds.over15 || Math.round(Math.max(1.15, (g1.odds.over || 1.85) * 0.68) * 100) / 100,
-        estimatedProb: getEstimatedProbForMarket(g1, 'OVER15'),
-      },
-      {
-        match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: t('accumulators.atLeast2Goals') || 'Almeno 2 gol',
-        odd: g2.odds.over15 || Math.round(Math.max(1.15, (g2.odds.over || 1.85) * 0.68) * 100) / 100,
-        estimatedProb: getEstimatedProbForMarket(g2, 'OVER15'),
-      }
-    ];
-
-    const eugineChance = calculateEugineChance(bets);
-    const bookmakerChance = calculateBookmakerChance(bets);
-    console.log('[EUGINE] Acumulada goalsLow:', { bets: bets.map(b => ({ match: b.match, odd: b.odd, estimatedProb: b.estimatedProb })), eugineChance, bookmakerChance });
-    
-    baseAccumulators.push({
-      emoji: '🛡️',
-      title: `${t('accumulators.goalsLowRisk')}${isPremium && lowRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
-      bets,
-      betAmount: Math.max(50, Math.min(150, Math.round(1000 * Math.max(0.05, (eugineChance / 100) * 0.30)))),
-      chancePercent: eugineChance,
-      bookmakerChance,
-      riskLevel: 'low',
-      typeId: 'goalsLow'
-    });
+    tryBuild2Leg(bestGoalGames, (g1, g2) => [
+      { match: `${g1.homeTeam} x ${g1.awayTeam}`, bet: t('accumulators.atLeast2Goals') || 'Almeno 2 gol', odd: g1.odds.over15 || Math.round(Math.max(1.15, (g1.odds.over || 1.85) * 0.68) * 100) / 100, estimatedProb: getEstimatedProbForMarket(g1, 'OVER15') },
+      { match: `${g2.homeTeam} x ${g2.awayTeam}`, bet: t('accumulators.atLeast2Goals') || 'Almeno 2 gol', odd: g2.odds.over15 || Math.round(Math.max(1.15, (g2.odds.over || 1.85) * 0.68) * 100) / 100, estimatedProb: getEstimatedProbForMarket(g2, 'OVER15') },
+    ], { emoji: '🛡️', titleKey: 'accumulators.goalsLowRisk', risk: 'low', typeId: 'goalsLow', betFactor: 0.30, minBet: 50, maxBet: 150 }, i, lowRiskGoalsCount);
   }
 
   // ===== MEDIUM RISK — GOALS (Over 2.5 + BTTS) =====
   const mediumRiskGoalsCount = isPremium ? 3 : 1;
   for (let i = 0; i < mediumRiskGoalsCount; i++) {
-    const g1 = bestGoalGames[i * 2] || getGame(i * 2);
-    const g2 = bestGoalGames[i * 2 + 1] || getGame(i * 2 + 1);
-
-    const bets: AccumulatorBet[] = [
-      {
-        match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: t('accumulators.over25') || 'Più di 2.5 gol',
-        odd: g1.odds.over || 1.85,
-        estimatedProb: getEstimatedProbForMarket(g1, 'OVER25'),
-      },
-      {
-        match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: t('accumulators.bothTeamsScore') || 'Entrambe segnano',
-        odd: g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over),
-        estimatedProb: getEstimatedProbForMarket(g2, 'BTTS'),
-      }
-    ];
-
-    const eugineChance = calculateEugineChance(bets);
-    const bookmakerChance = calculateBookmakerChance(bets);
-    console.log('[EUGINE] Acumulada goalsMedium:', { bets: bets.map(b => ({ match: b.match, odd: b.odd, estimatedProb: b.estimatedProb })), eugineChance, bookmakerChance });
-
-    baseAccumulators.push({
-      emoji: '⚖️',
-      title: `${t('accumulators.goalsMediumRisk')}${isPremium && mediumRiskGoalsCount > 1 ? ` #${i + 1}` : ''}`,
-      bets,
-      betAmount: Math.max(25, Math.min(80, Math.round(1000 * Math.max(0.02, (eugineChance / 100) * 0.20)))),
-      chancePercent: eugineChance,
-      bookmakerChance,
-      riskLevel: 'medium',
-      typeId: 'goalsMedium'
-    });
+    tryBuild2Leg(bestGoalGames, (g1, g2) => [
+      { match: `${g1.homeTeam} x ${g1.awayTeam}`, bet: t('accumulators.over25') || 'Più di 2.5 gol', odd: g1.odds.over || 1.85, estimatedProb: getEstimatedProbForMarket(g1, 'OVER25') },
+      { match: `${g2.homeTeam} x ${g2.awayTeam}`, bet: t('accumulators.bothTeamsScore') || 'Entrambe segnano', odd: g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over), estimatedProb: getEstimatedProbForMarket(g2, 'BTTS') },
+    ], { emoji: '⚖️', titleKey: 'accumulators.goalsMediumRisk', risk: 'medium', typeId: 'goalsMedium', betFactor: 0.20, minBet: 25, maxBet: 80 }, i, mediumRiskGoalsCount);
   }
 
   // ===== HIGH RISK — GOALS (Over 2.5 + BTTS + Over 3.5) =====
   const highRiskGoalsCount = isPremium ? 3 : 1;
   for (let i = 0; i < highRiskGoalsCount; i++) {
-    const g1 = bestGoalGames[i * 3] || getGame(i * 3);
-    const g2 = bestGoalGames[i * 3 + 1] || getGame(i * 3 + 1);
-    const g3 = bestGoalGames[i * 3 + 2] || getGame(i * 3 + 2);
+    const unique = getUniqueGames(bestGoalGames, 3 + i * 3);
+    const g1 = unique[i * 3];
+    const g2 = unique[i * 3 + 1];
+    const g3 = unique[i * 3 + 2];
+    if (!g1 || !g2 || !g3) continue;
 
     const bets: AccumulatorBet[] = [
-      {
-        match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: t('accumulators.over25') || 'Più di 2.5 gol',
-        odd: g1.odds.over || 1.85,
-        estimatedProb: getEstimatedProbForMarket(g1, 'OVER25'),
-      },
-      {
-        match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: t('accumulators.bothTeamsScore') || 'Entrambe segnano',
-        odd: g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over),
-        estimatedProb: getEstimatedProbForMarket(g2, 'BTTS'),
-      },
-      {
-        match: `${g3.homeTeam} x ${g3.awayTeam}`,
-        bet: t('accumulators.over35') || 'Più di 3.5 gol',
-        odd: g3.odds.over35 || Math.round(Math.max(1.80, (g3.odds.over || 1.85) * 1.35) * 100) / 100,
-        estimatedProb: getEstimatedProbForMarket(g3, 'OVER35'),
-      }
+      { match: `${g1.homeTeam} x ${g1.awayTeam}`, bet: t('accumulators.over25') || 'Più di 2.5 gol', odd: g1.odds.over || 1.85, estimatedProb: getEstimatedProbForMarket(g1, 'OVER25') },
+      { match: `${g2.homeTeam} x ${g2.awayTeam}`, bet: t('accumulators.bothTeamsScore') || 'Entrambe segnano', odd: g2.advancedData?.bttsOdds?.yes || estimateBttsOdd(g2.odds.over), estimatedProb: getEstimatedProbForMarket(g2, 'BTTS') },
+      { match: `${g3.homeTeam} x ${g3.awayTeam}`, bet: t('accumulators.over35') || 'Più di 3.5 gol', odd: g3.odds.over35 || Math.round(Math.max(1.80, (g3.odds.over || 1.85) * 1.35) * 100) / 100, estimatedProb: getEstimatedProbForMarket(g3, 'OVER35') },
     ];
+    if (!validateAccumulatorBets(bets)) continue;
 
     const eugineChance = calculateEugineChance(bets);
     const bookmakerChance = calculateBookmakerChance(bets);
@@ -419,86 +406,35 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
   // ===== LOW RISK — WINS (Double Chance) =====
   const lowRiskWinsCount = isPremium ? 3 : 1;
   for (let i = 0; i < lowRiskWinsCount; i++) {
-    const g1 = bestWinGames[i * 2] || getGame(i * 2);
-    const g2 = bestWinGames[i * 2 + 1] || getGame(i * 2 + 1);
-
-    const bets: AccumulatorBet[] = [
-      {
-        match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: `${g1.homeTeam} ${t('accumulators.winOrDraw')}`,
-        odd: g1.odds.doubleChanceHomeOrDraw || calcDoubleChanceOdd(g1.odds.home, g1.odds.draw),
-        estimatedProb: getEstimatedProbForMarket(g1, 'HOME_DOUBLE'),
-      },
-      {
-        match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: `${g2.homeTeam} ${t('accumulators.winOrDraw')}`,
-        odd: g2.odds.doubleChanceHomeOrDraw || calcDoubleChanceOdd(g2.odds.home, g2.odds.draw),
-        estimatedProb: getEstimatedProbForMarket(g2, 'HOME_DOUBLE'),
-      }
-    ];
-
-    const eugineChance = calculateEugineChance(bets);
-    const bookmakerChance = calculateBookmakerChance(bets);
-
-    baseAccumulators.push({
-      emoji: '🛡️',
-      title: `${t('accumulators.winsDoubleChance')}${isPremium && lowRiskWinsCount > 1 ? ` #${i + 1}` : ''}`,
-      bets,
-      betAmount: Math.max(50, Math.min(150, Math.round(1000 * Math.max(0.05, (eugineChance / 100) * 0.30)))),
-      chancePercent: eugineChance,
-      bookmakerChance,
-      riskLevel: 'low',
-      typeId: 'winsLow'
-    });
+    tryBuild2Leg(bestWinGames, (g1, g2) => [
+      { match: `${g1.homeTeam} x ${g1.awayTeam}`, bet: `${g1.homeTeam} ${t('accumulators.winOrDraw')}`, odd: g1.odds.doubleChanceHomeOrDraw || calcDoubleChanceOdd(g1.odds.home, g1.odds.draw), estimatedProb: getEstimatedProbForMarket(g1, 'HOME_DOUBLE') },
+      { match: `${g2.homeTeam} x ${g2.awayTeam}`, bet: `${g2.homeTeam} ${t('accumulators.winOrDraw')}`, odd: g2.odds.doubleChanceHomeOrDraw || calcDoubleChanceOdd(g2.odds.home, g2.odds.draw), estimatedProb: getEstimatedProbForMarket(g2, 'HOME_DOUBLE') },
+    ], { emoji: '🛡️', titleKey: 'accumulators.winsDoubleChance', risk: 'low', typeId: 'winsLow', betFactor: 0.30, minBet: 50, maxBet: 150 }, i, lowRiskWinsCount);
   }
 
   // ===== MEDIUM RISK — WINS (Moneyline) =====
   const mediumRiskWinsCount = isPremium ? 3 : 1;
   for (let i = 0; i < mediumRiskWinsCount; i++) {
-    const g1 = bestWinGames[i * 2] || getGame(i * 2);
-    const g2 = bestWinGames[i * 2 + 1] || getGame(i * 2 + 1);
-
-    const bets: AccumulatorBet[] = [
-      {
-        match: `${g1.homeTeam} x ${g1.awayTeam}`,
-        bet: `${t('accumulators.victory')} ${g1.homeTeam}`,
-        odd: g1.odds.home || 1.45,
-        estimatedProb: getEstimatedProbForMarket(g1, 'HOME'),
-      },
-      {
-        match: `${g2.homeTeam} x ${g2.awayTeam}`,
-        bet: `${t('accumulators.victory')} ${g2.homeTeam}`,
-        odd: g2.odds.home || 1.55,
-        estimatedProb: getEstimatedProbForMarket(g2, 'HOME'),
-      }
-    ];
-
-    const eugineChance = calculateEugineChance(bets);
-    const bookmakerChance = calculateBookmakerChance(bets);
-
-    baseAccumulators.push({
-      emoji: '⚖️',
-      title: `${t('accumulators.winsMediumRisk')}${isPremium && mediumRiskWinsCount > 1 ? ` #${i + 1}` : ''}`,
-      bets,
-      betAmount: Math.max(25, Math.min(80, Math.round(1000 * Math.max(0.02, (eugineChance / 100) * 0.20)))),
-      chancePercent: eugineChance,
-      bookmakerChance,
-      riskLevel: 'medium',
-      typeId: 'winsMedium'
-    });
+    tryBuild2Leg(bestWinGames, (g1, g2) => [
+      { match: `${g1.homeTeam} x ${g1.awayTeam}`, bet: `${t('accumulators.victory')} ${g1.homeTeam}`, odd: g1.odds.home || 1.45, estimatedProb: getEstimatedProbForMarket(g1, 'HOME') },
+      { match: `${g2.homeTeam} x ${g2.awayTeam}`, bet: `${t('accumulators.victory')} ${g2.homeTeam}`, odd: g2.odds.home || 1.55, estimatedProb: getEstimatedProbForMarket(g2, 'HOME') },
+    ], { emoji: '⚖️', titleKey: 'accumulators.winsMediumRisk', risk: 'medium', typeId: 'winsMedium', betFactor: 0.20, minBet: 25, maxBet: 80 }, i, mediumRiskWinsCount);
   }
 
   // ===== HIGH RISK — EXACT SCORES =====
   const highRiskScoresCount = isPremium ? 3 : 1;
   for (let i = 0; i < highRiskScoresCount; i++) {
-    const g1 = getGame(i * 2);
-    const g2 = getGame(i * 2 + 1);
+    const unique = getUniqueGames(effectivePool, 2 + i * 2);
+    const g1 = unique[i * 2];
+    const g2 = unique[i * 2 + 1];
+    if (!g1 || !g2) continue;
     const scores = [['2-1', '1-0'], ['1-1', '2-0'], ['3-1', '2-2']][i] || ['2-1', '1-0'];
 
     const bets: AccumulatorBet[] = [
       { match: `${g1.homeTeam} x ${g1.awayTeam}`, bet: `${t('accumulators.score')} ${scores[0]}`, odd: 7.00 + (i * 1.5) },
       { match: `${g2.homeTeam} x ${g2.awayTeam}`, bet: `${t('accumulators.score')} ${scores[1]}`, odd: 6.50 + (i * 1.5) }
     ];
+    if (!validateAccumulatorBets(bets)) continue;
 
     const eugineChance = calculateEugineChance(bets);
     const bookmakerChance = calculateBookmakerChance(bets);
@@ -516,9 +452,12 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
   }
 
   // ===== APOSTA DE OURO: Top 2 games with HIGHEST value edge =====
-  const goldGames = [...effectivePool]
-    .filter(g => g.analysis && !g.analysis.isSkip && (g.analysis.valuePercentage || 0) > 5)
-    .sort((a, b) => (b.analysis?.valuePercentage || 0) - (a.analysis?.valuePercentage || 0));
+  const goldGames = getUniqueGames(
+    [...effectivePool]
+      .filter(g => g.analysis && !g.analysis.isSkip && (g.analysis.valuePercentage || 0) > 5)
+      .sort((a, b) => (b.analysis?.valuePercentage || 0) - (a.analysis?.valuePercentage || 0)),
+    2
+  );
   
   if (goldGames.length >= 2) {
     const gold1 = goldGames[0];
@@ -552,30 +491,35 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       }
     ];
 
-    const eugineChance = calculateEugineChance(goldBets);
-    const bookmakerChance = calculateBookmakerChance(goldBets);
-    console.log('[EUGINE] Aposta de Ouro:', { bets: goldBets.map(b => ({ match: b.match, odd: b.odd, estimatedProb: b.estimatedProb })), eugineChance, bookmakerChance });
+    if (validateAccumulatorBets(goldBets)) {
+      const eugineChance = calculateEugineChance(goldBets);
+      const bookmakerChance = calculateBookmakerChance(goldBets);
+      console.log('[EUGINE] Aposta de Ouro:', { bets: goldBets.map(b => ({ match: b.match, odd: b.odd, estimatedProb: b.estimatedProb })), eugineChance, bookmakerChance });
 
-    baseAccumulators.unshift({
-      emoji: '🏆',
-      title: t('accumulators.goldBet') || 'Aposta de Ouro',
-      typeId: 'goldBet',
-      bets: goldBets,
-      betAmount: Math.max(50, Math.min(150, Math.round(1000 * eugineChance / 100 * 0.35))),
-      chancePercent: eugineChance,
-      bookmakerChance,
-      riskLevel: 'low',
-    });
+      baseAccumulators.unshift({
+        emoji: '🏆',
+        title: t('accumulators.goldBet') || 'Aposta de Ouro',
+        typeId: 'goldBet',
+        bets: goldBets,
+        betAmount: Math.max(50, Math.min(150, Math.round(1000 * eugineChance / 100 * 0.35))),
+        chancePercent: eugineChance,
+        bookmakerChance,
+        riskLevel: 'low',
+      });
+    }
   }
 
   // ===== APOSTA SEGURA: Over 1.5 in highest scoring games =====
-  const highScoringGames = effectivePool
-    .filter(g => g.advancedData?.homeStats && g.advancedData?.awayStats)
-    .sort((a, b) => {
-      const avgA = (a.advancedData?.homeStats?.avgGoalsScored || 0) + (a.advancedData?.awayStats?.avgGoalsScored || 0);
-      const avgB = (b.advancedData?.homeStats?.avgGoalsScored || 0) + (b.advancedData?.awayStats?.avgGoalsScored || 0);
-      return avgB - avgA;
-    });
+  const highScoringGames = getUniqueGames(
+    effectivePool
+      .filter(g => g.advancedData?.homeStats && g.advancedData?.awayStats)
+      .sort((a, b) => {
+        const avgA = (a.advancedData?.homeStats?.avgGoalsScored || 0) + (a.advancedData?.awayStats?.avgGoalsScored || 0);
+        const avgB = (b.advancedData?.homeStats?.avgGoalsScored || 0) + (b.advancedData?.awayStats?.avgGoalsScored || 0);
+        return avgB - avgA;
+      }),
+    2
+  );
   
   if (highScoringGames.length >= 2) {
     const safe1 = highScoringGames[0];
@@ -596,24 +540,33 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
       }
     ];
 
-    const eugineChance = calculateEugineChance(safeBets);
-    const bookmakerChance = calculateBookmakerChance(safeBets);
-    console.log('[EUGINE] Aposta Segura:', { bets: safeBets.map(b => ({ match: b.match, odd: b.odd, estimatedProb: b.estimatedProb })), eugineChance, bookmakerChance });
+    if (validateAccumulatorBets(safeBets)) {
+      const eugineChance = calculateEugineChance(safeBets);
+      const bookmakerChance = calculateBookmakerChance(safeBets);
+      console.log('[EUGINE] Aposta Segura:', { bets: safeBets.map(b => ({ match: b.match, odd: b.odd, estimatedProb: b.estimatedProb })), eugineChance, bookmakerChance });
 
-    baseAccumulators.unshift({
-      emoji: '🛡️',
-      title: t('accumulators.safeBet') || 'Aposta Segura — Gols quase certos',
-      typeId: 'safeBet',
-      bets: safeBets,
-      betAmount: Math.max(80, Math.min(200, Math.round(1000 * eugineChance / 100 * 0.40))),
-      chancePercent: eugineChance,
-      bookmakerChance,
-      riskLevel: 'low',
-    });
+      baseAccumulators.unshift({
+        emoji: '🛡️',
+        title: t('accumulators.safeBet') || 'Aposta Segura — Gols quase certos',
+        typeId: 'safeBet',
+        bets: safeBets,
+        betAmount: Math.max(80, Math.min(200, Math.round(1000 * eugineChance / 100 * 0.40))),
+        chancePercent: eugineChance,
+        bookmakerChance,
+        riskLevel: 'low',
+      });
+    }
   }
 
+  // Final validation: remove any accumulators with duplicate matches that slipped through
+  const validAccumulators = baseAccumulators.filter(acc => {
+    const matches = acc.bets.map(b => b.match);
+    const uniqueMatches = new Set(matches);
+    return uniqueMatches.size === acc.bets.length;
+  });
+
   // Filter by minimum chance thresholds
-  return baseAccumulators.filter(acc => {
+  return validAccumulators.filter(acc => {
     if (acc.riskLevel === 'low' && acc.chancePercent < 25) return false;
     if (acc.riskLevel === 'medium' && acc.chancePercent < 10) return false;
     if (acc.riskLevel === 'high' && acc.chancePercent < 3) return false;
