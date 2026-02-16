@@ -53,18 +53,29 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
 
+    // Try getClaims first, fall back to getUser if it fails
+    let userId: string | undefined;
+    let userEmail: string | undefined;
+
     const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims?.sub) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
-      });
+    if (!claimsError && claimsData?.claims?.sub) {
+      userId = claimsData.claims.sub;
+      userEmail = (claimsData.claims as any).email as string | undefined;
+    } else {
+      logStep("getClaims failed, falling back to getUser", { error: claimsError?.message });
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+      if (userError || !userData?.user) {
+        logStep("getUser also failed", { error: userError?.message });
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        });
+      }
+      userId = userData.user.id;
+      userEmail = userData.user.email;
     }
 
-    const user = {
-      id: claimsData.claims.sub,
-      email: (claimsData.claims as any).email as string | undefined,
-    };
+    const user = { id: userId, email: userEmail };
 
     if (!user.email) {
       return new Response(JSON.stringify({ error: "User not authenticated or email not available" }), {
