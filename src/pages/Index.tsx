@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import USFlag3D from '@/components/USFlag3D';
 import { Onboarding } from '@/components/Onboarding';
 import { Header } from '@/components/Header';
 import { GameCard } from '@/components/GameCard';
@@ -435,7 +436,7 @@ const Index = () => {
           <div className="flex flex-col items-center gap-3 text-center">
             <span className="text-sm font-semibold text-foreground">EUGINE</span>
             <p className="text-muted-foreground text-xs">
-              by <span className="font-semibold">🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸</span>
+              by <span className="font-semibold inline-flex items-center gap-1"><USFlag3D className="w-4 h-3" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-4 h-3" /></span>
             </p>
             <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
               <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{t('main.terms')}</a>
@@ -446,7 +447,7 @@ const Index = () => {
               {t('main.disclaimer')}
             </p>
             <p className="text-muted-foreground/30 text-[10px]">
-              © {new Date().getFullYear()} 🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸
+              <span className="inline-flex items-center gap-1">© {new Date().getFullYear()} <USFlag3D className="w-3.5 h-2.5" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-3.5 h-2.5" /></span>
             </p>
           </div>
         </footer>

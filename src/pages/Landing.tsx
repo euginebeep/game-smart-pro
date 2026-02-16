@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import USFlag3D from '@/components/USFlag3D';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, 
@@ -222,7 +223,7 @@ export default function Landing() {
         privacy: 'Política de Privacidade',
         responsible: 'Jogo Responsável',
         contact: 'Contato',
-        copyright: `© ${new Date().getFullYear()} 🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸. Todos os direitos reservados.`,
+        copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Todos os direitos reservados.`,
         disclaimer: 'O EUGINE é uma ferramenta de análise estatística. Resultados passados não garantem resultados futuros. Apostas esportivas envolvem risco de perda. Aposte com responsabilidade e apenas valores que você pode perder. O EUGINE não é uma casa de apostas e não processa transações financeiras de apostas. Se precisar de ajuda com apostas problemáticas, procure apoio em jogadoresanonimos.com.br',
       },
     },
@@ -266,7 +267,7 @@ export default function Landing() {
       },
       footer: {
         about: 'About Us', terms: 'Terms of Use', privacy: 'Privacy Policy', responsible: 'Responsible Gambling', contact: 'Contact',
-        copyright: `© ${new Date().getFullYear()} 🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸. All rights reserved.`,
+        copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. All rights reserved.`,
         disclaimer: "EUGINE is a statistical analysis tool. Past results do not guarantee future performance. Sports betting involves risk of loss. Bet responsibly and only with money you can afford to lose. EUGINE is not a bookmaker and does not process betting transactions. If you need help with problem gambling, visit begambleaware.org",
       },
     },
@@ -310,7 +311,7 @@ export default function Landing() {
       },
       footer: {
         about: 'Sobre Nosotros', terms: 'Términos de Uso', privacy: 'Política de Privacidad', responsible: 'Juego Responsable', contact: 'Contacto',
-        copyright: `© ${new Date().getFullYear()} 🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸. Todos los derechos reservados.`,
+        copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Todos los derechos reservados.`,
         disclaimer: 'EUGINE es una herramienta de análisis estadístico. Los resultados pasados no garantizan resultados futuros. Las apuestas deportivas conllevan riesgo de pérdida. Apuesta con responsabilidad y solo con dinero que puedas permitirte perder. Si necesitas ayuda, visita jugarbien.es',
       },
     },
@@ -354,7 +355,7 @@ export default function Landing() {
       },
       footer: {
         about: 'Chi Siamo', terms: 'Termini di Uso', privacy: 'Politica sulla Privacy', responsible: 'Gioco Responsabile', contact: 'Contatto',
-        copyright: `© ${new Date().getFullYear()} 🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸. Tutti i diritti riservati.`,
+        copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Tutti i diritti riservati.`,
         disclaimer: "EUGINE è uno strumento di analisi statistica. I risultati passati non garantiscono risultati futuri. Le scommesse sportive comportano rischio di perdita. Scommetti responsabilmente e solo con denaro che puoi permetterti di perdere. Se hai bisogno di aiuto, visita giocaresponsabile.it",
       },
     },
@@ -862,7 +863,7 @@ export default function Landing() {
           <div className="flex flex-col items-center gap-6">
             <div className="text-center">
               <span className="font-display text-lg font-bold text-foreground">EUGINE</span>
-              <p className="text-muted-foreground text-xs mt-1">by 🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸</p>
+              <p className="text-muted-foreground text-xs mt-1 inline-flex items-center gap-1">by <USFlag3D className="w-4 h-3" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-4 h-3" /></p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-muted-foreground">
@@ -882,8 +883,8 @@ export default function Landing() {
               </p>
             </div>
 
-            <p className="text-muted-foreground/40 text-xs">
-              {l.footer.copyright}
+            <p className="text-muted-foreground/40 text-xs inline-flex items-center gap-1">
+              <USFlag3D className="w-3.5 h-2.5" /> {l.footer.copyright} <USFlag3D className="w-3.5 h-2.5" />
             </p>
           </div>
         </div>
