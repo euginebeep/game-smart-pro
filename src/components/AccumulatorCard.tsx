@@ -103,10 +103,10 @@ export function AccumulatorCard({
               {t('accumulators.profit') || 'Lucro potencial'}
             </p>
             <p className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight leading-none">
-              +R${potentialProfit.toFixed(0)}
+              +{'$'}{potentialProfit.toFixed(0)}
             </p>
             <p className="text-sm text-muted-foreground mt-1.5">
-              {t('accumulators.youBet') || 'Apostando'} <span className="font-semibold text-foreground">R${betAmount}</span> → <span className="font-semibold text-foreground">R${potentialReturn.toFixed(0)}</span>
+              {t('accumulators.youBet') || 'Apostando'} <span className="font-semibold text-foreground">{'$'}{betAmount}</span> → <span className="font-semibold text-foreground">{'$'}{potentialReturn.toFixed(0)}</span>
             </p>
           </div>
         </div>

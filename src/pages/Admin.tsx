@@ -518,7 +518,7 @@ export default function Admin() {
             <CardHeader className="pb-2">
               <CardDescription>Vendas Hoje</CardDescription>
               <CardTitle className="text-3xl text-emerald-500">
-                R$ {analytics?.totalRevenueToday?.toFixed(2) || '0.00'}
+                $ {analytics?.totalRevenueToday?.toFixed(2) || '0.00'}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -571,7 +571,7 @@ export default function Admin() {
                     Receita Hoje
                   </CardDescription>
                   <CardTitle className="text-2xl text-emerald-500">
-                    R$ {analytics?.totalRevenueToday?.toFixed(2) || '0.00'}
+                    $ {analytics?.totalRevenueToday?.toFixed(2) || '0.00'}
                   </CardTitle>
                 </CardHeader>
               </Card>
@@ -627,7 +627,7 @@ export default function Admin() {
                           {item.plan.toUpperCase()}
                         </Badge>
                         <p className="text-2xl font-bold mt-2">{item.count}</p>
-                        <p className="text-sm text-muted-foreground">R$ {item.revenue.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">$ {item.revenue.toFixed(2)}</p>
                       </div>
                     ))}
                   </div>
@@ -754,7 +754,7 @@ export default function Admin() {
                               {sale.type === 'recurring' ? 'Recorrente' : 'Day Use'}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-emerald-500 font-medium">R$ {sale.amount.toFixed(2)}</TableCell>
+                          <TableCell className="text-emerald-500 font-medium">$ {sale.amount.toFixed(2)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

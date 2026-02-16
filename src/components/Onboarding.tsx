@@ -11,7 +11,7 @@ const slides = {
     {
       icon: Target,
       title: 'O que é Value Betting?',
-      text: 'Value betting é apostar APENAS quando a probabilidade real é maior que o que a casa oferece. É como comprar algo por R$50 que vale R$70.',
+      text: 'Value betting é apostar APENAS quando a probabilidade real é maior que o que a casa oferece. É como comprar algo por $50 que vale $70.',
       bars: [
         { label: 'Casa', value: 43, color: 'bg-red-400' },
         { label: 'EUGINE', value: 58, color: 'bg-emerald-400' },

@@ -192,15 +192,34 @@ function calculateBookmakerChance(bets: Array<{ odd: number }>): number {
 // Chance do EUGINE (usa estimatedProbability do Poisson quando disponível)
 function calculateEugineChance(bets: Array<{ odd: number; estimatedProb?: number }>): number {
   if (!bets || bets.length === 0) return 0;
+  
   let combinedProb = 1;
   for (const bet of bets) {
-    if (bet.estimatedProb && bet.estimatedProb > 0) {
-      combinedProb *= (bet.estimatedProb / 100);
-    } else if (bet.odd > 0) {
-      combinedProb *= (1 / bet.odd) * 0.93;
+    const prob = bet.estimatedProb && bet.estimatedProb > 0 && bet.estimatedProb <= 100
+      ? bet.estimatedProb / 100
+      : (1 / bet.odd) * 0.93;
+    combinedProb *= prob;
+  }
+  
+  let eugineChance = Math.round(Math.min(95, Math.max(1, combinedProb * 100)));
+  
+  // SANITY CHECK: chance NUNCA pode ser mais que 2.5x a chance da casa
+  const bookmakerChance = calculateBookmakerChance(bets);
+  if (bookmakerChance > 0) {
+    const maxAllowed = Math.min(90, Math.round(bookmakerChance * 2.5));
+    if (eugineChance > maxAllowed) {
+      eugineChance = maxAllowed;
     }
   }
-  return Math.round(Math.min(99, Math.max(1, combinedProb * 100)));
+  
+  // Para odds muito altas (>8), limitar edge absoluto a +10 pontos
+  const totalOdd = bets.reduce((acc, b) => acc * b.odd, 1);
+  if (totalOdd > 8) {
+    const maxForHighOdds = bookmakerChance + 10;
+    eugineChance = Math.min(eugineChance, Math.round(maxForHighOdds));
+  }
+  
+  return Math.max(1, eugineChance);
 }
 
 // ===== MARKET PROBABILITY HELPERS =====
