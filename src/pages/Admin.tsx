@@ -1222,9 +1222,13 @@ export default function Admin() {
                       </TableHeader>
                       <TableBody>
                         {filteredUsers.map((user) => {
-                          const maxSearches = user.subscription_status === 'active' 
-                            ? TIER_LIMITS[user.subscription_tier as keyof typeof TIER_LIMITS] || 1
-                            : (user as any).registration_source === 'free' ? 1 : 3;
+                          const isTrial = new Date(user.trial_end_date) >= new Date() && user.subscription_status !== 'active';
+                          const isSubscribed = user.subscription_status === 'active';
+                          const isFreeSource = (user as any).registration_source === 'free';
+                          const maxSearches = isSubscribed 
+                            ? (TIER_LIMITS[user.subscription_tier as keyof typeof TIER_LIMITS] || 1)
+                            : isFreeSource ? 1
+                            : isTrial ? 3 : 0;
 
                           return (
                             <TableRow key={user.id} className={user.is_blocked ? 'bg-destructive/10' : ''}>
