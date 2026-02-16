@@ -20,6 +20,10 @@ export function TechnicalDocsTab() {
           <Calculator className="h-4 w-4" />
           Lógica de Cálculos
         </TabsTrigger>
+        <TabsTrigger value="calibration" className="flex items-center gap-2">
+          <Target className="h-4 w-4" />
+          Calibração v9
+        </TabsTrigger>
         <TabsTrigger value="accumulators" className="flex items-center gap-2">
           <Layers className="h-4 w-4" />
           Acumuladas
@@ -54,24 +58,26 @@ export function TechnicalDocsTab() {
                   Objetivo Principal
                 </h4>
                 <p className="text-muted-foreground text-sm">
-                  O Eugine é um motor de análise matemática v8 que processa dados estatísticos de futebol 
-                  usando <strong>distribuição de Poisson</strong> para probabilidades de gols e <strong>função Sigmoid</strong> (fator 0.06) 
-                  para normalizar confiança e scores entre 5% e 95%. Identifica oportunidades de Value Betting com edge positivo.
+                  O Eugine é um motor de análise matemática <strong>v9</strong> que processa dados estatísticos de futebol 
+                  usando <strong>distribuição de Poisson</strong> para probabilidades de gols, <strong>função Sigmoid</strong> (fator 0.06) 
+                  para normalizar scores, e <strong>calibração ancorada em odds</strong> para converter scores internos em probabilidades reais.
+                  Identifica oportunidades de Value Betting com edge positivo em pontos percentuais.
                 </p>
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg border border-border">
                 <h4 className="font-semibold text-accent mb-2 flex items-center gap-2">
                   <Zap className="h-4 w-4" />
-                  Fluxo de Processamento
+                  Fluxo de Processamento (v9)
                 </h4>
                 <ol className="text-muted-foreground text-sm space-y-2 list-decimal list-inside">
                   <li>Coleta de dados via API-Football (fixtures, odds, estatísticas)</li>
                   <li>Enriquecimento com H2H, forma, lesões, classificação e odds BTTS/Over 3.5</li>
-                  <li>Cálculo de probabilidades usando <strong>Poisson + Sigmoid</strong></li>
-                  <li>Comparação com odds do mercado para identificar Value</li>
+                  <li>Cálculo de score interno (0-100) usando <strong>Poisson + Sigmoid + 7 Fatores</strong></li>
+                  <li><strong>Calibração:</strong> Score interno → probabilidade ancorada na odd do mercado</li>
+                  <li>Cálculo de Value = diferença simples em pontos percentuais (EUGINE - Casa)</li>
+                  <li>Skip automático se value &lt; 2 pontos ou prob calibrada &lt; 8%</li>
                   <li>Gestão de stakes com <strong>1/4 Kelly Criterion</strong></li>
-                  <li>Geração de recomendação com score de confiança</li>
                 </ol>
               </div>
 
@@ -83,6 +89,7 @@ export function TechnicalDocsTab() {
                 </h4>
                 <p className="text-xs text-muted-foreground mb-3">
                   O sistema faz chamadas sequenciais com delays de 200-400ms para respeitar rate limits.
+                  Pool expandido para 50 partidas (Tier 1-4), seleção final de 10 jogos priorizando valuePercentage.
                 </p>
                 <ScrollArea className="h-[320px]">
                   <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono bg-background/60 p-3 rounded">
@@ -121,17 +128,19 @@ export function TechnicalDocsTab() {
 9. ODDS BTTS (Premium)
    Endpoint: /odds
    Params: { fixture: "{fixtureId}", bookmaker: "8", bet: "8" }
-   Retorna: Odds reais de BTTS Sim/Não
 
 10. ODDS OVER 3.5 / 4.5 (Premium)
     Endpoint: /odds
     Params: { fixture: "{fixtureId}", bookmaker: "8", bet: "5" }
-    Retorna: Odds reais de Over/Under 3.5 e 4.5
 
 11. ODDS DOUBLE CHANCE
     Endpoint: /odds
     Params: { fixture: "{fixtureId}", bookmaker: "8", bet: "12" }
-    Retorna: Odds reais de Double Chance`}
+
+// ============= SELEÇÃO DE JOGOS =============
+// Pool: 50 fixtures (Ligas Tier 1-4)
+// Seleção final: 10 jogos
+// Prioridade: valuePercentage (até 7 com value + 3 qualidade)`}
                   </pre>
                 </ScrollArea>
                 <p className="text-xs text-accent mt-2 flex items-center gap-1">
@@ -144,39 +153,57 @@ export function TechnicalDocsTab() {
               <div className="p-4 bg-muted/50 rounded-lg border border-primary/30">
                 <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
                   <Cpu className="h-4 w-4" />
-                  FASE 2: Motor Matemático v8 (Poisson + Sigmoid)
+                  FASE 2: Motor Matemático v9 (Poisson + Sigmoid + Calibração)
                 </h4>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Função principal usa distribuição de Poisson para gols e Sigmoid para normalização.
+                  O score interno (0-100) mede CONFIANÇA nos fatores. A calibração converte em probabilidade real ancorada na odd.
                 </p>
                 <ScrollArea className="h-[400px]">
                   <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono bg-background/60 p-3 rounded">
-{`// ============= MOTOR EUGINE v8 =============
+{`// ============= MOTOR EUGINE v9 =============
 // Arquivo: supabase/functions/fetch-odds/index.ts
 
 // 1. POISSON DISTRIBUTION
-// Calcula probabilidade de X gols usando lambda (média esperada)
 // P(X=k) = (e^-λ × λ^k) / k!
-function poissonProbability(lambda: number, k: number): number
+function poissonProbability(lambda, k)
 
 // 2. SIGMOID NORMALIZATION  
-// Normaliza scores entre 5% e 95% com fator 0.06
 // sigmoid(x) = 1 / (1 + e^(-0.06 × (x - 50)))
 // Resultado: min 5%, max 95%
 
-// 3. KELLY CRITERION (1/4 Kelly)
-// Calcula stake ótimo baseado em edge vs mercado
-// kelly = (estimatedProb × odd - 1) / (odd - 1)
-// stake = bankroll × kelly × 0.25  (quarter Kelly)
+// 3. CALIBRAÇÃO ANCORADA EM ODDS (NOVO v9)
+// Score interno NÃO é probabilidade!
+// Conversão:
+//   impliedProb = (1/odd) × 100
+//   adjustmentFactor = (score - 50) / 50  [-1, +1]
+//   edge = adjustmentFactor × maxEdgePoints
+//   calibratedProb = impliedProb + edge
+//
+// maxEdgePoints por faixa de odd:
+//   ≤1.20 → 3pts   (mercado quase perfeito)
+//   ≤1.40 → 5pts   (favorito forte)
+//   ≤1.60 → 7pts   (favorito moderado)
+//   ≤2.00 → 10pts  (leve favorito)
+//   ≤2.50 → 12pts  (jogo equilibrado)
+//   ≤3.50 → 14pts  (underdog leve)
+//   ≤5.00 → 12pts  (underdog)
+//   ≤8.00 → 8pts   (underdog forte)
+//   >8.00 → 5pts   (zebra)
 
-// 4. VALUE BETTING
-// Edge = ((Prob_Estimada / Prob_Implícita) - 1) × 100
-// MIN_CONFIDENCE = 65%
-// MIN_VALUE = 5%
+// 4. VALUE = diferença simples em pontos percentuais
+// value = calibratedProb - impliedProb
+// Ex: EUGINE 55% vs Casa 50% = +5 pontos de edge
 
-// 7 FATORES DE ANÁLISE:
+// 5. SKIP AUTOMÁTICO
+// value < 2 pontos → "Vantagem insuficiente"
+// calibratedProb < 8% → "Probabilidade muito baixa"
+
+// 6. KELLY CRITERION (1/4 Kelly)
+// kelly = (prob × odd - 1) / (odd - 1) × 0.25
+
+// 7 FATORES DE ANÁLISE (pesos dinâmicos por liga):
 // 1. H2H (10-22%) - Confrontos diretos
-// 2. Forma (18-25%) - Últimos resultados ponderados
+// 2. Forma (18-25%) - Ponderada (60% últimos 3, 40% últimos 5)
 // 3. Stats (20-32%) - Gols, BTTS%, Over 2.5%
 // 4. Shots & Possession - Dados do fixture
 // 5. Classificação (10-15%) - Posição na tabela
@@ -248,7 +275,7 @@ function poissonProbability(lambda: number, k: number): number
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-accent" />
-                Value Betting + Kelly Criterion
+                Value Betting v9 + Kelly Criterion
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -260,10 +287,23 @@ function poissonProbability(lambda: number, k: number): number
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg border border-border">
-                <h4 className="font-semibold text-accent mb-2">Value Edge</h4>
+                <h4 className="font-semibold text-primary mb-2">Probabilidade Calibrada (v9)</h4>
                 <code className="text-xs bg-background/60 px-2 py-1 rounded block">
-                  Value = ((Prob_Estimada / Prob_Implícita) - 1) × 100
+                  Prob_Calibrada = Prob_Implícita + (adjustFactor × maxEdge)
                 </code>
+                <p className="text-xs text-muted-foreground mt-2">
+                  adjustFactor = (score - 50) / 50 → faixa [-1, +1]
+                </p>
+              </div>
+
+              <div className="p-4 bg-muted/50 rounded-lg border border-border">
+                <h4 className="font-semibold text-accent mb-2">Value Edge (v9 — pontos percentuais)</h4>
+                <code className="text-xs bg-background/60 px-2 py-1 rounded block">
+                  Value = Prob_Calibrada - Prob_Implícita
+                </code>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Ex: EUGINE 55% vs Casa 50% = <strong>+5 pontos</strong> de edge
+                </p>
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg border border-border">
@@ -277,15 +317,15 @@ function poissonProbability(lambda: number, k: number): number
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg border border-accent/30">
-                <h4 className="font-semibold text-accent mb-2">Thresholds de Skip</h4>
+                <h4 className="font-semibold text-accent mb-2">Thresholds de Skip (v9)</h4>
                 <div className="flex gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-destructive" />
-                    <span>Confiança &lt; 65%</span>
+                    <span>Value &lt; 2 pontos</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-destructive" />
-                    <span>Value &lt; 5%</span>
+                    <span>Prob Calibrada &lt; 8%</span>
                   </div>
                 </div>
               </div>
@@ -334,12 +374,12 @@ function poissonProbability(lambda: number, k: number): number
               <div className="space-y-2">
                 {[
                   { name: 'H2H (Confrontos Diretos)', weight: '15%', desc: 'Histórico entre os times' },
-                  { name: 'Forma Recente', weight: '20%', desc: 'Últimos 5 resultados' },
+                  { name: 'Forma Recente', weight: '20%', desc: 'Últimos 5 resultados (ponderada)' },
                   { name: 'Estatísticas Temporada', weight: '25%', desc: 'Gols, BTTS%, Over 2.5%' },
-                  { name: 'Value das Odds', weight: '15%', desc: 'Edge vs mercado' },
+                  { name: 'Value das Odds', weight: '15%', desc: 'Edge vs mercado (pontos %)' },
                   { name: 'Classificação', weight: '10%', desc: 'Posição na tabela' },
                   { name: 'Lesões', weight: '10%', desc: 'Desfalques importantes' },
-                  { name: 'API Prediction', weight: '5%', desc: 'Previsão externa' },
+                  { name: 'API Prediction', weight: '5%', desc: 'Previsão externa (confirmação)' },
                 ].map((factor, i) => (
                   <div key={i} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                     <div>
@@ -355,7 +395,130 @@ function poissonProbability(lambda: number, k: number): number
         </div>
       </TabsContent>
 
-      {/* Accumulators Tab (NEW) */}
+      {/* Calibration Tab (NEW v9) */}
+      <TabsContent value="calibration" className="space-y-4">
+        <Card className="border-accent/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-accent" />
+              Calibração de Probabilidade (v9)
+            </CardTitle>
+            <CardDescription>
+              Como o score interno é convertido em probabilidade real ancorada na odd do mercado
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+              <h4 className="font-semibold text-destructive mb-2 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                PROBLEMA QUE RESOLVE
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Antes da calibração (v8), o score interno de 80% era exibido diretamente como "80% de chance".
+                Isso gerava absurdos como um jogo @2.04 (casa diz 49%) mostrando "90% de chance EUGINE".
+                <strong> O score mede confiança nos fatores, NÃO probabilidade.</strong>
+              </p>
+            </div>
+
+            <div className="p-4 bg-muted/50 rounded-lg border border-primary/30">
+              <h4 className="font-semibold text-primary mb-2">Função: calculateCalibratedProbability(score, odd)</h4>
+              <ScrollArea className="h-[280px]">
+                <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono bg-background/60 p-3 rounded">
+{`// PASSO 1: Probabilidade implícita da odd
+impliedProb = (1 / odd) × 100
+// Ex: odd 2.04 → 49.0%
+
+// PASSO 2: Edge máximo por faixa de odd
+// Mercado mais eficiente = menor edge possível
+Odd ≤ 1.20 → max  3 pontos (super favorito)
+Odd ≤ 1.40 → max  5 pontos (favorito forte)
+Odd ≤ 1.60 → max  7 pontos (favorito moderado)
+Odd ≤ 2.00 → max 10 pontos (leve favorito)
+Odd ≤ 2.50 → max 12 pontos (equilibrado)
+Odd ≤ 3.50 → max 14 pontos (underdog leve)
+Odd ≤ 5.00 → max 12 pontos (underdog)
+Odd ≤ 8.00 → max  8 pontos (underdog forte)
+Odd > 8.00 → max  5 pontos (zebra)
+
+// PASSO 3: Fator de ajuste [-1, +1]
+adjustmentFactor = (score - 50) / 50
+// score 50 = neutro (0), score 80 = +0.6, score 30 = -0.4
+
+// PASSO 4: Edge em pontos percentuais
+edgePoints = adjustmentFactor × maxEdgePoints
+
+// PASSO 5: Probabilidade calibrada
+calibrated = impliedProb + edgePoints
+// Limites: min 2%, max 95%
+
+// ============= EXEMPLO REAL =============
+// Jogo @2.04, score interno = 75
+// impliedProb = 49.0%
+// maxEdge = 12 (odd ≤ 2.50)
+// adjustment = (75 - 50) / 50 = 0.50
+// edge = 0.50 × 12 = +6.0 pontos
+// calibrated = 49.0 + 6.0 = 55.0%
+// ← Correto! Não 90%.`}
+                </pre>
+              </ScrollArea>
+            </div>
+
+            <div className="p-4 bg-muted/50 rounded-lg border border-accent/30">
+              <h4 className="font-semibold text-accent mb-2">Exemplos de Calibração</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-2 font-semibold">Odd</th>
+                      <th className="text-center py-2 px-2 font-semibold">Casa diz</th>
+                      <th className="text-center py-2 px-2 font-semibold">Score</th>
+                      <th className="text-center py-2 px-2 font-semibold">Max Edge</th>
+                      <th className="text-center py-2 px-2 font-semibold">EUGINE diz</th>
+                      <th className="text-center py-2 px-2 font-semibold">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { odd: '1.15', casa: '87%', score: '85', maxEdge: '3', eugine: '89%', value: '+2pts' },
+                      { odd: '1.50', casa: '67%', score: '80', maxEdge: '7', eugine: '71%', value: '+4pts' },
+                      { odd: '2.04', casa: '49%', score: '75', maxEdge: '12', eugine: '55%', value: '+6pts' },
+                      { odd: '2.50', casa: '40%', score: '70', maxEdge: '12', eugine: '45%', value: '+5pts' },
+                      { odd: '3.50', casa: '29%', score: '80', maxEdge: '14', eugine: '37%', value: '+8pts' },
+                      { odd: '6.00', casa: '17%', score: '65', maxEdge: '8', eugine: '19%', value: '+2pts' },
+                      { odd: '10.0', casa: '10%', score: '60', maxEdge: '5', eugine: '11%', value: '+1pt' },
+                    ].map((row, i) => (
+                      <tr key={i} className="border-b border-border/50">
+                        <td className="py-1.5 px-2 font-mono">{row.odd}</td>
+                        <td className="py-1.5 px-2 text-center">{row.casa}</td>
+                        <td className="py-1.5 px-2 text-center">{row.score}</td>
+                        <td className="py-1.5 px-2 text-center text-accent">{row.maxEdge}</td>
+                        <td className="py-1.5 px-2 text-center font-semibold text-primary">{row.eugine}</td>
+                        <td className="py-1.5 px-2 text-center text-primary">{row.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
+              <h4 className="font-semibold text-primary mb-2 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                Garantias do Sistema v9
+              </h4>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                <li>Jogo @1.15 nunca mostrará mais que 90% (casa diz 87% + max 3pts)</li>
+                <li>Jogo @2.04 nunca mostrará mais que 61% (casa diz 49% + max 12pts)</li>
+                <li>Jogo @10.0 nunca mostrará mais que 15% (casa diz 10% + max 5pts)</li>
+                <li>Edge sempre em pontos percentuais simples (não mais ratio)</li>
+                <li>Skip automático se edge &lt; 2 pontos ou prob &lt; 8%</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      {/* Accumulators Tab */}
       <TabsContent value="accumulators" className="space-y-4">
         <Card className="border-primary/30">
           <CardHeader>
@@ -364,7 +527,7 @@ function poissonProbability(lambda: number, k: number): number
               Estrutura das Acumuladas
             </CardTitle>
             <CardDescription>
-              Configuração comercial otimizada para atratividade do apostador
+              Configuração comercial otimizada com guardrails de sanidade
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -424,6 +587,25 @@ function poissonProbability(lambda: number, k: number): number
                   <p>• Risco Médio: $25 - $80 (20% edge × bankroll)</p>
                   <p>• Risco Alto: $10 - $30 (10% edge × bankroll)</p>
                 </div>
+              </div>
+            </div>
+
+            {/* GUARDRAILS */}
+            <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+              <h4 className="font-semibold text-destructive mb-2 flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Guardrails de Sanidade (v9)
+              </h4>
+              <div className="text-xs text-muted-foreground space-y-2">
+                <p><strong>1. Limite de 2.5x:</strong> Chance EUGINE nunca pode exceder 2.5× a chance da casa de apostas.</p>
+                <code className="text-xs bg-background/60 px-2 py-1 rounded block">
+                  eugineChance = min(eugineChance, bookmakerChance × 2.5)
+                </code>
+                <p><strong>2. Edge máximo universal +10pts:</strong> O "Value Edge" nunca ultrapassa +10 pontos percentuais sobre a probabilidade implícita da casa.</p>
+                <code className="text-xs bg-background/60 px-2 py-1 rounded block">
+                  eugineChance = min(eugineChance, bookmakerChance + 10)
+                </code>
+                <p><strong>3. Partidas únicas:</strong> Nenhum jogo pode aparecer mais de uma vez na mesma acumulada.</p>
               </div>
             </div>
 
@@ -590,19 +772,19 @@ function poissonProbability(lambda: number, k: number): number
               Sistema de Inteligência Artificial
             </CardTitle>
             <CardDescription>
-              Motor matemático determinístico + gateway IA disponível
+              Motor matemático determinístico v9 + gateway IA disponível
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="p-4 bg-muted/50 rounded-lg border border-accent/30">
               <h4 className="font-semibold text-accent mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
-                Motor Atual: Matemático v8
+                Motor Atual: Matemático v9 (com Calibração)
               </h4>
               <p className="text-sm text-muted-foreground">
-                O Eugine opera com um <strong>motor matemático determinístico v8</strong> usando 
-                Poisson + Sigmoid + Kelly Criterion. Resultados reproduzíveis, sem custos de API de IA, 
-                transparência total nos cálculos e latência mínima.
+                O Eugine opera com um <strong>motor matemático determinístico v9</strong> usando 
+                Poisson + Sigmoid + <strong>Calibração ancorada em odds</strong> + Kelly Criterion.
+                Probabilidades são realistas e ancoradas no mercado. Resultados reproduzíveis, sem custos de API de IA.
               </p>
             </div>
 
@@ -633,10 +815,11 @@ function poissonProbability(lambda: number, k: number): number
             <div className="p-4 bg-muted/50 rounded-lg border border-primary/30">
               <h4 className="font-semibold text-primary mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
-                Vantagens do Motor Atual
+                Vantagens do Motor Atual v9
               </h4>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                 <li>Resultados determinísticos e reproduzíveis</li>
+                <li>Probabilidades calibradas e realistas (ancoradas em odds)</li>
                 <li>Sem custos de API de IA por análise</li>
                 <li>Transparência total nos cálculos</li>
                 <li>Latência mínima (apenas API-Football)</li>
