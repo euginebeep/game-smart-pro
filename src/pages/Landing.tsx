@@ -17,7 +17,9 @@ import {
   Shield,
   Globe,
   Activity,
-  Clock
+  Clock,
+  Download,
+  Smartphone
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
@@ -72,6 +74,22 @@ export default function Landing() {
   const [leadEmail, setLeadEmail] = useState('');
   const [leadLoading, setLeadLoading] = useState(false);
 
+  // PWA install state
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
+    setIsStandalone(!!standalone);
+    
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
   // Load stats
   useEffect(() => {
     async function loadStats() {
@@ -104,6 +122,15 @@ export default function Landing() {
   }, []);
 
   // Lead capture handler
+  async function handlePwaInstall() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  }
+
   async function handleLeadCapture() {
     if (!leadEmail || !leadEmail.includes('@')) {
       toast.error(l.hero.emailError);
@@ -475,6 +502,29 @@ export default function Landing() {
           <div className="mt-6">
             <ActiveUsersCounter />
           </div>
+
+          {/* PWA Install CTA — Android/Chrome */}
+          {deferredPrompt && !isStandalone && (
+            <div className="mt-6 animate-fade-in">
+              <button
+                onClick={handlePwaInstall}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary/15 border border-primary/30 text-primary hover:bg-primary/25 transition-all text-sm font-semibold"
+              >
+                <Smartphone className="w-5 h-5" />
+                <Download className="w-4 h-4" />
+                {language === 'pt' ? 'Instalar App no celular' :
+                 language === 'es' ? 'Instalar App en el móvil' :
+                 language === 'it' ? 'Installa App sul telefono' :
+                 'Install App on your phone'}
+              </button>
+              <p className="text-muted-foreground/60 text-[10px] mt-1.5">
+                {language === 'pt' ? 'Acesse como um app. Sem baixar nada.' :
+                 language === 'es' ? 'Accede como una app. Sin descargar nada.' :
+                 language === 'it' ? 'Accedi come un\'app. Senza scaricare nulla.' :
+                 'Access like an app. No download needed.'}
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
