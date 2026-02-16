@@ -309,14 +309,14 @@ export default function About() {
           <div className="flex flex-col items-center gap-3">
             <span className="text-sm font-semibold text-foreground">EUGINE</span>
             <p className="text-muted-foreground text-xs">
-              by <span className="font-semibold">🇺🇸 GS ITALY INVESTMENTS LLC</span>
+              by <span className="font-semibold">🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸</span>
             </p>
             <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
               <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{t('main.terms')}</a>
               <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{t('main.privacy')}</a>
             </div>
             <p className="text-muted-foreground/40 text-[10px]">
-              © {new Date().getFullYear()} 🇺🇸 GS ITALY INVESTMENTS LLC
+              © {new Date().getFullYear()} 🇺🇸 GS ITALY INVESTMENTS LLC 🇺🇸
             </p>
           </div>
         </footer>
