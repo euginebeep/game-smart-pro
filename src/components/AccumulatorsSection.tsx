@@ -223,11 +223,19 @@ function getEstimatedProbForMarket(game: Game, market: string): number | undefin
   const typeUpper = (analysis.type || '').toUpperCase();
   const marketUpper = market.toUpperCase();
   
-  // If recommended bet type matches market, use directly
-  if (marketUpper.includes('OVER') && typeUpper.includes('OVER')) return analysis.estimatedProbability;
-  if (marketUpper.includes('BTTS') && (typeUpper.includes('BTTS') || typeUpper.includes('AMBAS') || typeUpper.includes('ENTRAMBE'))) return analysis.estimatedProbability;
-  if (marketUpper.includes('HOME') && (typeUpper.includes('HOME') || typeUpper.includes('CASA') || typeUpper.includes('VITÓRIA') || typeUpper.includes('VICTORY'))) return analysis.estimatedProbability;
-  if (marketUpper.includes('AWAY') && (typeUpper.includes('AWAY') || typeUpper.includes('FORA') || typeUpper.includes('TRASFERTA'))) return analysis.estimatedProbability;
+  // Match analysis type to market — support all languages (PT/EN/ES/IT)
+  const isOverType = typeUpper.includes('OVER') || typeUpper.includes('MAIS DE') || typeUpper.includes('MÁS DE') || typeUpper.includes('PIÙ DI') || typeUpper.includes('GOL');
+  const isUnderType = typeUpper.includes('UNDER') || typeUpper.includes('MENOS DE') || typeUpper.includes('MENO DI');
+  const isBttsType = typeUpper.includes('BTTS') || typeUpper.includes('AMBAS') || typeUpper.includes('ENTRAMBE') || typeUpper.includes('BOTH') || typeUpper.includes('MARCAM') || typeUpper.includes('SEGNANO');
+  const isHomeType = typeUpper.includes('HOME') || typeUpper.includes('CASA') || typeUpper.includes('VITÓRIA') || typeUpper.includes('VICTORY') || typeUpper.includes('VICTORIA');
+  const isAwayType = typeUpper.includes('AWAY') || typeUpper.includes('FORA') || typeUpper.includes('TRASFERTA') || typeUpper.includes('VISITANTE');
+  
+  // Direct match: analysis type matches the accumulator market
+  if (marketUpper.includes('OVER') && isOverType) return analysis.estimatedProbability;
+  if (marketUpper.includes('BTTS') && isBttsType) return analysis.estimatedProbability;
+  if (marketUpper.includes('HOME') && isHomeType) return analysis.estimatedProbability;
+  if (marketUpper.includes('AWAY') && isAwayType) return analysis.estimatedProbability;
+  if (marketUpper.includes('UNDER') && isUnderType) return analysis.estimatedProbability;
   
   // Different market — estimate proportionally using edge ratio (conservative: 50% of edge)
   if (analysis.impliedProbability && analysis.impliedProbability > 0) {
