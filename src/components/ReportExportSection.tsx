@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, FileImage, FileCode, Loader2 } from 'lucide-react';
+import { Download, FileImage, FileCode, Loader2, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Game } from '@/types/game';
@@ -16,10 +16,10 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
   const [exportingImage, setExportingImage] = useState(false);
   const [exportingHtml, setExportingHtml] = useState(false);
 
+  const locale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : language === 'it' ? 'it-IT' : 'en-US';
+
   // Allow premium users only
   if (userTier !== 'premium') return null;
-
-  const locale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : language === 'it' ? 'it-IT' : 'en-US';
 
   const getFormattedDate = () => {
     const now = new Date();
@@ -39,16 +39,16 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     try {
       const element = contentRef.current;
       
-      // Create wrapper with header and footer
+      // Create wrapper with header and footer - use tight fit to avoid empty space
       const wrapper = document.createElement('div');
       wrapper.style.cssText = `
-        position: fixed;
+        position: absolute;
         left: -9999px;
         top: 0;
         width: ${Math.max(element.scrollWidth, 1200)}px;
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
         padding: 30px;
-        z-index: 99999;
+        overflow: hidden;
       `;
       
       // Header
@@ -65,6 +65,10 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
       // Clone content
       const clone = element.cloneNode(true) as HTMLElement;
       clone.style.width = '100%';
+      // Remove any extra height/min-height that causes empty space
+      clone.style.overflow = 'hidden';
+      clone.style.height = 'auto';
+      clone.style.minHeight = '0';
       wrapper.appendChild(clone);
       
       // Footer
@@ -81,6 +85,9 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
       
       // Wait for rendering
       await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Measure actual content height to avoid empty space
+      const actualHeight = wrapper.scrollHeight;
       
       const canvas = await html2canvas(wrapper, {
         backgroundColor: '#0f172a',
@@ -89,11 +96,11 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
         logging: false,
         allowTaint: true,
         width: wrapper.scrollWidth,
-        height: wrapper.scrollHeight,
+        height: actualHeight,
         scrollX: 0,
         scrollY: 0,
         windowWidth: wrapper.scrollWidth,
-        windowHeight: wrapper.scrollHeight,
+        windowHeight: actualHeight,
       });
 
       document.body.removeChild(wrapper);
@@ -593,6 +600,18 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     }
   };
 
+  const shareViaWhatsApp = () => {
+    const gamesList = games.slice(0, 10).map(game => {
+      const bestOdd = Math.max(game.odds.home, game.odds.draw, game.odds.away);
+      return `⚽ ${game.homeTeam} vs ${game.awayTeam} | ${game.league} | ${t('gameCard.bestOdd')}: ${bestOdd.toFixed(2)}${game.analysis?.confidence ? ` | ${game.analysis.confidence}%` : ''}`;
+    }).join('\n');
+
+    const text = `🎯 *EUGINE Analytics - Premium Report*\n📅 ${new Date().toLocaleDateString(locale)}\n📊 ${t('export.totalGames')}: ${games.length}\n\n${gamesList}\n\n✨ ${t('export.generatedAt')}: ${new Date().toLocaleString(locale)}`;
+    
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="glass-card p-4 sm:p-6 mb-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -603,7 +622,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
           </h3>
           <p className="text-sm text-muted-foreground">{t('export.subtitle')}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button
             onClick={exportAsImage}
             disabled={exportingImage}
@@ -621,6 +640,14 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
           >
             {exportingHtml ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCode className="w-4 h-4" />}
             <span className="ml-2">{t('export.html')}</span>
+          </Button>
+          <Button
+            onClick={shareViaWhatsApp}
+            variant="outline"
+            className="bg-gradient-to-r from-green-600/20 to-green-500/20 border-green-500/30 hover:border-green-400 text-green-400"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span className="ml-2">{t('export.whatsapp')}</span>
           </Button>
         </div>
       </div>
