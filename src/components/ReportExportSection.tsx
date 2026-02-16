@@ -15,6 +15,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
   const { t, language } = useLanguage();
   const [exportingImage, setExportingImage] = useState(false);
   const [exportingHtml, setExportingHtml] = useState(false);
+  const [sharingWhatsApp, setSharingWhatsApp] = useState(false);
 
   const locale = language === 'pt' ? 'pt-BR' : language === 'es' ? 'es-ES' : language === 'it' ? 'it-IT' : 'en-US';
 
@@ -32,79 +33,74 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     }).replace(/[/:]/g, '-').replace(', ', '_');
   };
 
-  const exportAsImage = async () => {
-    if (!contentRef.current) return;
+  const generateReportCanvas = async (): Promise<HTMLCanvasElement> => {
+    if (!contentRef.current) throw new Error('No content ref');
+    const element = contentRef.current;
     
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: ${Math.max(element.scrollWidth, 1200)}px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      padding: 30px;
+      overflow: hidden;
+    `;
+    
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; margin-bottom: 30px; background: rgba(30, 41, 59, 0.95); border-radius: 20px; border: 2px solid rgba(251, 191, 36, 0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <h1 style="font-size: 2.5rem; font-weight: 900; color: #fbbf24; margin-bottom: 12px; text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);">🎯 EUGINE Analytics</h1>
+        <p style="color: #94a3b8; font-size: 1rem; margin-bottom: 8px;">${t('export.generatedAt')}: ${new Date().toLocaleString(locale)}</p>
+        <p style="color: #fbbf24; font-size: 1.1rem; font-weight: 600;">${t('export.totalGames')}: ${games.length} | Premium Report</p>
+      </div>
+    `;
+    wrapper.appendChild(header);
+    
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.width = '100%';
+    clone.style.overflow = 'hidden';
+    clone.style.height = 'auto';
+    clone.style.minHeight = '0';
+    wrapper.appendChild(clone);
+    
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <div style="text-align: center; padding: 30px 20px; margin-top: 30px; color: #64748b; font-size: 0.875rem; border-top: 1px solid rgba(100, 116, 139, 0.3);">
+        <p style="margin-bottom: 8px;">EUGINE Analytics™ v3.0 • GS ITALYINVESTMENTS</p>
+        <p style="color: #475569;">Premium Report - ${new Date().toLocaleDateString(locale)}</p>
+      </div>
+    `;
+    wrapper.appendChild(footer);
+    
+    document.body.appendChild(wrapper);
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const actualHeight = wrapper.scrollHeight;
+    
+    const canvas = await html2canvas(wrapper, {
+      backgroundColor: '#0f172a',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      allowTaint: true,
+      width: wrapper.scrollWidth,
+      height: actualHeight,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: wrapper.scrollWidth,
+      windowHeight: actualHeight,
+    });
+
+    document.body.removeChild(wrapper);
+    return canvas;
+  };
+
+  const exportAsImage = async () => {
     setExportingImage(true);
     try {
-      const element = contentRef.current;
-      
-      // Create wrapper with header and footer - use tight fit to avoid empty space
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = `
-        position: absolute;
-        left: -9999px;
-        top: 0;
-        width: ${Math.max(element.scrollWidth, 1200)}px;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        padding: 30px;
-        overflow: hidden;
-      `;
-      
-      // Header
-      const header = document.createElement('div');
-      header.innerHTML = `
-        <div style="text-align: center; padding: 40px 20px; margin-bottom: 30px; background: rgba(30, 41, 59, 0.95); border-radius: 20px; border: 2px solid rgba(251, 191, 36, 0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-          <h1 style="font-size: 2.5rem; font-weight: 900; color: #fbbf24; margin-bottom: 12px; text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);">🎯 EUGINE Analytics</h1>
-          <p style="color: #94a3b8; font-size: 1rem; margin-bottom: 8px;">${t('export.generatedAt')}: ${new Date().toLocaleString(locale)}</p>
-          <p style="color: #fbbf24; font-size: 1.1rem; font-weight: 600;">${t('export.totalGames')}: ${games.length} | Premium Report</p>
-        </div>
-      `;
-      wrapper.appendChild(header);
-      
-      // Clone content
-      const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.width = '100%';
-      // Remove any extra height/min-height that causes empty space
-      clone.style.overflow = 'hidden';
-      clone.style.height = 'auto';
-      clone.style.minHeight = '0';
-      wrapper.appendChild(clone);
-      
-      // Footer
-      const footer = document.createElement('div');
-      footer.innerHTML = `
-        <div style="text-align: center; padding: 30px 20px; margin-top: 30px; color: #64748b; font-size: 0.875rem; border-top: 1px solid rgba(100, 116, 139, 0.3);">
-          <p style="margin-bottom: 8px;">EUGINE Analytics™ v3.0 • GS ITALYINVESTMENTS</p>
-          <p style="color: #475569;">Premium Report - ${new Date().toLocaleDateString(locale)}</p>
-        </div>
-      `;
-      wrapper.appendChild(footer);
-      
-      document.body.appendChild(wrapper);
-      
-      // Wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Measure actual content height to avoid empty space
-      const actualHeight = wrapper.scrollHeight;
-      
-      const canvas = await html2canvas(wrapper, {
-        backgroundColor: '#0f172a',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-        width: wrapper.scrollWidth,
-        height: actualHeight,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: wrapper.scrollWidth,
-        windowHeight: actualHeight,
-      });
-
-      document.body.removeChild(wrapper);
-
+      const canvas = await generateReportCanvas();
       const link = document.createElement('a');
       link.download = `eugine-report-${getFormattedDate()}.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
@@ -600,16 +596,38 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     }
   };
 
-  const shareViaWhatsApp = () => {
-    const gamesList = games.slice(0, 10).map(game => {
-      const bestOdd = Math.max(game.odds.home, game.odds.draw, game.odds.away);
-      return `⚽ ${game.homeTeam} vs ${game.awayTeam} | ${game.league} | ${t('gameCard.bestOdd')}: ${bestOdd.toFixed(2)}${game.analysis?.confidence ? ` | ${game.analysis.confidence}%` : ''}`;
-    }).join('\n');
+  const shareViaWhatsApp = async () => {
+    setSharingWhatsApp(true);
+    try {
+      const canvas = await generateReportCanvas();
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/png', 1.0);
+      });
+      const file = new File([blob], `eugine-report-${getFormattedDate()}.png`, { type: 'image/png' });
 
-    const text = `🎯 *EUGINE Analytics - Premium Report*\n📅 ${new Date().toLocaleDateString(locale)}\n📊 ${t('export.totalGames')}: ${games.length}\n\n${gamesList}\n\n✨ ${t('export.generatedAt')}: ${new Date().toLocaleString(locale)}`;
-    
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'EUGINE Analytics - Premium Report',
+          text: `🎯 EUGINE Analytics | ${t('export.totalGames')}: ${games.length}`,
+        });
+      } else {
+        // Fallback: download PNG + open WhatsApp with text
+        const link = document.createElement('a');
+        link.download = file.name;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+
+        const text = `🎯 *EUGINE Analytics - Premium Report*\n📅 ${new Date().toLocaleDateString(locale)}\n📊 ${t('export.totalGames')}: ${games.length}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Error sharing via WhatsApp:', error);
+      }
+    } finally {
+      setSharingWhatsApp(false);
+    }
   };
 
   return (
@@ -643,10 +661,11 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
           </Button>
           <Button
             onClick={shareViaWhatsApp}
+            disabled={sharingWhatsApp}
             variant="outline"
             className="bg-gradient-to-r from-green-600/20 to-green-500/20 border-green-500/30 hover:border-green-400 text-green-400"
           >
-            <MessageCircle className="w-4 h-4" />
+            {sharingWhatsApp ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
             <span className="ml-2">{t('export.whatsapp')}</span>
           </Button>
         </div>
