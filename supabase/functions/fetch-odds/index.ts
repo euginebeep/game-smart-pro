@@ -1406,44 +1406,39 @@ function buildSmartAccumulators(
   analyzedGames: any[],
   lang: string = 'pt'
 ): SmartAccumulator[] {
-  
+  // 1. Pegar todos os jogos que TÊM análise válida com edge > 0
   const eligible: SmartAccBet[] = [];
-  let debugSkipped = { noAnalysis: 0, isSkip: 0, noProbs: 0, noEdge: 0, oddRange: 0, lowProb: 0 };
   
   for (const game of analyzedGames) {
-    if (!game.analysis) { debugSkipped.noAnalysis++; continue; }
-    if (game.analysis.isSkip) { debugSkipped.isSkip++; continue; }
+    if (!game.analysis) continue;
+    if (game.analysis.isSkip) continue;
     
     const a = game.analysis;
-    const edge = (a.estimatedProbability || 0) - (a.impliedProbability || 0);
+    if (!a.estimatedProbability || !a.impliedProbability) continue;
     
-    if (!a.estimatedProbability || !a.impliedProbability) { debugSkipped.noProbs++; continue; }
-    if (edge <= 0) { debugSkipped.noEdge++; continue; }
+    const edge = a.estimatedProbability - a.impliedProbability;
+    if (edge <= 0) continue;
     
-    // Use the actual odd from the recommended bet
-    // Try multiple sources: analysis.recommendedOdd, recalculate from profit, or use impliedProbability
-    const betAmount = 40;
+    // Calcular odd do jogo
     let odd = 0;
-    if (a.recommendedOdd && a.recommendedOdd > 0) {
+    if (a.recommendedOdd && a.recommendedOdd > 1) {
       odd = a.recommendedOdd;
-    } else if (a.profit && a.profit > 0) {
-      odd = (a.profit / betAmount) + 1;
     } else if (a.impliedProbability > 0) {
-      // Derive odd from implied probability
       odd = Math.round((100 / a.impliedProbability) * 100) / 100;
+    } else if (a.profit && a.profit > 0) {
+      odd = Math.round(((a.profit / 40) + 1) * 100) / 100;
     }
     
-    if (odd < 1.10 || odd > 6.00) { debugSkipped.oddRange++; continue; }
-    if (a.estimatedProbability < 10) { debugSkipped.lowProb++; continue; }
+    if (odd < 1.10 || odd > 6.00) continue;
     
     eligible.push({
-      fixtureId: game.id || game.fixtureId || `${game.homeTeam}-${game.awayTeam}`,
-      homeTeam: game.homeTeam,
-      awayTeam: game.awayTeam,
-      league: game.league,
+      fixtureId: game.id || `${game.homeTeam}-${game.awayTeam}`,
+      homeTeam: game.homeTeam || 'Time A',
+      awayTeam: game.awayTeam || 'Time B',
+      league: game.league || '',
       betType: a.type || '',
       betLabel: a.type || '',
-      odd: Math.round(odd * 100) / 100,
+      odd: odd,
       estimatedProb: a.estimatedProbability,
       impliedProb: a.impliedProbability,
       edge: edge,
@@ -1451,132 +1446,19 @@ function buildSmartAccumulators(
     });
   }
   
-  console.log(`[SMART-ACC] Debug: total=${analyzedGames.length}, eligible=${eligible.length}, skipped=${JSON.stringify(debugSkipped)}`);
-  if (eligible.length > 0) {
-    console.log(`[SMART-ACC] Top eligible: ${eligible.slice(0, 3).map(e => `${e.homeTeam}v${e.awayTeam} odd=${e.odd} edge=${e.edge.toFixed(1)}`).join(', ')}`);
+  console.log(`[SMART-ACC] Eligible games: ${eligible.length} out of ${analyzedGames.length}`);
+  
+  // Se menos de 4 jogos, não dá para montar
+  if (eligible.length < 4) {
+    console.log('[SMART-ACC] Not enough eligible games');
+    return [];
   }
   
-  if (eligible.length < 4) return [];
+  // 2. Ordenar por edge (maior primeiro)
+  eligible.sort((a, b) => b.edge - a.edge);
   
-  const lowOdd = eligible.filter(b => b.odd >= 1.10 && b.odd < 1.70);
-  const midOdd = eligible.filter(b => b.odd >= 1.70 && b.odd < 3.00);
-  const highOdd = eligible.filter(b => b.odd >= 3.00 && b.odd <= 6.00);
-  
-  lowOdd.sort((a, b) => b.edge - a.edge);
-  midOdd.sort((a, b) => b.edge - a.edge);
-  highOdd.sort((a, b) => b.edge - a.edge);
-  
-  const combinations: SmartAccBet[][] = [];
-  
-  // Estratégia A: "Equilibrada"
-  if (lowOdd.length >= 2 && midOdd.length >= 2 && highOdd.length >= 1) {
-    combinations.push([...lowOdd.slice(0, 2), ...midOdd.slice(0, 2), ...highOdd.slice(0, 1)]);
-    if (highOdd.length >= 2) {
-      combinations.push([...lowOdd.slice(0, 2), ...midOdd.slice(0, 2), ...highOdd.slice(0, 2)]);
-    }
-  }
-  
-  // Estratégia B: "Segura"
-  if (lowOdd.length >= 3 && midOdd.length >= 2) {
-    combinations.push([...lowOdd.slice(0, 3), ...midOdd.slice(0, 2)]);
-    if (midOdd.length >= 3) {
-      combinations.push([...lowOdd.slice(0, 3), ...midOdd.slice(0, 3)]);
-    }
-  }
-  
-  // Estratégia C: "Ousada"
-  if (lowOdd.length >= 1 && midOdd.length >= 2 && highOdd.length >= 2) {
-    combinations.push([...lowOdd.slice(0, 1), ...midOdd.slice(0, 2), ...highOdd.slice(0, 2)]);
-    if (highOdd.length >= 3) {
-      combinations.push([...lowOdd.slice(0, 1), ...midOdd.slice(0, 2), ...highOdd.slice(0, 3)]);
-    }
-  }
-  
-  // Estratégia D: "Máximo Edge"
-  const allByEdge = [...eligible].sort((a, b) => b.edge - a.edge);
-  if (allByEdge.length >= 5) {
-    combinations.push(allByEdge.slice(0, 5));
-    if (allByEdge.length >= 6) combinations.push(allByEdge.slice(0, 6));
-  }
-  
-  // Estratégia E: "Máximo EV"
-  const allByEV = [...eligible].sort((a, b) => {
-    const evA = (a.estimatedProb / 100) * a.odd;
-    const evB = (b.estimatedProb / 100) * b.odd;
-    return evB - evA;
-  });
-  if (allByEV.length >= 5) {
-    combinations.push(allByEV.slice(0, 5));
-    if (allByEV.length >= 6) combinations.push(allByEV.slice(0, 6));
-  }
-  
-  // Estratégia F: "Compacta" — top 4 por edge (mínimo viável)
-  if (allByEdge.length >= 4) {
-    combinations.push(allByEdge.slice(0, 4));
-  }
-  
-  // Estratégia G: "Mix" — 2 de cada faixa disponível
-  const mixCombo: SmartAccBet[] = [];
-  if (lowOdd.length >= 1) mixCombo.push(lowOdd[0]);
-  if (lowOdd.length >= 2) mixCombo.push(lowOdd[1]);
-  if (midOdd.length >= 1) mixCombo.push(midOdd[0]);
-  if (midOdd.length >= 2) mixCombo.push(midOdd[1]);
-  if (highOdd.length >= 1) mixCombo.push(highOdd[0]);
-  if (mixCombo.length >= 4) {
-    combinations.push(mixCombo.slice(0, Math.min(6, mixCombo.length)));
-  }
-  
-  const evaluated: SmartAccumulator[] = [];
-  const usedCombos = new Set<string>();
-  
-  for (const combo of combinations) {
-    const fixtureIds = combo.map(b => b.fixtureId);
-    if (new Set(fixtureIds).size !== fixtureIds.length) continue;
-    
-    const leagueTime = combo.map(b => `${b.league}-${b.startTime}`);
-    if (new Set(leagueTime).size !== leagueTime.length) continue;
-    
-    const totalOdd = combo.reduce((acc, b) => acc * b.odd, 1);
-    const combinedProb = combo.reduce((acc, b) => acc * (b.estimatedProb / 100), 1) * 100;
-    const bookmakerProb = combo.reduce((acc, b) => acc * (b.impliedProb / 100), 1) * 100;
-    const combinedEdge = combinedProb - bookmakerProb;
-    const expectedValue = (combinedProb / 100) * totalOdd;
-    
-    if (totalOdd < 3) continue;
-    if (totalOdd > 200) continue;
-    if (combinedProb < 1) continue;
-    if (combinedEdge < 0) continue;
-    // expectedValue filter removed — too restrictive
-    
-    const comboId = fixtureIds.sort().join('-');
-    if (usedCombos.has(comboId)) continue;
-    usedCombos.add(comboId);
-    
-    const uniqueLeagues = new Set(combo.map(b => b.league)).size;
-    const diversityBonus = uniqueLeagues / combo.length;
-    const qualityScore = expectedValue * (1 + combinedEdge / 10) * (1 + diversityBonus);
-    
-    evaluated.push({
-      id: `smart-${combo.length}-${Math.round(totalOdd * 100)}`,
-      title: '', subtitle: '', emoji: '', badge: '',
-      bets: combo,
-      totalOdd: Math.round(totalOdd * 100) / 100,
-      combinedProb: Math.round(combinedProb * 10) / 10,
-      bookmakerProb: Math.round(bookmakerProb * 10) / 10,
-      combinedEdge: Math.round(combinedEdge * 10) / 10,
-      expectedValue: Math.round(expectedValue * 1000) / 1000,
-      suggestedStake: totalOdd > 30 ? 20 : totalOdd > 15 ? 30 : 50,
-      riskLevel: totalOdd > 20 ? 'high' : 'medium',
-      qualityScore,
-    });
-  }
-  
-  evaluated.sort((a, b) => b.qualityScore - a.qualityScore);
-  
-  const MIN_QUALITY = 0.1;
-  const selected = evaluated
-    .filter(acc => acc.qualityScore >= MIN_QUALITY)
-    .slice(0, 3);
+  // 3. Montar até 3 combos diferentes
+  const results: SmartAccumulator[] = [];
   
   const titles = lang === 'en' 
     ? { safe: 'Safe Combo', balanced: 'Balanced Combo', bold: 'Bold Combo' }
@@ -1586,38 +1468,53 @@ function buildSmartAccumulators(
     ? { safe: 'Combo Sicuro', balanced: 'Combo Equilibrato', bold: 'Combo Audace' }
     : { safe: 'Combo Seguro', balanced: 'Combo Equilibrado', bold: 'Combo Ousado' };
   
-  const subtitles = lang === 'en'
-    ? { safe: 'Higher probability, moderate return', balanced: 'Best balance of probability × return', bold: 'Lower probability, high return' }
-    : lang === 'es'
-    ? { safe: 'Mayor probabilidad, retorno moderado', balanced: 'Mejor balance probabilidad × retorno', bold: 'Menor probabilidad, alto retorno' }
-    : lang === 'it'
-    ? { safe: 'Maggiore probabilità, ritorno moderato', balanced: 'Miglior equilibrio probabilità × ritorno', bold: 'Minore probabilità, alto ritorno' }
-    : { safe: 'Maior probabilidade, retorno moderado', balanced: 'Melhor equilíbrio probabilidade × retorno', bold: 'Menor probabilidade, retorno alto' };
+  const gamesLabel = lang === 'en' ? 'games' : lang === 'es' ? 'juegos' : lang === 'it' ? 'partite' : 'jogos';
   
-  for (let i = 0; i < selected.length; i++) {
-    const acc = selected[i];
-    if (i === 0 || acc.totalOdd <= 15) {
-      acc.emoji = '🛡️';
-      acc.title = `${titles.safe} — ${acc.bets.length} ${lang === 'en' ? 'games' : lang === 'es' ? 'juegos' : lang === 'it' ? 'partite' : 'jogos'}`;
-      acc.subtitle = subtitles.safe;
-      acc.badge = lang === 'en' ? 'Safest' : lang === 'es' ? 'Más seguro' : lang === 'it' ? 'Più sicuro' : 'Mais seguro';
-      acc.riskLevel = 'medium';
-    } else if (i === 1 || acc.totalOdd <= 35) {
-      acc.emoji = '🧠';
-      acc.title = `${titles.balanced} — ${acc.bets.length} ${lang === 'en' ? 'games' : lang === 'es' ? 'juegos' : lang === 'it' ? 'partite' : 'jogos'}`;
-      acc.subtitle = subtitles.balanced;
-      acc.badge = lang === 'en' ? 'Balanced' : lang === 'es' ? 'Equilibrado' : lang === 'it' ? 'Equilibrato' : 'Equilibrado';
-      acc.riskLevel = 'medium';
-    } else {
-      acc.emoji = '🚀';
-      acc.title = `${titles.bold} — ${acc.bets.length} ${lang === 'en' ? 'games' : lang === 'es' ? 'juegos' : lang === 'it' ? 'partite' : 'jogos'}`;
-      acc.subtitle = subtitles.bold;
-      acc.badge = lang === 'en' ? 'Bold' : lang === 'es' ? 'Audaz' : lang === 'it' ? 'Audace' : 'Ousado';
-      acc.riskLevel = 'high';
-    }
+  // COMBO 1: Top 5 por edge (ou todos se menos de 5)
+  const combo1Size = Math.min(5, eligible.length);
+  const combo1 = eligible.slice(0, combo1Size);
+  results.push(makeSmartCombo(combo1, '🛡️', `${titles.safe} — ${combo1Size} ${gamesLabel}`, combo1Size, 50, 'medium'));
+  
+  // COMBO 2: Se tem 8+ jogos, pegar posições 3-8 (jogos diferentes do combo 1)
+  if (eligible.length >= 8) {
+    const combo2Size = Math.min(6, eligible.length - 3);
+    const combo2 = eligible.slice(3, 3 + combo2Size);
+    results.push(makeSmartCombo(combo2, '🧠', `${titles.balanced} — ${combo2Size} ${gamesLabel}`, combo2Size, 30, 'medium'));
   }
   
-  return selected;
+  // COMBO 3: Se tem 12+ jogos, pegar mix de odds altas
+  if (eligible.length >= 12) {
+    const highOddGames = [...eligible].sort((a, b) => b.odd - a.odd);
+    const combo3 = highOddGames.slice(0, Math.min(5, highOddGames.length));
+    results.push(makeSmartCombo(combo3, '🚀', `${titles.bold} — ${combo3.length} ${gamesLabel}`, combo3.length, 20, 'high'));
+  }
+  
+  console.log(`[SMART-ACC] Generated ${results.length} combos`);
+  
+  return results;
+}
+
+function makeSmartCombo(bets: SmartAccBet[], emoji: string, title: string, numGames: number, stake: number, risk: 'medium' | 'high'): SmartAccumulator {
+  const totalOdd = bets.reduce((acc, b) => acc * b.odd, 1);
+  const combinedProb = bets.reduce((acc, b) => acc * (b.estimatedProb / 100), 1) * 100;
+  const bookmakerProb = bets.reduce((acc, b) => acc * (b.impliedProb / 100), 1) * 100;
+  
+  return {
+    id: `smart-${numGames}-${Math.round(totalOdd * 100)}`,
+    emoji: emoji,
+    title: title,
+    subtitle: `${numGames} ${title.includes('games') ? 'games selected by AI' : 'jogos selecionados por IA'}`,
+    badge: title.split(' — ')[0],
+    bets: bets,
+    totalOdd: Math.round(totalOdd * 100) / 100,
+    combinedProb: Math.round(combinedProb * 10) / 10,
+    bookmakerProb: Math.round(bookmakerProb * 10) / 10,
+    combinedEdge: Math.round((combinedProb - bookmakerProb) * 10) / 10,
+    expectedValue: Math.round((combinedProb / 100) * totalOdd * 1000) / 1000,
+    suggestedStake: stake,
+    riskLevel: risk,
+    qualityScore: 1,
+  };
 }
 
 function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
