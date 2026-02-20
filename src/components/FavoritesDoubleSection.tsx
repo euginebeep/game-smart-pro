@@ -1,6 +1,7 @@
-import { Star, TrendingUp, Crown } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { Game } from '@/types/game';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { AccumulatorCard } from './AccumulatorCard';
 
 interface FavoritesDoubleSectionProps {
   games: Game[];
@@ -8,44 +9,29 @@ interface FavoritesDoubleSectionProps {
 
 export function FavoritesDoubleSection({ games }: FavoritesDoubleSectionProps) {
   const { t } = useLanguage();
-  
-  // Find two games with odds between 1.60 and 2.20 with highest confidence from analysis engine
+
   const sortedByFavorite = [...games]
     .filter(g => g.odds.home >= 1.60 && g.odds.home <= 2.20 && g.analysis?.confidence)
     .sort((a, b) => (b.analysis?.confidence || 0) - (a.analysis?.confidence || 0))
     .slice(0, 2);
 
-  const bets = sortedByFavorite.length >= 2 ? [
-    {
-      match: `${sortedByFavorite[0].homeTeam} x ${sortedByFavorite[0].awayTeam}`,
-      bet: `${t('accumulators.victory')} ${sortedByFavorite[0].homeTeam}`,
-      odd: sortedByFavorite[0].odds.home,
-      league: sortedByFavorite[0].league,
-    },
-    {
-      match: `${sortedByFavorite[1].homeTeam} x ${sortedByFavorite[1].awayTeam}`,
-      bet: `${t('accumulators.victory')} ${sortedByFavorite[1].homeTeam}`,
-      odd: sortedByFavorite[1].odds.home,
-      league: sortedByFavorite[1].league,
-    }
-  ] : [
-    { match: 'Real Madrid x Getafe', bet: `${t('accumulators.victory')} Real Madrid`, odd: 1.65, league: 'La Liga' },
-    { match: 'Bayern x Augsburg', bet: `${t('accumulators.victory')} Bayern`, odd: 1.60, league: 'Bundesliga' }
+  const bets: { match: string; bet: string; odd: number; estimatedProb?: number }[] = sortedByFavorite.length >= 2 ? sortedByFavorite.map(g => ({
+    match: `${g.homeTeam} x ${g.awayTeam}`,
+    bet: `${t('accumulators.victory')} ${g.homeTeam}`,
+    odd: g.odds.home,
+    estimatedProb: g.analysis?.estimatedProbability,
+  })) : [
+    { match: 'Real Madrid x Getafe', bet: `${t('accumulators.victory')} Real Madrid`, odd: 1.65 },
+    { match: 'Bayern x Augsburg', bet: `${t('accumulators.victory')} Bayern`, odd: 1.60 }
   ];
 
-  const totalOdd = bets.reduce((acc, bet) => acc * bet.odd, 1);
-  const betAmount = 100;
-  const profit = (betAmount * totalOdd) - betAmount;
-  
-  // Calculate real chance using (1/odd) * 0.93 margin for each bet
-  // Combined probability = product of individual probabilities (independent events)
-  const individualProbs = bets.map(bet => (1 / bet.odd) * 0.93);
-  const combinedProb = individualProbs.reduce((acc, p) => acc * p, 1);
-  const successChance = Math.round(combinedProb * 100);
+  // Calculate combined probability
+  const combinedProb = bets.reduce((acc: number, b) => acc * ((1 / b.odd) * 0.93), 1);
+  const chancePercent = Math.round(combinedProb * 100);
+  const bookmakerChance = Math.round(bets.reduce((acc: number, b) => acc * (1 / b.odd), 1) * 100);
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
-      {/* Section Header */}
       <div className="text-center mb-5 sm:mb-6 lg:mb-8">
         <div className="inline-flex items-center gap-2 mb-2">
           <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
@@ -63,70 +49,17 @@ export function FavoritesDoubleSection({ games }: FavoritesDoubleSectionProps) {
         </p>
       </div>
 
-      {/* Favorites Double Card */}
       <div className="max-w-2xl mx-auto">
-        <article className="glass-card p-4 sm:p-6 lg:p-8 animate-fade-in-up bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 border-amber-500/30">
-          {/* Header */}
-          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500/30 to-yellow-500/20 flex items-center justify-center">
-              <Star className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-amber-500 fill-amber-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-amber-500">
-                {t('favoritesDouble.cardTitle') || 'Dupla dos Favoritos'}
-              </h3>
-              <div className="inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold bg-amber-500/20 text-amber-500">
-                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
-                {t('favoritesDouble.favorites') || 'FAVORITOS'}
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">{t('premiumDouble.totalOdd')}</p>
-              <p className="text-2xl sm:text-3xl font-black text-amber-500">{totalOdd.toFixed(2)}</p>
-            </div>
-          </div>
-
-          {/* Bets */}
-          <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-            {bets.map((bet, idx) => (
-              <div key={idx} className="bg-secondary/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-amber-500/20">
-                <div className="flex justify-between items-center gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground text-sm sm:text-base truncate">{bet.match}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{bet.bet}</p>
-                      <span className="text-[10px] text-amber-500/70 hidden sm:inline">• {bet.league}</span>
-                    </div>
-                  </div>
-                  <span className="text-lg sm:text-xl font-bold text-amber-500 flex-shrink-0">@{bet.odd.toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
-            <div className="bg-amber-500/20 rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-amber-500/30">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('premiumDouble.chanceOfSuccess')}</p>
-              <p className="text-2xl sm:text-3xl font-black text-amber-500">{successChance}%</p>
-            </div>
-            <div className="bg-amber-500/20 rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 text-center border border-amber-500/30">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase mb-0.5 sm:mb-1">{t('premiumDouble.return')}</p>
-              <p className="text-2xl sm:text-3xl font-black text-amber-500">$ {(betAmount * totalOdd).toFixed(0)}</p>
-            </div>
-          </div>
-
-          {/* Profit */}
-          <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-amber-500/30">
-            <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
-              <p className="text-sm sm:text-base lg:text-lg">
-                <span className="text-muted-foreground">$ {betAmount} → </span>
-                <span className="font-bold text-amber-500">+$ {profit.toFixed(2)} {t('favoritesDouble.profit') || 'lucro'}</span>
-              </p>
-            </div>
-          </div>
-        </article>
+        <AccumulatorCard
+          emoji="⭐"
+          title={t('favoritesDouble.cardTitle') || 'Dupla dos Favoritos'}
+          typeId="favoritesDouble"
+          bets={bets}
+          betAmount={100}
+          chancePercent={chancePercent}
+          bookmakerChance={bookmakerChance}
+          riskLevel="low"
+        />
       </div>
     </section>
   );

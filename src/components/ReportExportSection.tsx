@@ -152,10 +152,98 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
   const generateStandaloneHtml = (): string => {
     const dateStr = new Date().toLocaleDateString(locale);
     const dateTimeStr = new Date().toLocaleString(locale);
+
+    // ===== Generate Accumulators HTML =====
+    let accumulatorsHtml = '';
+    const gamesWithEdge = games.filter(g => g.analysis && !g.analysis.isSkip && (g.analysis.valuePercentage || 0) > 0);
+    const effectivePool = gamesWithEdge.length >= 2 ? gamesWithEdge : games.filter(g => g.analysis && !g.analysis.isSkip);
+
+    if (effectivePool.length >= 2) {
+      const sorted = [...effectivePool].sort((a, b) => (b.analysis?.confidence || 0) - (a.analysis?.confidence || 0));
+
+      // Build simple 2-leg accumulators
+      const accTypes = [
+        { emoji: '🛡️', title: t('accumulators.goalsLowRisk'), market: 'over' },
+        { emoji: '💎', title: t('premiumDouble.premiumDouble'), market: 'home' },
+      ];
+
+      for (const accType of accTypes) {
+        const g1 = sorted[0];
+        const g2 = sorted[1];
+        if (!g1 || !g2) continue;
+
+        const odd1 = accType.market === 'over' ? g1.odds.over : g1.odds.home;
+        const odd2 = accType.market === 'over' ? g2.odds.over : g2.odds.home;
+        const totalOdd = odd1 * odd2;
+        const bet1Label = accType.market === 'over' ? (t('accumulators.over25') || 'Over 2.5') : `${t('accumulators.victory')} ${g1.homeTeam}`;
+        const bet2Label = accType.market === 'over' ? (t('accumulators.over25') || 'Over 2.5') : `${t('accumulators.victory')} ${g2.homeTeam}`;
+        const bookChance = Math.round((1 / totalOdd) * 93);
+
+        accumulatorsHtml += `
+          <div style="background:#0f172a;border:1px solid #334155;border-radius:16px;padding:20px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <div style="font-size:18px;font-weight:700;color:#f1f5f9;">${accType.emoji} ${accType.title}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1e293b;border-radius:10px;margin-bottom:6px;">
+              <div>
+                <div style="font-weight:600;color:#e2e8f0;font-size:14px;">${g1.homeTeam} x ${g1.awayTeam}</div>
+                <div style="color:#94a3b8;font-size:12px;">${bet1Label}</div>
+              </div>
+              <div style="font-weight:800;color:#38bdf8;font-size:18px;">@${odd1.toFixed(2)}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1e293b;border-radius:10px;margin-bottom:6px;">
+              <div>
+                <div style="font-weight:600;color:#e2e8f0;font-size:14px;">${g2.homeTeam} x ${g2.awayTeam}</div>
+                <div style="color:#94a3b8;font-size:12px;">${bet2Label}</div>
+              </div>
+              <div style="font-weight:800;color:#38bdf8;font-size:18px;">@${odd2.toFixed(2)}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;">
+              <div style="text-align:center;background:#1e293b;padding:12px;border-radius:10px;">
+                <div style="color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:1px;">${t('accumulators.totalOdd') || 'Cotação'}</div>
+                <div style="font-weight:800;color:#f59e0b;font-size:22px;">${totalOdd.toFixed(2)}</div>
+              </div>
+              <div style="text-align:center;background:#1e293b;padding:12px;border-radius:10px;">
+                <div style="color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:1px;">${t('accumulators.chance') || 'Chance'}</div>
+                <div style="font-weight:800;color:#38bdf8;font-size:22px;">${bookChance}%</div>
+              </div>
+              <div style="text-align:center;background:#064e3b;border:1px solid #10b981;padding:12px;border-radius:10px;">
+                <div style="color:#6ee7b7;font-size:10px;text-transform:uppercase;letter-spacing:1px;">${t('accumulators.eugineEdge') || 'Vantagem'}</div>
+                <div style="font-weight:800;color:#34d399;font-size:22px;">+${Math.max(1, Math.round(bookChance * 0.15))}%</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // ===== Top games with value =====
+    const topGames = games
+      .filter((g) => g.analysis && !g.analysis.isSkip)
+      .sort((a, b) => (b.analysis?.valuePercentage || 0) - (a.analysis?.valuePercentage || 0))
+      .slice(0, 10);
+
+    let topGamesHtml = '';
+    if (topGames.length > 0) {
+      topGamesHtml += `<h2 style="color:#f1f5f9;font-size:20px;margin:24px 0 12px;">⚽ Top Jogos com Valor</h2>`;
+      for (const game of topGames) {
+        const a = game.analysis!;
+        topGamesHtml += `
+          <div style="background:#0f172a;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:600;color:#e2e8f0;font-size:14px;">${game.homeTeam} x ${game.awayTeam}</div>
+              <div style="color:#38bdf8;font-size:12px;margin-top:2px;">${a.type}</div>
+              ${a.estimatedProbability ? `<div style="color:#94a3b8;font-size:11px;margin-top:4px;">Casa: ${Math.round(a.impliedProbability || 0)}% → EUGINE: ${Math.round(a.estimatedProbability)}%</div>` : ''}
+            </div>
+            ${(a.valuePercentage || 0) > 0 ? `<div style="background:#064e3b;border:1px solid #10b981;padding:6px 14px;border-radius:20px;font-weight:800;color:#34d399;font-size:14px;">+${a.valuePercentage!.toFixed(0)}%</div>` : ''}
+          </div>
+        `;
+      }
+    }
     
     // Generate game cards HTML
     let gamesHtml = '';
-    games.forEach((game, idx) => {
+    games.forEach((game) => {
       const analysis = game.analysis;
       const adv = game.advancedData;
       const bestOdd = Math.max(game.odds.home, game.odds.draw, game.odds.away);
@@ -212,8 +300,8 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
             ${adv.homeForm || adv.awayForm ? `
             <div class="data-box box-blue">
               <h4>📊 ${t('gameCard.recentForm')}</h4>
-              ${adv.homeForm ? `<p>${game.homeTeam.slice(0,10)}: ${adv.homeForm.slice(0,5).split('').map(r => `<span class="form-${r.toLowerCase()}">${r}</span>`).join('')}</p>` : ''}
-              ${adv.awayForm ? `<p>${game.awayTeam.slice(0,10)}: ${adv.awayForm.slice(0,5).split('').map(r => `<span class="form-${r.toLowerCase()}">${r}</span>`).join('')}</p>` : ''}
+              ${adv.homeForm ? `<p>${game.homeTeam.slice(0,10)}: ${adv.homeForm.slice(0,5).split('').map((r: string) => `<span class="form-${r.toLowerCase()}">${r}</span>`).join('')}</p>` : ''}
+              ${adv.awayForm ? `<p>${game.awayTeam.slice(0,10)}: ${adv.awayForm.slice(0,5).split('').map((r: string) => `<span class="form-${r.toLowerCase()}">${r}</span>`).join('')}</p>` : ''}
             </div>
             ` : ''}
             ${adv.homePosition || adv.awayPosition ? `
@@ -598,6 +686,15 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
       <p class="stats">${t('export.totalGames')}: ${games.length} | Premium Report</p>
     </div>
     
+    ${accumulatorsHtml ? `
+    <div class="section-header">
+      <h2>🏆 ${t('accumulators.title') || 'Acumuladas do Dia'}</h2>
+    </div>
+    ${accumulatorsHtml}
+    ` : ''}
+    
+    ${topGamesHtml}
+    
     <div class="section-header">
       <h2>📊 ${t('main.gameAnalysis') || 'Análise dos Jogos'}</h2>
       <p>${t('main.showingToday') || 'Previsões analíticas matemáticas'}</p>
@@ -615,12 +712,54 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
 </html>`;
   };
 
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  const showHTMLPreview = (htmlContent: string) => {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;padding:16px;';
+
+    const container = document.createElement('div');
+    container.style.cssText = 'background:white;border-radius:12px;width:100%;max-width:600px;max-height:90vh;overflow:auto;padding:0;position:relative;';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕ Fechar';
+    closeBtn.style.cssText = 'position:sticky;top:0;right:0;width:100%;padding:12px;background:#1a1a2e;color:white;border:none;font-weight:bold;cursor:pointer;z-index:1;';
+    closeBtn.onclick = () => document.body.removeChild(modal);
+
+    const content = document.createElement('div');
+    content.innerHTML = htmlContent;
+
+    container.appendChild(closeBtn);
+    container.appendChild(content);
+    modal.appendChild(container);
+
+    modal.onclick = (e) => {
+      if (e.target === modal) document.body.removeChild(modal);
+    };
+
+    document.body.appendChild(modal);
+  };
+
   const exportAsHtml = () => {
     setExportingHtml(true);
     try {
       const htmlContent = generateStandaloneHtml();
-      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-      downloadFile(blob, `eugine-report-${getFormattedDate()}.html`);
+
+      if (isIOS()) {
+        // iOS Safari can't handle blob URL downloads well — show preview in-app
+        showHTMLPreview(htmlContent);
+      } else {
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `eugine-report-${getFormattedDate()}.html`;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(link.href);
+        }, 100);
+      }
       toast({ title: '✅ ' + (t('export.successHtml') || 'Relatório HTML exportado com sucesso!') });
     } catch (error) {
       console.error('Error exporting HTML:', error);
@@ -630,19 +769,61 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     }
   };
 
+  const generateWhatsAppMessage = (): string => {
+    const date = new Date().toLocaleDateString(locale);
+    let msg = `🎯 *EUGINE Analytics*\n`;
+    msg += `📅 ${date}\n\n`;
+
+    // Top games with value edge
+    const topGames = games
+      .filter((g) => g.analysis && !g.analysis.isSkip && (g.analysis.valuePercentage || 0) > 0)
+      .sort((a, b) => (b.analysis?.valuePercentage || 0) - (a.analysis?.valuePercentage || 0))
+      .slice(0, 5);
+
+    if (topGames.length > 0) {
+      msg += `⚽ *TOP ${topGames.length} JOGOS COM VALOR*\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+      for (const game of topGames) {
+        const a = game.analysis!;
+        const bestOdd = Math.max(game.odds.home, game.odds.draw, game.odds.away);
+        msg += `*${game.homeTeam} x ${game.awayTeam}*\n`;
+        msg += `  ${a.type} @${bestOdd.toFixed(2)}\n`;
+        if (a.estimatedProbability && a.impliedProbability) {
+          msg += `  Casa: ${Math.round(a.impliedProbability)}% → EUGINE: ${Math.round(a.estimatedProbability)}%`;
+          if ((a.valuePercentage || 0) > 0) msg += ` (+${a.valuePercentage!.toFixed(0)}%)`;
+          msg += `\n`;
+        }
+        if (a.confidence) msg += `  Confiança: ${a.confidence}%\n`;
+        msg += `\n`;
+      }
+    }
+
+    // All remaining analyzed games summary
+    const allAnalyzed = games.filter((g) => g.analysis && !g.analysis.isSkip);
+    if (allAnalyzed.length > topGames.length) {
+      msg += `📊 *${allAnalyzed.length} jogos analisados no total*\n\n`;
+    }
+
+    msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `🤖 _Análise por EUGINE Analytics_\n`;
+    msg += `📱 _eugine-analytics.com_`;
+
+    return msg;
+  };
+
   const shareViaWhatsApp = async () => {
     setSharingWhatsApp(true);
     try {
-      const canvas = await generateReportCanvas();
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/png', 0.9);
-      });
-      const file = new File([blob], `eugine-report-${getFormattedDate()}.png`, { type: 'image/png' });
-
-      // Try Web Share API first (works well on Android)
+      // Try Web Share API with image first (mobile)
       if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function') {
         try {
-          const shareData = { files: [file], title: 'EUGINE Analytics', text: `🎯 EUGINE Analytics | ${t('export.totalGames')}: ${games.length}` };
+          const canvas = await generateReportCanvas();
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/png', 0.9);
+          });
+          const file = new File([blob], `eugine-report-${getFormattedDate()}.png`, { type: 'image/png' });
+          const shareData = { files: [file], title: 'EUGINE Analytics', text: generateWhatsAppMessage() };
           if (navigator.canShare(shareData)) {
             await navigator.share(shareData);
             toast({ title: '✅ ' + (t('export.successWhatsapp') || 'Compartilhado com sucesso!') });
@@ -654,13 +835,11 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
         }
       }
 
-      // Fallback: download PNG + open WhatsApp with text
-      downloadFile(blob, file.name);
-      const text = `🎯 *EUGINE Analytics - Premium Report*\n📅 ${new Date().toLocaleDateString(locale)}\n📊 ${t('export.totalGames')}: ${games.length}`;
-      setTimeout(() => {
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-      }, 500);
-      toast({ title: '✅ ' + (t('export.successWhatsapp') || 'Imagem baixada! Anexe no WhatsApp.') });
+      // Fallback: open WhatsApp with full text message
+      const message = generateWhatsAppMessage();
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+      toast({ title: '✅ ' + (t('export.successWhatsapp') || 'Compartilhado com sucesso!') });
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
       toast({ title: '❌ ' + (t('export.errorWhatsapp') || 'Erro ao compartilhar'), variant: 'destructive' });
