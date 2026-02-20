@@ -1408,20 +1408,33 @@ function buildSmartAccumulators(
 ): SmartAccumulator[] {
   
   const eligible: SmartAccBet[] = [];
+  let debugSkipped = { noAnalysis: 0, isSkip: 0, noProbs: 0, noEdge: 0, oddRange: 0, lowProb: 0 };
   
   for (const game of analyzedGames) {
-    if (!game.analysis || game.analysis.isSkip) continue;
+    if (!game.analysis) { debugSkipped.noAnalysis++; continue; }
+    if (game.analysis.isSkip) { debugSkipped.isSkip++; continue; }
     
     const a = game.analysis;
     const edge = (a.estimatedProbability || 0) - (a.impliedProbability || 0);
     
-    if (!a.estimatedProbability || !a.impliedProbability) continue;
-    if (edge <= 0) continue;
+    if (!a.estimatedProbability || !a.impliedProbability) { debugSkipped.noProbs++; continue; }
+    if (edge <= 0) { debugSkipped.noEdge++; continue; }
     
+    // Use the actual odd from the recommended bet
+    // Try multiple sources: analysis.recommendedOdd, recalculate from profit, or use impliedProbability
     const betAmount = 40;
-    const odd = a.profit ? (a.profit / betAmount) + 1 : 0;
-    if (odd < 1.15 || odd > 4.50) continue;
-    if (a.estimatedProbability < 15) continue;
+    let odd = 0;
+    if (a.recommendedOdd && a.recommendedOdd > 0) {
+      odd = a.recommendedOdd;
+    } else if (a.profit && a.profit > 0) {
+      odd = (a.profit / betAmount) + 1;
+    } else if (a.impliedProbability > 0) {
+      // Derive odd from implied probability
+      odd = Math.round((100 / a.impliedProbability) * 100) / 100;
+    }
+    
+    if (odd < 1.10 || odd > 6.00) { debugSkipped.oddRange++; continue; }
+    if (a.estimatedProbability < 10) { debugSkipped.lowProb++; continue; }
     
     eligible.push({
       fixtureId: game.id || game.fixtureId || `${game.homeTeam}-${game.awayTeam}`,
@@ -1438,11 +1451,16 @@ function buildSmartAccumulators(
     });
   }
   
-  if (eligible.length < 5) return [];
+  console.log(`[SMART-ACC] Debug: total=${analyzedGames.length}, eligible=${eligible.length}, skipped=${JSON.stringify(debugSkipped)}`);
+  if (eligible.length > 0) {
+    console.log(`[SMART-ACC] Top eligible: ${eligible.slice(0, 3).map(e => `${e.homeTeam}v${e.awayTeam} odd=${e.odd} edge=${e.edge.toFixed(1)}`).join(', ')}`);
+  }
   
-  const lowOdd = eligible.filter(b => b.odd >= 1.15 && b.odd < 1.60);
-  const midOdd = eligible.filter(b => b.odd >= 1.60 && b.odd < 2.50);
-  const highOdd = eligible.filter(b => b.odd >= 2.50 && b.odd <= 4.50);
+  if (eligible.length < 4) return [];
+  
+  const lowOdd = eligible.filter(b => b.odd >= 1.10 && b.odd < 1.70);
+  const midOdd = eligible.filter(b => b.odd >= 1.70 && b.odd < 3.00);
+  const highOdd = eligible.filter(b => b.odd >= 3.00 && b.odd <= 6.00);
   
   lowOdd.sort((a, b) => b.edge - a.edge);
   midOdd.sort((a, b) => b.edge - a.edge);
@@ -1508,11 +1526,11 @@ function buildSmartAccumulators(
     const combinedEdge = combinedProb - bookmakerProb;
     const expectedValue = (combinedProb / 100) * totalOdd;
     
-    if (totalOdd < 5) continue;
-    if (totalOdd > 150) continue;
-    if (combinedProb < 2) continue;
-    if (combinedEdge < 0.5) continue;
-    if (expectedValue < 0.9) continue;
+    if (totalOdd < 3) continue;
+    if (totalOdd > 300) continue;
+    if (combinedProb < 0.5) continue;
+    if (combinedEdge < 0.1) continue;
+    if (expectedValue < 0.5) continue;
     
     const comboId = fixtureIds.sort().join('-');
     if (usedCombos.has(comboId)) continue;
