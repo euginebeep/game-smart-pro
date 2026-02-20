@@ -421,8 +421,8 @@ function calculateDynamicWeights(leagueName: string, betType: 'result' | 'over_u
 
 // ============= VALUE BETTING FUNCTIONS =============
 
-const MIN_VALUE_THRESHOLD = 2; // 2 pontos percentuais de edge mínimo
-const MIN_CONFIDENCE_THRESHOLD = 8; // 8% de probabilidade mínima
+const MIN_VALUE_THRESHOLD = 3; // 3 pontos percentuais de edge mínimo (aumentado de 2)
+const MIN_CONFIDENCE_THRESHOLD = 12; // 12% de probabilidade mínima (aumentado de 8)
 
 function calculateImpliedProbability(odds: number): number {
   if (odds <= 1) return 100;
@@ -439,11 +439,11 @@ function calculateValue(estimatedProb: number, odds: number): number {
 function shouldSkipBet(confidence: number, value: number): { skip: boolean; reason?: string } {
   // Com calibração, value agora é em pontos percentuais (ex: +5 = 5% de edge)
   // Edge mínimo de 2 pontos para valer o risco
-  if (value < 2) {
+  if (value < 3) {
     return { skip: true, reason: 'Vantagem insuficiente para justificar aposta' };
   }
-  // Confiança muito baixa (prob calibrada < 8%)
-  if (confidence < 8) {
+  // Confiança muito baixa (prob calibrada < 12%)
+  if (confidence < 12) {
     return { skip: true, reason: 'Probabilidade muito baixa' };
   }
   return { skip: false };
@@ -469,23 +469,23 @@ function calculateCalibratedProbability(score: number, odd: number): number {
   // Quanto menor a odd, mais eficiente o mercado, menor o edge possível
   let maxEdgePoints: number;
   if (odd <= 1.20) {
-    maxEdgePoints = 3;    // Super favorito — mercado quase perfeito
+    maxEdgePoints = 2;    // Super favorito — mercado quase perfeito (reduzido de 3)
   } else if (odd <= 1.40) {
-    maxEdgePoints = 5;    // Favorito forte
+    maxEdgePoints = 3;    // Favorito forte (reduzido de 5)
   } else if (odd <= 1.60) {
-    maxEdgePoints = 7;    // Favorito moderado
+    maxEdgePoints = 4;    // Favorito moderado (reduzido de 7)
   } else if (odd <= 2.00) {
-    maxEdgePoints = 10;   // Leve favorito
+    maxEdgePoints = 6;    // Leve favorito (reduzido de 10)
   } else if (odd <= 2.50) {
-    maxEdgePoints = 12;   // Jogo equilibrado — mais espaço
+    maxEdgePoints = 7;    // Jogo equilibrado (reduzido de 12)
   } else if (odd <= 3.50) {
-    maxEdgePoints = 14;   // Underdog leve
+    maxEdgePoints = 8;    // Underdog leve (reduzido de 14)
   } else if (odd <= 5.00) {
-    maxEdgePoints = 12;   // Underdog
+    maxEdgePoints = 7;    // Underdog (reduzido de 12)
   } else if (odd <= 8.00) {
-    maxEdgePoints = 8;    // Underdog forte
+    maxEdgePoints = 5;    // Underdog forte (reduzido de 8)
   } else {
-    maxEdgePoints = 5;    // Zebra — casas raramente erram tanto
+    maxEdgePoints = 3;    // Zebra — casas raramente erram tanto (reduzido de 5)
   }
   
   // 3. Converter score (0-100) em fator de ajuste
@@ -1265,6 +1265,22 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
     };
   });
   
+  // ============= DEBUG LOGGING =============
+  for (const bet of scoresWithValue) {
+    secureLog('info', 'BET_ANALYSIS_DEBUG', {
+      game: `${game.homeTeam} vs ${game.awayTeam}`,
+      league: game.league,
+      betType: bet.betType,
+      odd: bet.odd,
+      score: bet.score,
+      impliedProb: Math.round(bet.impliedProb),
+      estimatedProb: Math.round(bet.estimatedProb),
+      value: Math.round(bet.value * 100) / 100,
+      shouldSkip: shouldSkipBet(bet.estimatedProb, bet.value).skip,
+    });
+  }
+  // ============= FIM DEBUG LOGGING =============
+
   // Ordenar por score (confiança)
   scoresWithValue.sort((a, b) => b.score - a.score);
   const best = scoresWithValue[0];
@@ -1275,10 +1291,25 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   // Verificar se deve fazer skip
   const skipCheck = shouldSkipBet(confidence, best.value);
   
-  if (skipCheck.skip) {
+  // VERIFICAÇÃO DE SANIDADE: Se a probabilidade estimada é menor que a implícita, SEMPRE fazer skip
+  const sanityCheck = best.estimatedProb <= best.impliedProb;
+  
+  if (skipCheck.skip || sanityCheck) {
+    const skipReason = sanityCheck 
+      ? 'Falha na verificação de sanidade: prob. estimada ≤ prob. implícita'
+      : (skipCheck.reason || t.noEdge);
+      
+    secureLog('warn', 'BET_SKIPPED', {
+      game: `${game.homeTeam} vs ${game.awayTeam}`,
+      reason: skipReason,
+      estimatedProb: best.estimatedProb,
+      impliedProb: best.impliedProb,
+      value: best.value
+    });
+    
     return {
       type: t.skip,
-      reason: skipCheck.reason || t.noEdge,
+      reason: skipReason,
       profit: 0,
       confidence,
       factors: factors.slice(0, 3),
@@ -1286,7 +1317,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
       impliedProbability: best.impliedProb,
       estimatedProbability: best.estimatedProb,
       isSkip: true,
-      skipReason: skipCheck.reason,
+      skipReason: skipReason,
     };
   }
   
@@ -1417,7 +1448,19 @@ function buildSmartAccumulators(
     if (!a.estimatedProbability || !a.impliedProbability) continue;
     
     const edge = a.estimatedProbability - a.impliedProbability;
-    if (edge <= 0) continue;
+    
+    // VALIDAÇÃO TRIPLA DE SEGURANÇA
+    if (edge <= 3) continue; // Aumentado de 0 para 3 (mínimo 3% de edge)
+    if (a.estimatedProbability <= a.impliedProbability) continue; // Redundante mas seguro
+    if (a.confidence < 15) continue; // Mínimo 15% de confiança
+    
+    // Log de segurança
+    secureLog('info', 'SMART_ACC_ELIGIBLE', {
+      game: `${game.homeTeam} vs ${game.awayTeam}`,
+      edge: Math.round(edge * 100) / 100,
+      confidence: a.confidence,
+      odd: a.recommendedOdd || 'N/A'
+    });
     
     // Calcular odd do jogo
     let odd = 0;
@@ -2590,6 +2633,27 @@ function translateCachedData(cachedData: any, lang: string): any {
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
+
+  // MODO DE MANUTENÇÃO - Desativar recomendações temporariamente
+  const MAINTENANCE_MODE = Deno.env.get('EUGINE_MAINTENANCE_MODE') === 'true';
+  if (MAINTENANCE_MODE) {
+    secureLog('warn', 'MAINTENANCE_MODE_ACTIVE', {});
+    return new Response(
+      JSON.stringify({
+        error: 'Sistema em manutenção. Voltaremos em breve.',
+        games: [],
+        remaining: 0,
+        isToday: false,
+        alertMessage: '⚠️ Sistema temporariamente indisponível para manutenção.',
+        foundDate: new Date(),
+        dailySearchesRemaining: 0,
+        isTrial: false,
+        userTier: 'maintenance',
+        smartAccumulators: []
+      }),
+      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
