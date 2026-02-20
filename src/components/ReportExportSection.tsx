@@ -33,19 +33,24 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     }).replace(/[/:]/g, '-').replace(', ', '_');
   };
 
+  const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
   const generateReportCanvas = async (): Promise<HTMLCanvasElement> => {
     if (!contentRef.current) throw new Error('No content ref');
     const element = contentRef.current;
     
+    const canvasWidth = isMobile() ? Math.max(element.scrollWidth, 800) : Math.max(element.scrollWidth, 1200);
+    
     const wrapper = document.createElement('div');
     wrapper.style.cssText = `
-      position: absolute;
+      position: fixed;
       left: -9999px;
       top: 0;
-      width: ${Math.max(element.scrollWidth, 1200)}px;
+      width: ${canvasWidth}px;
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
       padding: 30px;
       overflow: hidden;
+      z-index: -1;
     `;
     
     const header = document.createElement('div');
@@ -79,9 +84,11 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
 
     const actualHeight = wrapper.scrollHeight;
     
+    const scale = isMobile() ? 1 : 2;
+    
     const canvas = await html2canvas(wrapper, {
       backgroundColor: '#0f172a',
-      scale: 2,
+      scale,
       useCORS: true,
       logging: false,
       allowTaint: true,
@@ -97,14 +104,40 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     return canvas;
   };
 
+  const downloadFile = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    if (isMobile()) {
+      // Mobile: open in new tab so user can long-press to save
+      const w = window.open(url, '_blank');
+      if (!w) {
+        // Popup blocked fallback
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      // Revoke after delay to allow download
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } else {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const exportAsImage = async () => {
     setExportingImage(true);
     try {
       const canvas = await generateReportCanvas();
-      const link = document.createElement('a');
-      link.download = `eugine-report-${getFormattedDate()}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Blob failed')), 'image/png', 0.9);
+      });
+      downloadFile(blob, `eugine-report-${getFormattedDate()}.png`);
     } catch (error) {
       console.error('Error exporting image:', error);
     } finally {
@@ -583,12 +616,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     try {
       const htmlContent = generateStandaloneHtml();
       const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = `eugine-report-${getFormattedDate()}.html`;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
+      downloadFile(blob, `eugine-report-${getFormattedDate()}.html`);
     } catch (error) {
       console.error('Error exporting HTML:', error);
     } finally {
@@ -601,30 +629,32 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     try {
       const canvas = await generateReportCanvas();
       const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/png', 1.0);
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/png', 0.9);
       });
       const file = new File([blob], `eugine-report-${getFormattedDate()}.png`, { type: 'image/png' });
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'EUGINE Analytics - Premium Report',
-          text: `🎯 EUGINE Analytics | ${t('export.totalGames')}: ${games.length}`,
-        });
-      } else {
-        // Fallback: download PNG + open WhatsApp with text
-        const link = document.createElement('a');
-        link.download = file.name;
-        link.href = canvas.toDataURL('image/png', 1.0);
-        link.click();
+      // Try Web Share API first (works well on Android)
+      if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function') {
+        try {
+          const shareData = { files: [file], title: 'EUGINE Analytics', text: `🎯 EUGINE Analytics | ${t('export.totalGames')}: ${games.length}` };
+          if (navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            return;
+          }
+        } catch (shareErr) {
+          if ((shareErr as Error).name === 'AbortError') return;
+          console.warn('Share API failed, using fallback', shareErr);
+        }
+      }
 
-        const text = `🎯 *EUGINE Analytics - Premium Report*\n📅 ${new Date().toLocaleDateString(locale)}\n📊 ${t('export.totalGames')}: ${games.length}`;
+      // Fallback: download PNG + open WhatsApp with text
+      downloadFile(blob, file.name);
+      const text = `🎯 *EUGINE Analytics - Premium Report*\n📅 ${new Date().toLocaleDateString(locale)}\n📊 ${t('export.totalGames')}: ${games.length}`;
+      setTimeout(() => {
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-      }
+      }, 500);
     } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        console.error('Error sharing via WhatsApp:', error);
-      }
+      console.error('Error sharing via WhatsApp:', error);
     } finally {
       setSharingWhatsApp(false);
     }
