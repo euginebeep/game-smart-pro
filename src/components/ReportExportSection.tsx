@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download, FileImage, FileCode, Loader2, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
 import { Game } from '@/types/game';
 import html2canvas from 'html2canvas';
 
@@ -13,6 +14,7 @@ interface ReportExportSectionProps {
 
 export function ReportExportSection({ games, userTier, contentRef }: ReportExportSectionProps) {
   const { t, language } = useLanguage();
+  const { toast } = useToast();
   const [exportingImage, setExportingImage] = useState(false);
   const [exportingHtml, setExportingHtml] = useState(false);
   const [sharingWhatsApp, setSharingWhatsApp] = useState(false);
@@ -138,8 +140,10 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
         canvas.toBlob(b => b ? resolve(b) : reject(new Error('Blob failed')), 'image/png', 0.9);
       });
       downloadFile(blob, `eugine-report-${getFormattedDate()}.png`);
+      toast({ title: '✅ ' + (t('export.successImage') || 'Imagem exportada com sucesso!') });
     } catch (error) {
       console.error('Error exporting image:', error);
+      toast({ title: '❌ ' + (t('export.errorImage') || 'Erro ao exportar imagem'), variant: 'destructive' });
     } finally {
       setExportingImage(false);
     }
@@ -617,8 +621,10 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
       const htmlContent = generateStandaloneHtml();
       const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
       downloadFile(blob, `eugine-report-${getFormattedDate()}.html`);
+      toast({ title: '✅ ' + (t('export.successHtml') || 'Relatório HTML exportado com sucesso!') });
     } catch (error) {
       console.error('Error exporting HTML:', error);
+      toast({ title: '❌ ' + (t('export.errorHtml') || 'Erro ao exportar HTML'), variant: 'destructive' });
     } finally {
       setExportingHtml(false);
     }
@@ -639,6 +645,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
           const shareData = { files: [file], title: 'EUGINE Analytics', text: `🎯 EUGINE Analytics | ${t('export.totalGames')}: ${games.length}` };
           if (navigator.canShare(shareData)) {
             await navigator.share(shareData);
+            toast({ title: '✅ ' + (t('export.successWhatsapp') || 'Compartilhado com sucesso!') });
             return;
           }
         } catch (shareErr) {
@@ -653,8 +660,10 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
       setTimeout(() => {
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
       }, 500);
+      toast({ title: '✅ ' + (t('export.successWhatsapp') || 'Imagem baixada! Anexe no WhatsApp.') });
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
+      toast({ title: '❌ ' + (t('export.errorWhatsapp') || 'Erro ao compartilhar'), variant: 'destructive' });
     } finally {
       setSharingWhatsApp(false);
     }
