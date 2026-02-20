@@ -38,7 +38,14 @@ export function AccumulatorCard({
   const totalOdd = bets.reduce((acc, b) => acc * b.odd, 1);
   const potentialReturn = Math.round(betAmount * totalOdd * 100) / 100;
   const potentialProfit = Math.round((potentialReturn - betAmount) * 100) / 100;
-  const edge = bookmakerChance ? chancePercent - bookmakerChance : 0;
+  
+  // Calcular bookmaker chance via odds se não foi passado
+  const calculatedBookmaker = bookmakerChance || Math.round(
+    bets.reduce((acc, b) => acc * ((1 / b.odd) * 0.93), 1) * 100
+  );
+  const edge = calculatedBookmaker > 0 && chancePercent > calculatedBookmaker
+    ? chancePercent - calculatedBookmaker
+    : 0;
 
   // ===== CORES POR RISCO =====
   const riskStyles = {
@@ -152,7 +159,7 @@ export function AccumulatorCard({
               <p className={`text-xl sm:text-2xl font-black ${
                 edge > 0 ? 'text-emerald-400' : 'text-muted-foreground'
               }`}>
-                {edge > 0 ? `+${edge}%` : '—'}
+                {edge > 0 ? `+${edge}%` : '0%'}
               </p>
               {edge > 0 && (
                 <div className="absolute inset-0 bg-emerald-400/5 rounded-xl pointer-events-none" />
@@ -161,17 +168,17 @@ export function AccumulatorCard({
           </div>
 
           {/* ===== BARRA DE EDGE (PROGRESSO VISUAL = DOPAMINA) ===== */}
-          {bookmakerChance !== undefined && edge > 0 && (
+          {calculatedBookmaker > 0 && edge > 0 && (
             <div className="mt-3">
               <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                <span>{t('accumulators.bookmakerSays') || 'Casa diz'} {bookmakerChance}%</span>
+                <span>{t('accumulators.bookmakerSays') || 'Casa diz'} {calculatedBookmaker}%</span>
                 <span className="font-bold text-emerald-400">EUGINE {chancePercent}%</span>
               </div>
               <div className="h-2 rounded-full bg-secondary/80 overflow-hidden">
                 <div className="h-full relative">
                   <div
                     className="absolute inset-y-0 left-0 bg-muted-foreground/30 rounded-full"
-                    style={{ width: `${Math.min(100, bookmakerChance)}%` }}
+                    style={{ width: `${Math.min(100, calculatedBookmaker)}%` }}
                   />
                   <div
                     className="absolute inset-y-0 left-0 bg-emerald-400 rounded-full transition-all duration-700"

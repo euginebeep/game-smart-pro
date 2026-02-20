@@ -1510,6 +1510,22 @@ function buildSmartAccumulators(
     if (allByEV.length >= 6) combinations.push(allByEV.slice(0, 6));
   }
   
+  // Estratégia F: "Compacta" — top 4 por edge (mínimo viável)
+  if (allByEdge.length >= 4) {
+    combinations.push(allByEdge.slice(0, 4));
+  }
+  
+  // Estratégia G: "Mix" — 2 de cada faixa disponível
+  const mixCombo: SmartAccBet[] = [];
+  if (lowOdd.length >= 1) mixCombo.push(lowOdd[0]);
+  if (lowOdd.length >= 2) mixCombo.push(lowOdd[1]);
+  if (midOdd.length >= 1) mixCombo.push(midOdd[0]);
+  if (midOdd.length >= 2) mixCombo.push(midOdd[1]);
+  if (highOdd.length >= 1) mixCombo.push(highOdd[0]);
+  if (mixCombo.length >= 4) {
+    combinations.push(mixCombo.slice(0, Math.min(6, mixCombo.length)));
+  }
+  
   const evaluated: SmartAccumulator[] = [];
   const usedCombos = new Set<string>();
   
@@ -1527,10 +1543,10 @@ function buildSmartAccumulators(
     const expectedValue = (combinedProb / 100) * totalOdd;
     
     if (totalOdd < 3) continue;
-    if (totalOdd > 300) continue;
-    if (combinedProb < 0.5) continue;
-    if (combinedEdge < 0.1) continue;
-    if (expectedValue < 0.5) continue;
+    if (totalOdd > 200) continue;
+    if (combinedProb < 1) continue;
+    if (combinedEdge < 0) continue;
+    // expectedValue filter removed — too restrictive
     
     const comboId = fixtureIds.sort().join('-');
     if (usedCombos.has(comboId)) continue;
@@ -1557,7 +1573,7 @@ function buildSmartAccumulators(
   
   evaluated.sort((a, b) => b.qualityScore - a.qualityScore);
   
-  const MIN_QUALITY = 0.8;
+  const MIN_QUALITY = 0.1;
   const selected = evaluated
     .filter(acc => acc.qualityScore >= MIN_QUALITY)
     .slice(0, 3);
