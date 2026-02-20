@@ -218,6 +218,12 @@ function calculateEugineChance(bets: Array<{ odd: number; estimatedProb?: number
     eugineChance = Math.min(eugineChance, Math.round(maxEdge));
   }
   
+  // CRITICAL FIX: Se eugineChance < bookmakerChance, não temos edge — usar bookmaker + 1
+  if (bookmakerChance > 0 && eugineChance < bookmakerChance) {
+    // Sem edge real, colocar igual ao bookmaker (mostra 0% de vantagem)
+    eugineChance = bookmakerChance;
+  }
+  
   return Math.max(1, eugineChance);
 }
 
@@ -255,15 +261,9 @@ function getEstimatedProbForMarket(game: Game, market: string): number | undefin
   if (marketUpper.includes('AWAY') && isAwayType) return analysis.estimatedProbability;
   if (marketUpper.includes('UNDER') && isUnderType) return analysis.estimatedProbability;
   
-  // Different market — estimate proportionally using edge ratio (conservative: 50% of edge)
-  if (analysis.impliedProbability && analysis.impliedProbability > 0) {
-    const edgeRatio = analysis.estimatedProbability / analysis.impliedProbability;
-    const oddForMarket = getOddForMarket(game, market);
-    const impliedForThisMarket = (1 / oddForMarket) * 100;
-    const adjustedEdge = 1 + (edgeRatio - 1) * 0.5;
-    return Math.min(95, Math.round(impliedForThisMarket * adjustedEdge));
-  }
-  
+  // CRITICAL FIX: Do NOT cross-estimate between different markets.
+  // When the analysis recommends OVER 2.5 but the accumulator needs HOME WIN,
+  // we have NO reliable estimate. Return undefined to use bookmaker odds as fallback.
   return undefined;
 }
 
@@ -583,8 +583,10 @@ function generateAccumulators(games: Game[], t: (key: string) => string, isPremi
     return uniqueMatches.size === acc.bets.length;
   });
 
-  // Filter by minimum chance thresholds
+  // Filter by minimum chance thresholds AND require positive edge
   return validAccumulators.filter(acc => {
+    // CRITICAL: Must have eugineChance > bookmakerChance (positive edge)
+    if (acc.bookmakerChance && acc.chancePercent <= acc.bookmakerChance) return false;
     if (acc.riskLevel === 'low' && acc.chancePercent < 25) return false;
     if (acc.riskLevel === 'medium' && acc.chancePercent < 10) return false;
     if (acc.riskLevel === 'high' && acc.chancePercent < 3) return false;
