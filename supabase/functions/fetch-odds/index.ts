@@ -1367,6 +1367,225 @@ function analyzeSimple(game: Game, lang: string = 'pt'): BettingAnalysis {
   };
 }
 
+// ============================================================================
+// SMART ACCUMULATOR BUILDER — Seleção Otimizada de Acumuladas 5-6 Pernas
+// ============================================================================
+
+interface SmartAccBet {
+  fixtureId: string;
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
+  betType: string;
+  betLabel: string;
+  odd: number;
+  estimatedProb: number;
+  impliedProb: number;
+  edge: number;
+  startTime: string;
+}
+
+interface SmartAccumulator {
+  id: string;
+  title: string;
+  subtitle: string;
+  emoji: string;
+  badge: string;
+  bets: SmartAccBet[];
+  totalOdd: number;
+  combinedProb: number;
+  bookmakerProb: number;
+  combinedEdge: number;
+  expectedValue: number;
+  suggestedStake: number;
+  riskLevel: 'medium' | 'high';
+  qualityScore: number;
+}
+
+function buildSmartAccumulators(
+  analyzedGames: any[],
+  lang: string = 'pt'
+): SmartAccumulator[] {
+  
+  const eligible: SmartAccBet[] = [];
+  
+  for (const game of analyzedGames) {
+    if (!game.analysis || game.analysis.isSkip) continue;
+    
+    const a = game.analysis;
+    const edge = (a.estimatedProbability || 0) - (a.impliedProbability || 0);
+    
+    if (!a.estimatedProbability || !a.impliedProbability) continue;
+    if (edge <= 0) continue;
+    
+    const betAmount = 40;
+    const odd = a.profit ? (a.profit / betAmount) + 1 : 0;
+    if (odd < 1.15 || odd > 4.50) continue;
+    if (a.estimatedProbability < 15) continue;
+    
+    eligible.push({
+      fixtureId: game.id || game.fixtureId || `${game.homeTeam}-${game.awayTeam}`,
+      homeTeam: game.homeTeam,
+      awayTeam: game.awayTeam,
+      league: game.league,
+      betType: a.type || '',
+      betLabel: a.type || '',
+      odd: Math.round(odd * 100) / 100,
+      estimatedProb: a.estimatedProbability,
+      impliedProb: a.impliedProbability,
+      edge: edge,
+      startTime: game.startTime || '',
+    });
+  }
+  
+  if (eligible.length < 5) return [];
+  
+  const lowOdd = eligible.filter(b => b.odd >= 1.15 && b.odd < 1.60);
+  const midOdd = eligible.filter(b => b.odd >= 1.60 && b.odd < 2.50);
+  const highOdd = eligible.filter(b => b.odd >= 2.50 && b.odd <= 4.50);
+  
+  lowOdd.sort((a, b) => b.edge - a.edge);
+  midOdd.sort((a, b) => b.edge - a.edge);
+  highOdd.sort((a, b) => b.edge - a.edge);
+  
+  const combinations: SmartAccBet[][] = [];
+  
+  // Estratégia A: "Equilibrada"
+  if (lowOdd.length >= 2 && midOdd.length >= 2 && highOdd.length >= 1) {
+    combinations.push([...lowOdd.slice(0, 2), ...midOdd.slice(0, 2), ...highOdd.slice(0, 1)]);
+    if (highOdd.length >= 2) {
+      combinations.push([...lowOdd.slice(0, 2), ...midOdd.slice(0, 2), ...highOdd.slice(0, 2)]);
+    }
+  }
+  
+  // Estratégia B: "Segura"
+  if (lowOdd.length >= 3 && midOdd.length >= 2) {
+    combinations.push([...lowOdd.slice(0, 3), ...midOdd.slice(0, 2)]);
+    if (midOdd.length >= 3) {
+      combinations.push([...lowOdd.slice(0, 3), ...midOdd.slice(0, 3)]);
+    }
+  }
+  
+  // Estratégia C: "Ousada"
+  if (lowOdd.length >= 1 && midOdd.length >= 2 && highOdd.length >= 2) {
+    combinations.push([...lowOdd.slice(0, 1), ...midOdd.slice(0, 2), ...highOdd.slice(0, 2)]);
+    if (highOdd.length >= 3) {
+      combinations.push([...lowOdd.slice(0, 1), ...midOdd.slice(0, 2), ...highOdd.slice(0, 3)]);
+    }
+  }
+  
+  // Estratégia D: "Máximo Edge"
+  const allByEdge = [...eligible].sort((a, b) => b.edge - a.edge);
+  if (allByEdge.length >= 5) {
+    combinations.push(allByEdge.slice(0, 5));
+    if (allByEdge.length >= 6) combinations.push(allByEdge.slice(0, 6));
+  }
+  
+  // Estratégia E: "Máximo EV"
+  const allByEV = [...eligible].sort((a, b) => {
+    const evA = (a.estimatedProb / 100) * a.odd;
+    const evB = (b.estimatedProb / 100) * b.odd;
+    return evB - evA;
+  });
+  if (allByEV.length >= 5) {
+    combinations.push(allByEV.slice(0, 5));
+    if (allByEV.length >= 6) combinations.push(allByEV.slice(0, 6));
+  }
+  
+  const evaluated: SmartAccumulator[] = [];
+  const usedCombos = new Set<string>();
+  
+  for (const combo of combinations) {
+    const fixtureIds = combo.map(b => b.fixtureId);
+    if (new Set(fixtureIds).size !== fixtureIds.length) continue;
+    
+    const leagueTime = combo.map(b => `${b.league}-${b.startTime}`);
+    if (new Set(leagueTime).size !== leagueTime.length) continue;
+    
+    const totalOdd = combo.reduce((acc, b) => acc * b.odd, 1);
+    const combinedProb = combo.reduce((acc, b) => acc * (b.estimatedProb / 100), 1) * 100;
+    const bookmakerProb = combo.reduce((acc, b) => acc * (b.impliedProb / 100), 1) * 100;
+    const combinedEdge = combinedProb - bookmakerProb;
+    const expectedValue = (combinedProb / 100) * totalOdd;
+    
+    if (totalOdd < 5) continue;
+    if (totalOdd > 150) continue;
+    if (combinedProb < 2) continue;
+    if (combinedEdge < 0.5) continue;
+    if (expectedValue < 0.9) continue;
+    
+    const comboId = fixtureIds.sort().join('-');
+    if (usedCombos.has(comboId)) continue;
+    usedCombos.add(comboId);
+    
+    const uniqueLeagues = new Set(combo.map(b => b.league)).size;
+    const diversityBonus = uniqueLeagues / combo.length;
+    const qualityScore = expectedValue * (1 + combinedEdge / 10) * (1 + diversityBonus);
+    
+    evaluated.push({
+      id: `smart-${combo.length}-${Math.round(totalOdd * 100)}`,
+      title: '', subtitle: '', emoji: '', badge: '',
+      bets: combo,
+      totalOdd: Math.round(totalOdd * 100) / 100,
+      combinedProb: Math.round(combinedProb * 10) / 10,
+      bookmakerProb: Math.round(bookmakerProb * 10) / 10,
+      combinedEdge: Math.round(combinedEdge * 10) / 10,
+      expectedValue: Math.round(expectedValue * 1000) / 1000,
+      suggestedStake: totalOdd > 30 ? 20 : totalOdd > 15 ? 30 : 50,
+      riskLevel: totalOdd > 20 ? 'high' : 'medium',
+      qualityScore,
+    });
+  }
+  
+  evaluated.sort((a, b) => b.qualityScore - a.qualityScore);
+  
+  const MIN_QUALITY = 0.8;
+  const selected = evaluated
+    .filter(acc => acc.qualityScore >= MIN_QUALITY)
+    .slice(0, 3);
+  
+  const titles = lang === 'en' 
+    ? { safe: 'Safe Combo', balanced: 'Balanced Combo', bold: 'Bold Combo' }
+    : lang === 'es'
+    ? { safe: 'Combo Seguro', balanced: 'Combo Equilibrado', bold: 'Combo Audaz' }
+    : lang === 'it'
+    ? { safe: 'Combo Sicuro', balanced: 'Combo Equilibrato', bold: 'Combo Audace' }
+    : { safe: 'Combo Seguro', balanced: 'Combo Equilibrado', bold: 'Combo Ousado' };
+  
+  const subtitles = lang === 'en'
+    ? { safe: 'Higher probability, moderate return', balanced: 'Best balance of probability × return', bold: 'Lower probability, high return' }
+    : lang === 'es'
+    ? { safe: 'Mayor probabilidad, retorno moderado', balanced: 'Mejor balance probabilidad × retorno', bold: 'Menor probabilidad, alto retorno' }
+    : lang === 'it'
+    ? { safe: 'Maggiore probabilità, ritorno moderato', balanced: 'Miglior equilibrio probabilità × ritorno', bold: 'Minore probabilità, alto ritorno' }
+    : { safe: 'Maior probabilidade, retorno moderado', balanced: 'Melhor equilíbrio probabilidade × retorno', bold: 'Menor probabilidade, retorno alto' };
+  
+  for (let i = 0; i < selected.length; i++) {
+    const acc = selected[i];
+    if (i === 0 || acc.totalOdd <= 15) {
+      acc.emoji = '🛡️';
+      acc.title = `${titles.safe} — ${acc.bets.length} ${lang === 'en' ? 'games' : lang === 'es' ? 'juegos' : lang === 'it' ? 'partite' : 'jogos'}`;
+      acc.subtitle = subtitles.safe;
+      acc.badge = lang === 'en' ? 'Safest' : lang === 'es' ? 'Más seguro' : lang === 'it' ? 'Più sicuro' : 'Mais seguro';
+      acc.riskLevel = 'medium';
+    } else if (i === 1 || acc.totalOdd <= 35) {
+      acc.emoji = '🧠';
+      acc.title = `${titles.balanced} — ${acc.bets.length} ${lang === 'en' ? 'games' : lang === 'es' ? 'juegos' : lang === 'it' ? 'partite' : 'jogos'}`;
+      acc.subtitle = subtitles.balanced;
+      acc.badge = lang === 'en' ? 'Balanced' : lang === 'es' ? 'Equilibrado' : lang === 'it' ? 'Equilibrato' : 'Equilibrado';
+      acc.riskLevel = 'medium';
+    } else {
+      acc.emoji = '🚀';
+      acc.title = `${titles.bold} — ${acc.bets.length} ${lang === 'en' ? 'games' : lang === 'es' ? 'juegos' : lang === 'it' ? 'partite' : 'jogos'}`;
+      acc.subtitle = subtitles.bold;
+      acc.badge = lang === 'en' ? 'Bold' : lang === 'es' ? 'Audaz' : lang === 'it' ? 'Audace' : 'Ousado';
+      acc.riskLevel = 'high';
+    }
+  }
+  
+  return selected;
+}
+
 function analyzeBet(game: Game, lang: string = 'pt'): BettingAnalysis {
   if (game.advancedData && Object.keys(game.advancedData).length > 0) {
     return analyzeAdvanced(game, lang);
@@ -2273,8 +2492,21 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
   
   secureLog('info', 'Jogos processados com sucesso', { count: gamesWithOdds.length });
   
+  // ===== SMART ACCUMULATOR BUILDER (PREMIUM) =====
+  let smartAccumulators: SmartAccumulator[] = [];
+  try {
+    smartAccumulators = buildSmartAccumulators(gamesWithOdds, lang || 'pt');
+    secureLog('info', 'Smart Accumulators built', { 
+      eligible: gamesWithOdds.filter((g: any) => g.analysis && !g.analysis.isSkip).length,
+      generated: smartAccumulators.length,
+    });
+  } catch (smartErr) {
+    secureLog('warn', 'Smart Accumulator error', { error: String(smartErr) });
+  }
+
   return { 
     games: gamesWithOdds,
+    smartAccumulators: smartAccumulators,
     remaining: 100,
     isToday: diaEncontrado === 0,
     alertMessage: mensagem,
@@ -2859,6 +3091,17 @@ serve(async (req) => {
       filteredData.userCountry = userCountry;
       filteredData.registrationSource = registrationSource;
       
+      // ===== SMART ACCUMULATOR BUILDER (PREMIUM - from cached data) =====
+      if (userTier === 'premium' && filteredData.games?.length > 0) {
+        try {
+          filteredData.smartAccumulators = buildSmartAccumulators(filteredData.games, validLang);
+          secureLog('info', 'Smart Accumulators built (cached path)', { generated: filteredData.smartAccumulators.length });
+        } catch (smartErr) {
+          secureLog('warn', 'Smart Accumulator error (cached)', { error: String(smartErr) });
+          filteredData.smartAccumulators = [];
+        }
+      }
+      
       // ===== SALVAR NO TRACKING AUTOMATICAMENTE =====
       try {
         const gamesToTrack = (filteredData.games || []).filter((g: any) => g.analysis && !g.analysis.isSkip);
@@ -2910,9 +3153,21 @@ serve(async (req) => {
     
     const filteredResult = filterDataByTier(translatedResult, userTier, registrationSource);
     
+    // ===== SMART ACCUMULATOR BUILDER (PREMIUM - fresh data) =====
+    let freshSmartAccumulators: SmartAccumulator[] = [];
+    if (userTier === 'premium' && filteredResult.games?.length > 0) {
+      try {
+        freshSmartAccumulators = buildSmartAccumulators(filteredResult.games, validLang);
+        secureLog('info', 'Smart Accumulators built (fresh path)', { generated: freshSmartAccumulators.length });
+      } catch (smartErr) {
+        secureLog('warn', 'Smart Accumulator error (fresh)', { error: String(smartErr) });
+      }
+    }
+    
     return new Response(
       JSON.stringify({ 
         ...filteredResult, 
+        smartAccumulators: freshSmartAccumulators,
         fromCache: false,
         dailySearchesRemaining: dailySearchInfo.remaining,
         isTrial: dailySearchInfo.is_trial,

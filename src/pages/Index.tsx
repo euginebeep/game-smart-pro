@@ -11,6 +11,7 @@ import { AccumulatorsSection } from '@/components/AccumulatorsSection';
 import { PremiumDoubleSection } from '@/components/PremiumDoubleSection';
 import { FavoritesDoubleSection } from '@/components/FavoritesDoubleSection';
 import { ZebraSection } from '@/components/ZebraSection';
+import { SmartAccumulatorSection } from '@/components/SmartAccumulatorSection';
 import { TrialBanner } from '@/components/TrialBanner';
 import { PricingSection } from '@/components/PricingSection';
 import { DailyLimitPricingCards } from '@/components/DailyLimitPricingCards';
@@ -51,6 +52,7 @@ const Index = () => {
   const [isFreeReport, setIsFreeReport] = useState(false);
   const [isFreeSource, setIsFreeSource] = useState(false);
   const [limitConfig, setLimitConfig] = useState<{ maxAccumulators?: number; maxZebras?: number; maxDoubles?: number }>({});
+  const [smartAccumulators, setSmartAccumulators] = useState<any[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('eugine_onboarding_done'));
   const previousLanguage = useRef(language);
   const gamesContentRef = useRef<HTMLDivElement>(null);
@@ -104,6 +106,7 @@ const Index = () => {
           setIsFreeReport(parsed.isFreeReport ?? false);
           setIsFreeSource(parsed.isFreeSource ?? false);
           if (parsed.limitConfig) setLimitConfig(parsed.limitConfig);
+          if (parsed.smartAccumulators) setSmartAccumulators(parsed.smartAccumulators);
         }
       }
     } catch (e) {
@@ -184,6 +187,10 @@ const Index = () => {
         newLimitConfig.maxDoubles = result.maxDoubles;
         setLimitConfig(newLimitConfig);
       }
+      // Smart Accumulators
+      if ((result as any).smartAccumulators) {
+        setSmartAccumulators((result as any).smartAccumulators);
+      }
 
       // Save cooldown timestamp
       sessionStorage.setItem(COOLDOWN_KEY, Date.now().toString());
@@ -200,6 +207,7 @@ const Index = () => {
           isFreeReport: result.isFreeReport,
           isFreeSource: result.isFreeSource,
           limitConfig: newLimitConfig,
+          smartAccumulators: (result as any).smartAccumulators || [],
         }));
       } catch (e) {
         console.error('Error saving session cache:', e);
@@ -395,6 +403,16 @@ const Index = () => {
                     />
                   ))}
                 </div>
+
+                {/* Smart Accumulator — Premium */}
+                <SmartAccumulatorSection
+                  smartAccumulators={smartAccumulators}
+                  isPremium={userTier === 'premium'}
+                  onUpgrade={() => {
+                    const pricingEl = document.querySelector('[data-pricing-section]');
+                    if (pricingEl) pricingEl.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                />
 
                 {/* Section 1: Accumulators */}
                 <AccumulatorsSection games={games} userTier={userTier} maxAccumulators={limitConfig.maxAccumulators} />

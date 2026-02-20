@@ -112,8 +112,9 @@ export async function fetchOdds(language: string = 'pt'): Promise<OddsResponse> 
       foundDate: new Date(data.foundDate),
       dailySearchesRemaining: data.dailySearchesRemaining,
       isTrial: data.isTrial,
-      userTier: data.userTier
-    };
+      userTier: data.userTier,
+      smartAccumulators: data.smartAccumulators || [],
+    } as any;
 
   } catch (error) {
     console.error('Erro ao buscar odds:', error);
