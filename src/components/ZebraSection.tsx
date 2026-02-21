@@ -68,8 +68,8 @@ export function ZebraSection({ games, userTier = 'free', maxZebras }: ZebraSecti
           const config = chanceMap[z.level];
           const betAmount = 20;
 
-          // bookmakerChance = implied probability from odds
-          const bookmakerChance = Math.round((1 / bet.odd) * 93);
+          // bookmakerChance = de-vigged implied probability (7% margin removed)
+          const bookmakerChance = Math.round((1 / bet.odd) * 0.93 * 100);
 
           return (
             <AccumulatorCard

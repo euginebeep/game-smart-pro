@@ -394,7 +394,9 @@ const Index = () => {
 
                 {/* Match Cards - New Compact Design */}
                 <div className="space-y-4">
-                  {filteredGames.map((game, index) => (
+                  {filteredGames
+                    .filter(game => !game.analysis?.isSkip)
+                    .map((game, index) => (
                     <MatchCard 
                       key={game.id} 
                       game={game} 
