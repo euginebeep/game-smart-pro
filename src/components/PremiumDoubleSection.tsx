@@ -27,9 +27,14 @@ export function PremiumDoubleSection({ games }: PremiumDoubleSectionProps) {
     { match: 'Germany x Netherlands', bet: t('accumulators.over25'), odd: 1.85 }
   ];
 
-  const combinedProb = bets.reduce((acc: number, b) => acc * ((1 / b.odd) * 0.93), 1);
-  const chancePercent = Math.round(combinedProb * 100);
-  const bookmakerChance = Math.round(bets.reduce((acc: number, b) => acc * (1 / b.odd), 1) * 100);
+  // EUGINE's estimate: use estimatedProb when available, otherwise raw implied probability
+  const combinedEugineProb = bets.reduce((acc: number, b) => {
+    const prob = b.estimatedProb ? b.estimatedProb / 100 : (1 / b.odd);
+    return acc * prob;
+  }, 1);
+  const chancePercent = Math.round(combinedEugineProb * 100);
+  // Bookmaker fair chance (de-vigged, 7% margin removed)
+  const bookmakerChance = Math.round(bets.reduce((acc: number, b) => acc * ((1 / b.odd) * 0.93), 1) * 100);
 
   return (
     <section className="mt-8 sm:mt-10 lg:mt-12">
