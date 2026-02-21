@@ -176,6 +176,7 @@ export interface BettingAnalysis {
   estimatedProbability?: number; // Prob que o EUGINE calcula
   isSkip?: boolean;
   skipReason?: string;
+  isLowConfidence?: boolean;
   factors?: AnalysisFactor[];
 }
 
