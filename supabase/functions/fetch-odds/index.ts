@@ -228,6 +228,9 @@ interface AdvancedGameData {
     draws: number;
     avgGoals: number;
     lastGames: { home: number; away: number; date: string }[];
+    homeWinRate?: number;
+    awayWinRate?: number;
+    drawRate?: number;
   };
   homeStats?: TeamStats;
   awayStats?: TeamStats;
@@ -246,7 +249,41 @@ interface AdvancedGameData {
     awayGoals?: string;
     advice?: string;
     under_over?: string;
+    // Enhanced prediction data
+    homeWinPct?: number;
+    drawPct?: number;
+    awayWinPct?: number;
+    homeFormPct?: number;
+    awayFormPct?: number;
+    homeAttackPct?: number;
+    awayAttackPct?: number;
+    homeDefensePct?: number;
+    awayDefensePct?: number;
+    homeTotalPct?: number;
+    awayTotalPct?: number;
   };
+  // Enhanced standings data
+  standings?: {
+    totalTeams: number;
+    homePosition: number | null;
+    awayPosition: number | null;
+    homePoints: number | null;
+    awayPoints: number | null;
+    homeGoalDiff: number | null;
+    awayGoalDiff: number | null;
+  };
+  // Home/Away specific stats from standings
+  homeGoalsScored?: number;
+  homeMatchesPlayed?: number;
+  homeGoalsConceded?: number;
+  homeHomeGoalsFor?: number;
+  homeHomeGoalsAgainst?: number;
+  awayGoalsScored?: number;
+  awayMatchesPlayed?: number;
+  awayGoalsConceded?: number;
+  awayAwayGoalsFor?: number;
+  awayAwayGoalsAgainst?: number;
+  h2hAvgGoals?: number;
   // ===== PREMIUM DATA =====
   cornersData?: CornersData;
   cardsData?: CardsData;
@@ -1240,6 +1277,106 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   awayWinScore = Math.round(poissonProbs.awayWin * 0.6 + awayWinScore * 0.4);
   drawScore = Math.round(poissonProbs.draw * 0.6 + drawScore * 0.4);
 
+  // ============= CALIBRAÇÃO COM PREDICTIONS DA API =============
+  const apiPred = game.advancedData?.apiPrediction;
+  
+  if (apiPred) {
+    const apiHomePct = apiPred.homeWinPct || 0;
+    const apiAwayPct = apiPred.awayWinPct || 0;
+    const apiDrawPct = apiPred.drawPct || 0;
+    
+    if (apiHomePct > 0) {
+      // Mix: 60% our calculation + 40% API model
+      homeWinScore = Math.round(homeWinScore * 0.60 + apiHomePct * 0.40);
+      awayWinScore = Math.round(awayWinScore * 0.60 + apiAwayPct * 0.40);
+      drawScore = Math.round(drawScore * 0.60 + apiDrawPct * 0.40);
+      
+      secureLog('info', 'API_PRED_CALIBRATION', {
+        game: `${game.homeTeam} vs ${game.awayTeam}`,
+        apiHome: apiHomePct,
+        apiDraw: apiDrawPct,
+        apiAway: apiAwayPct,
+        adjustedHome: homeWinScore,
+        adjustedDraw: drawScore,
+        adjustedAway: awayWinScore,
+      });
+    }
+    
+    // Use API total strength for Over/Under adjustment
+    const apiTotalHome = apiPred.homeTotalPct || 50;
+    const apiTotalAway = apiPred.awayTotalPct || 50;
+    
+    if (apiTotalHome > 65 || apiTotalAway > 65) {
+      over25Score = Math.min(95, Math.round(over25Score * 1.05));
+    }
+  }
+
+  // ============= STANDINGS-BASED 1X2 SCORING (ENHANCED) =============
+  const standingsData = game.advancedData?.standings;
+  
+  if (standingsData && standingsData.homePosition && standingsData.awayPosition && standingsData.totalTeams) {
+    const totalTeams = standingsData.totalTeams;
+    const homePos = standingsData.homePosition;
+    const awayPos = standingsData.awayPosition;
+    const posDiff = awayPos - homePos; // Positive = home is better
+    const relativeStrength = posDiff / totalTeams; // -1 to +1
+    
+    // Adjust 1X2 scores based on relative position
+    if (relativeStrength > 0.40) {
+      homeWinScore += 10;
+      awayWinScore -= 5;
+    } else if (relativeStrength > 0.20) {
+      homeWinScore += 5;
+    } else if (relativeStrength < -0.40) {
+      awayWinScore += 10;
+      homeWinScore -= 5;
+    } else if (relativeStrength < -0.20) {
+      awayWinScore += 5;
+    }
+    
+    // Goal difference as quality factor
+    const homeGD = standingsData.homeGoalDiff || 0;
+    const awayGD = standingsData.awayGoalDiff || 0;
+    
+    if (homeGD > 10 && awayGD < -5) homeWinScore += 5;
+    if (awayGD > 10 && homeGD < -5) awayWinScore += 5;
+    
+    secureLog('info', 'STANDINGS_FACTOR', {
+      game: `${game.homeTeam} vs ${game.awayTeam}`,
+      homePos, awayPos, totalTeams, posDiff: posDiff,
+      relativeStrength: relativeStrength.toFixed(2),
+      homeGD, awayGD,
+    });
+  }
+  
+  // ============= HOME/AWAY SPECIFIC FORM FROM STANDINGS =============
+  const advData = game.advancedData;
+  
+  if (advData) {
+    const homeHomeGF = advData.homeHomeGoalsFor || 0;
+    const homeHomeGA = advData.homeHomeGoalsAgainst || 0;
+    const awayAwayGF = advData.awayAwayGoalsFor || 0;
+    const awayAwayGA = advData.awayAwayGoalsAgainst || 0;
+    
+    // Home team scores a lot at home AND away team concedes a lot away
+    if (homeHomeGF > homeHomeGA * 1.5 && awayAwayGA > awayAwayGF) {
+      homeWinScore += 6;
+      secureLog('info', 'HOME_AWAY_SPLIT_BOOST', {
+        game: `${game.homeTeam} vs ${game.awayTeam}`,
+        boost: 'home', homeHomeGF, homeHomeGA, awayAwayGF, awayAwayGA,
+      });
+    }
+    
+    // Away team scores a lot away AND home team concedes a lot at home
+    if (awayAwayGF > awayAwayGA * 1.3 && homeHomeGA > homeHomeGF) {
+      awayWinScore += 6;
+      secureLog('info', 'HOME_AWAY_SPLIT_BOOST', {
+        game: `${game.homeTeam} vs ${game.awayTeam}`,
+        boost: 'away', homeHomeGF, homeHomeGA, awayAwayGF, awayAwayGA,
+      });
+    }
+  }
+
   // ============= FILTRO 2: PERFIL OFENSIVO PARA OVER/UNDER =============
   if (adv?.homeStats && adv?.awayStats) {
     const homeGPG = adv.homeStats.avgGoalsScored || 0;
@@ -1796,12 +1933,25 @@ function getDayLabel(dataJogo: Date, lang: string = 'pt'): string {
   return `📅 ${dataJogo.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })}`;
 }
 
-// Helper function to make API-Football requests
+// ============================================================================
+// RATE LIMIT CONTROLLER FOR API-FOOTBALL
+// ============================================================================
+const API_CALLS_LIMIT = 30; // Max extra calls per execution
+let apiCallsUsed = 0;
+
+// Helper function to make API-Football requests with rate limit
 async function apiFootballRequest(endpoint: string, params: Record<string, string> = {}): Promise<any> {
+  if (apiCallsUsed >= API_CALLS_LIMIT) {
+    secureLog('warn', 'API_RATE_LIMIT_REACHED', { callsUsed: apiCallsUsed, limit: API_CALLS_LIMIT });
+    return { response: [] };
+  }
+  
+  apiCallsUsed++;
+  
   const url = new URL(`${API_BASE}${endpoint}`);
   Object.entries(params).forEach(([key, value]) => url.searchParams.append(key, value));
   
-  secureLog('info', 'API-Football request', { endpoint, params });
+  secureLog('info', 'API-Football request', { endpoint, params, callsUsed: apiCallsUsed });
   
   const response = await fetch(url.toString(), {
     method: 'GET',
@@ -1809,6 +1959,13 @@ async function apiFootballRequest(endpoint: string, params: Record<string, strin
       'x-apisports-key': API_KEY!,
     },
   });
+  
+  // Check rate limit headers from API-Football
+  const remaining = response.headers.get('x-ratelimit-requests-remaining');
+  if (remaining && parseInt(remaining) < 5) {
+    secureLog('warn', 'API_RATE_LIMIT_LOW', { remaining });
+    apiCallsUsed = API_CALLS_LIMIT; // Stop making extra calls
+  }
   
   if (!response.ok) {
     const errorText = await response.text();
@@ -1927,28 +2084,90 @@ async function fetchTeamStats(teamId: number, leagueId: number, season: number):
   }
 }
 
-async function fetchStandings(leagueId: number, season: number, teamId: number): Promise<{ position: number; form: string } | undefined> {
+// Cache for full standings (avoid repeated calls per league)
+const standingsCache = new Map<string, any>();
+
+async function fetchFullStandings(leagueId: number, season: number): Promise<any> {
+  const key = `${leagueId}-${season}`;
+  
+  if (standingsCache.has(key)) {
+    return standingsCache.get(key);
+  }
+  
   try {
     const data = await apiFootballRequest('/standings', {
       league: leagueId.toString(),
       season: season.toString()
     });
     
-    if (!data.response || !data.response[0]?.league?.standings) return undefined;
+    if (!data.response || !data.response[0]?.league?.standings) return null;
     
-    const standings = data.response[0].league.standings[0];
-    const teamStanding = standings.find((s: any) => s.team.id === teamId);
+    const standings = data.response[0].league.standings;
+    const table = Array.isArray(standings[0]) ? standings[0] : standings;
     
-    if (!teamStanding) return undefined;
-    
-    return {
-      position: teamStanding.rank,
-      form: teamStanding.form || ''
+    const result = {
+      totalTeams: table.length,
+      teams: table.map((entry: any) => ({
+        teamId: entry.team?.id,
+        teamName: entry.team?.name,
+        rank: entry.rank,
+        points: entry.points,
+        goalsDiff: entry.goalsDiff,
+        played: entry.all?.played || 0,
+        win: entry.all?.win || 0,
+        draw: entry.all?.draw || 0,
+        lose: entry.all?.lose || 0,
+        goalsFor: entry.all?.goals?.for || 0,
+        goalsAgainst: entry.all?.goals?.against || 0,
+        form: entry.form || '',
+        homeWin: entry.home?.win || 0,
+        homeDraw: entry.home?.draw || 0,
+        homeLose: entry.home?.lose || 0,
+        homeGoalsFor: entry.home?.goals?.for || 0,
+        homeGoalsAgainst: entry.home?.goals?.against || 0,
+        awayWin: entry.away?.win || 0,
+        awayDraw: entry.away?.draw || 0,
+        awayLose: entry.away?.lose || 0,
+        awayGoalsFor: entry.away?.goals?.for || 0,
+        awayGoalsAgainst: entry.away?.goals?.against || 0,
+      })),
     };
+    
+    standingsCache.set(key, result);
+    secureLog('info', 'STANDINGS_FETCHED', { leagueId, totalTeams: result.totalTeams });
+    return result;
   } catch (err) {
-    secureLog('warn', 'Erro ao buscar standings', { leagueId, error: String(err) });
-    return undefined;
+    secureLog('warn', 'STANDINGS_FETCH_ERROR', { leagueId, error: String(err) });
+    return null;
   }
+}
+
+function getTeamStandingsData(standings: any, teamId: number, teamName: string): any {
+  if (!standings || !standings.teams) return null;
+  
+  let team = standings.teams.find((t: any) => t.teamId === teamId);
+  if (!team) {
+    team = standings.teams.find((t: any) => 
+      t.teamName.toLowerCase().includes(teamName.toLowerCase()) ||
+      teamName.toLowerCase().includes(t.teamName.toLowerCase())
+    );
+  }
+  
+  return team || null;
+}
+
+// Legacy wrapper for backward compatibility
+async function fetchStandings(leagueId: number, season: number, teamId: number): Promise<{ position: number; form: string } | undefined> {
+  const fullStandings = await fetchFullStandings(leagueId, season);
+  if (!fullStandings) return undefined;
+  
+  const teamData = fullStandings.teams.find((s: any) => s.teamId === teamId);
+  if (!teamData) return undefined;
+  
+  return {
+    position: teamData.rank,
+    form: teamData.form || ''
+  };
 }
 
 async function fetchInjuries(teamId: number, fixtureId: number): Promise<number> {
@@ -1974,18 +2193,43 @@ async function fetchPrediction(fixtureId: number): Promise<AdvancedGameData['api
     
     if (!data.response || !data.response[0]) return undefined;
     
-    const pred = data.response[0].predictions;
+    const pred = data.response[0];
+    const predictions = pred.predictions;
+    const comparison = pred.comparison;
     
-    return {
-      winner: pred?.winner?.name,
-      winnerConfidence: pred?.percent?.home ? parseInt(pred.percent.home) : undefined,
-      homeGoals: pred?.goals?.home,
-      awayGoals: pred?.goals?.away,
-      advice: pred?.advice,
-      under_over: pred?.under_over
+    const result: AdvancedGameData['apiPrediction'] = {
+      winner: predictions?.winner?.name,
+      winnerConfidence: predictions?.percent?.home ? parseInt(predictions.percent.home) : undefined,
+      homeGoals: predictions?.goals?.home,
+      awayGoals: predictions?.goals?.away,
+      advice: predictions?.advice,
+      under_over: predictions?.under_over,
+      // Enhanced: percentage probabilities from API model
+      homeWinPct: parseInt(predictions?.percent?.home || '0'),
+      drawPct: parseInt(predictions?.percent?.draw || '0'),
+      awayWinPct: parseInt(predictions?.percent?.away || '0'),
+      // Comparison data
+      homeFormPct: parseInt(comparison?.form?.home || '0'),
+      awayFormPct: parseInt(comparison?.form?.away || '0'),
+      homeAttackPct: parseInt(comparison?.att?.home || '0'),
+      awayAttackPct: parseInt(comparison?.att?.away || '0'),
+      homeDefensePct: parseInt(comparison?.def?.home || '0'),
+      awayDefensePct: parseInt(comparison?.def?.away || '0'),
+      homeTotalPct: parseInt(comparison?.total?.home || '0'),
+      awayTotalPct: parseInt(comparison?.total?.away || '0'),
     };
+    
+    secureLog('info', 'API_PREDICTION_FETCHED', {
+      fixtureId,
+      homeWinPct: result.homeWinPct,
+      drawPct: result.drawPct,
+      awayWinPct: result.awayWinPct,
+      advice: result.advice,
+    });
+    
+    return result;
   } catch (err) {
-    secureLog('warn', 'Erro ao buscar previsão', { fixtureId, error: String(err) });
+    secureLog('warn', 'PREDICTIONS_FETCH_ERROR', { fixtureId, error: String(err) });
     return undefined;
   }
 }
@@ -2176,18 +2420,19 @@ async function fetchAdvancedData(fixture: any, isPremium: boolean = false): Prom
   const leagueId = fixture.league.id;
   const season = fixture.league.season;
   const fixtureId = fixture.fixture.id;
+  const homeTeamName = fixture.teams.home.name;
+  const awayTeamName = fixture.teams.away.name;
   
   secureLog('info', 'Buscando dados avançados', { 
-    fixture: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+    fixture: `${homeTeamName} vs ${awayTeamName}`,
     fixtureId,
     isPremium
   });
   
-  // Base data for all tiers
-  const [h2h, homeStanding, awayStanding] = await Promise.all([
+  // Base data for all tiers - fetch full standings (cached per league) + H2H
+  const [h2h, fullStandings] = await Promise.all([
     fetchH2H(homeTeamId, awayTeamId),
-    fetchStandings(leagueId, season, homeTeamId),
-    fetchStandings(leagueId, season, awayTeamId),
+    fetchFullStandings(leagueId, season),
   ]);
   
   await delay(200);
@@ -2201,20 +2446,64 @@ async function fetchAdvancedData(fixture: any, isPremium: boolean = false): Prom
     fetchPrediction(fixtureId)
   ]);
   
+  // Extract full standings data for both teams
+  const homeStandingData = fullStandings ? getTeamStandingsData(fullStandings, homeTeamId, homeTeamName) : null;
+  const awayStandingData = fullStandings ? getTeamStandingsData(fullStandings, awayTeamId, awayTeamName) : null;
+  
   let advancedData: AdvancedGameData = {
-    h2h,
+    h2h: h2h ? {
+      ...h2h,
+      homeWinRate: h2h.totalGames > 0 ? h2h.homeWins / h2h.totalGames : 0,
+      awayWinRate: h2h.totalGames > 0 ? h2h.awayWins / h2h.totalGames : 0,
+      drawRate: h2h.totalGames > 0 ? h2h.draws / h2h.totalGames : 0,
+    } : undefined,
     homeStats,
     awayStats,
-    homePosition: homeStanding?.position,
-    awayPosition: awayStanding?.position,
-    homeForm: homeStanding?.form,
-    awayForm: awayStanding?.form,
+    homePosition: homeStandingData?.rank,
+    awayPosition: awayStandingData?.rank,
+    homeForm: homeStandingData?.form || undefined,
+    awayForm: awayStandingData?.form || undefined,
     homeInjuries: homeInjuryData.count,
     awayInjuries: awayInjuryData.count,
     homeInjuryDetails: homeInjuryData.details,
     awayInjuryDetails: awayInjuryData.details,
-    apiPrediction: prediction
+    apiPrediction: prediction,
+    // H2H avg goals
+    h2hAvgGoals: h2h?.avgGoals,
+    // Full standings data
+    standings: fullStandings ? {
+      totalTeams: fullStandings.totalTeams,
+      homePosition: homeStandingData?.rank || null,
+      awayPosition: awayStandingData?.rank || null,
+      homePoints: homeStandingData?.points || null,
+      awayPoints: awayStandingData?.points || null,
+      homeGoalDiff: homeStandingData?.goalsDiff || null,
+      awayGoalDiff: awayStandingData?.goalsDiff || null,
+    } : undefined,
+    // Home-specific stats from standings
+    homeGoalsScored: homeStandingData?.goalsFor,
+    homeMatchesPlayed: homeStandingData?.played,
+    homeGoalsConceded: homeStandingData?.goalsAgainst,
+    homeHomeGoalsFor: homeStandingData?.homeGoalsFor,
+    homeHomeGoalsAgainst: homeStandingData?.homeGoalsAgainst,
+    // Away-specific stats from standings
+    awayGoalsScored: awayStandingData?.goalsFor,
+    awayMatchesPlayed: awayStandingData?.played,
+    awayGoalsConceded: awayStandingData?.goalsAgainst,
+    awayAwayGoalsFor: awayStandingData?.awayGoalsFor,
+    awayAwayGoalsAgainst: awayStandingData?.awayGoalsAgainst,
   };
+  
+  if (homeStandingData || awayStandingData) {
+    secureLog('info', 'STANDINGS_DATA_LOADED', {
+      game: `${homeTeamName} vs ${awayTeamName}`,
+      homePos: homeStandingData?.rank,
+      awayPos: awayStandingData?.rank,
+      homeGD: homeStandingData?.goalsDiff,
+      awayGD: awayStandingData?.goalsDiff,
+      totalTeams: fullStandings?.totalTeams,
+    });
+  }
   
   // Premium-only data: Corners, Cards, Lineups, BTTS Odds, Top Scorers
   if (isPremium) {
