@@ -589,14 +589,14 @@ export default function Landing() {
                 <span className="inline-block px-4 py-1.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4 tracking-wider">
                   {language === 'pt' ? 'PASSO 1' : language === 'es' ? 'PASO 1' : language === 'it' ? 'PASSO 1' : 'STEP 1'}
                 </span>
-                <h3 className="text-foreground font-black text-2xl sm:text-3xl mb-4 leading-tight">{stepData[0]?.heading}</h3>
-                <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
+                <h3 className="text-foreground font-black text-2xl sm:text-3xl lg:text-4xl mb-4 leading-tight">{stepData[0]?.heading}</h3>
+                <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-4">
                   {stepData[0]?.shortDesc}
                 </p>
-                <p className="text-muted-foreground/60 text-xs sm:text-sm leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
+                <p className="text-muted-foreground/60 text-sm sm:text-base leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
                   {stepData[0]?.annotation}
                 </p>
-                <p className="text-primary/80 text-xs font-semibold italic">
+                <p className="text-primary/80 text-sm font-semibold italic">
                   ⚡ {stepData[0]?.trigger}
                 </p>
               </div>
@@ -610,14 +610,14 @@ export default function Landing() {
                 <span className="inline-block px-4 py-1.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4 tracking-wider">
                   {language === 'pt' ? 'PASSO 2' : language === 'es' ? 'PASO 2' : language === 'it' ? 'PASSO 2' : 'STEP 2'}
                 </span>
-                <h3 className="text-foreground font-black text-2xl sm:text-3xl mb-4 leading-tight">{stepData[1]?.heading}</h3>
-                <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
+                <h3 className="text-foreground font-black text-2xl sm:text-3xl lg:text-4xl mb-4 leading-tight">{stepData[1]?.heading}</h3>
+                <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-4">
                   {stepData[1]?.shortDesc}
                 </p>
-                <p className="text-muted-foreground/60 text-xs sm:text-sm leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
+                <p className="text-muted-foreground/60 text-sm sm:text-base leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
                   {stepData[1]?.annotation}
                 </p>
-                <p className="text-primary/80 text-xs font-semibold italic">
+                <p className="text-primary/80 text-sm font-semibold italic">
                   🎯 {stepData[1]?.trigger}
                 </p>
               </div>
@@ -647,14 +647,14 @@ export default function Landing() {
                 <span className="inline-block px-4 py-1.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4 tracking-wider">
                   {language === 'pt' ? 'PASSO 3' : language === 'es' ? 'PASO 3' : language === 'it' ? 'PASSO 3' : 'STEP 3'}
                 </span>
-                <h3 className="text-foreground font-black text-2xl sm:text-3xl mb-4 leading-tight">{stepData[2]?.heading}</h3>
-                <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
+                <h3 className="text-foreground font-black text-2xl sm:text-3xl lg:text-4xl mb-4 leading-tight">{stepData[2]?.heading}</h3>
+                <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-4">
                   {stepData[2]?.shortDesc}
                 </p>
-                <p className="text-muted-foreground/60 text-xs sm:text-sm leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
+                <p className="text-muted-foreground/60 text-sm sm:text-base leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
                   {stepData[2]?.annotation}
                 </p>
-                <p className="text-primary/80 text-xs font-semibold italic">
+                <p className="text-primary/80 text-sm font-semibold italic">
                   🧠 {stepData[2]?.trigger}
                 </p>
               </div>
