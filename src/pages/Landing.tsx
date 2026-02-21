@@ -182,20 +182,27 @@ export default function Landing() {
       },
       steps: {
         title: 'Como o EUGINE encontra sua vantagem',
+        subtitle: 'Veja como funciona na prática — telas reais do sistema',
         step1: {
           title: '1. Varremos 50+ jogos',
           heading: 'Varremos 50+ jogos por dia',
           shortDesc: 'Analisamos todas as principais ligas, comparando odds de múltiplas casas com nosso modelo de probabilidade.',
+          annotation: '↑ Cada card mostra o jogo, as odds e o nível de confiança do EUGINE. Verde = vantagem detectada.',
+          trigger: 'Enquanto você lê isso, o EUGINE já está analisando os jogos de amanhã.',
         },
         step2: {
           title: '2. Encontramos onde a casa erra',
           heading: 'Encontramos onde a casa erra',
           shortDesc: 'Quando nossa probabilidade calculada é maior que a odd oferecida, existe valor. Aí você recebe o alerta.',
+          annotation: '↑ A análise compara a probabilidade da casa com a do EUGINE. A barra verde mostra sua vantagem real (edge).',
+          trigger: 'A casa de apostas calcula rápido. O EUGINE calcula melhor.',
         },
         step3: {
           title: '3. Você aposta com vantagem',
           heading: 'Você aposta com vantagem',
           shortDesc: 'Cada sugestão mostra QUANTO de edge você tem. Ao longo do tempo, vantagem consistente = resultado consistente.',
+          annotation: '↑ Veja os 7 fatores que o EUGINE analisa: forma, H2H, odds, gols, posse, cantos e cartões. Tudo transparente.',
+          trigger: 'Imagine abrir o app e saber exatamente onde está a vantagem.',
         },
       },
       impactPhrase: 'Você não precisa ganhar todas. Só precisa ter vantagem.',
@@ -250,9 +257,10 @@ export default function Landing() {
       },
       steps: {
         title: 'How EUGINE finds your edge',
-        step1: { title: '1. We scan 50+ matches', heading: 'We scan 50+ matches daily', shortDesc: 'We analyze all major leagues, comparing odds from multiple bookmakers with our probability model.' },
-        step2: { title: '2. We find where the bookmaker is wrong', heading: 'We find where the bookmaker is wrong', shortDesc: "When our calculated probability exceeds the offered odds, there's value. That's when you get the alert." },
-        step3: { title: '3. You bet with the edge', heading: 'You bet with the edge', shortDesc: 'Each pick shows HOW MUCH edge you have. Over time, consistent edge = consistent results.' },
+        subtitle: 'See how it works in practice — real screenshots from the system',
+        step1: { title: '1. We scan 50+ matches', heading: 'We scan 50+ matches daily', shortDesc: 'We analyze all major leagues, comparing odds from multiple bookmakers with our probability model.', annotation: '↑ Each card shows the match, odds and EUGINE confidence level. Green = edge detected.', trigger: 'While you read this, EUGINE is already analyzing tomorrow\'s matches.' },
+        step2: { title: '2. We find where the bookmaker is wrong', heading: 'We find where the bookmaker is wrong', shortDesc: "When our calculated probability exceeds the offered odds, there's value. That's when you get the alert.", annotation: '↑ The analysis compares the bookmaker\'s probability with EUGINE\'s. The green bar shows your real edge.', trigger: 'The bookmaker calculates fast. EUGINE calculates better.' },
+        step3: { title: '3. You bet with the edge', heading: 'You bet with the edge', shortDesc: 'Each pick shows HOW MUCH edge you have. Over time, consistent edge = consistent results.', annotation: '↑ See the 7 factors EUGINE analyzes: form, H2H, odds, goals, possession, corners and cards. Fully transparent.', trigger: 'Imagine opening the app and knowing exactly where the edge is.' },
       },
       impactPhrase: "You don't need to win every bet. You just need the edge.",
       closingLine: 'Intelligence beats luck. Data beats opinion. Discipline beats impulse.',
@@ -294,9 +302,10 @@ export default function Landing() {
       },
       steps: {
         title: 'Cómo EUGINE encuentra tu ventaja',
-        step1: { title: '1. Escaneamos 50+ partidos', heading: 'Escaneamos 50+ partidos al día', shortDesc: 'Analizamos todas las ligas principales, comparando cuotas de múltiples casas con nuestro modelo de probabilidad.' },
-        step2: { title: '2. Encontramos donde la casa se equivoca', heading: 'Encontramos donde la casa se equivoca', shortDesc: 'Cuando nuestra probabilidad calculada es mayor que la cuota ofrecida, hay valor. Ahí recibes la alerta.' },
-        step3: { title: '3. Apuestas con ventaja', heading: 'Apuestas con ventaja', shortDesc: 'Cada sugerencia muestra CUÁNTA ventaja tienes. Con el tiempo, ventaja consistente = resultado consistente.' },
+        subtitle: 'Mira cómo funciona en la práctica — pantallas reales del sistema',
+        step1: { title: '1. Escaneamos 50+ partidos', heading: 'Escaneamos 50+ partidos al día', shortDesc: 'Analizamos todas las ligas principales, comparando cuotas de múltiples casas con nuestro modelo de probabilidad.', annotation: '↑ Cada tarjeta muestra el partido, las cuotas y el nivel de confianza de EUGINE. Verde = ventaja detectada.', trigger: 'Mientras lees esto, EUGINE ya está analizando los partidos de mañana.' },
+        step2: { title: '2. Encontramos donde la casa se equivoca', heading: 'Encontramos donde la casa se equivoca', shortDesc: 'Cuando nuestra probabilidad calculada es mayor que la cuota ofrecida, hay valor. Ahí recibes la alerta.', annotation: '↑ El análisis compara la probabilidad de la casa con la de EUGINE. La barra verde muestra tu ventaja real (edge).', trigger: 'La casa de apuestas calcula rápido. EUGINE calcula mejor.' },
+        step3: { title: '3. Apuestas con ventaja', heading: 'Apuestas con ventaja', shortDesc: 'Cada sugerencia muestra CUÁNTA ventaja tienes. Con el tiempo, ventaja consistente = resultado consistente.', annotation: '↑ Mira los 7 factores que EUGINE analiza: forma, H2H, cuotas, goles, posesión, córners y tarjetas. Todo transparente.', trigger: 'Imagina abrir la app y saber exactamente dónde está la ventaja.' },
       },
       impactPhrase: 'No necesitas ganar todas. Solo necesitas tener ventaja.',
       closingLine: 'La inteligencia supera a la suerte. Los datos superan a la opinión. La disciplina supera al impulso.',
@@ -338,9 +347,10 @@ export default function Landing() {
       },
       steps: {
         title: 'Come EUGINE trova il tuo vantaggio',
-        step1: { title: '1. Analizziamo 50+ partite', heading: 'Analizziamo 50+ partite al giorno', shortDesc: 'Analizziamo tutti i principali campionati, confrontando quote di più bookmaker con il nostro modello di probabilità.' },
-        step2: { title: '2. Troviamo dove il bookmaker sbaglia', heading: 'Troviamo dove il bookmaker sbaglia', shortDesc: "Quando la nostra probabilità calcolata supera la quota offerta, c'è valore. È allora che ricevi l'avviso." },
-        step3: { title: '3. Scommetti con vantaggio', heading: 'Scommetti con vantaggio', shortDesc: 'Ogni suggerimento mostra QUANTO vantaggio hai. Nel tempo, vantaggio costante = risultato costante.' },
+        subtitle: 'Guarda come funziona nella pratica — schermate reali del sistema',
+        step1: { title: '1. Analizziamo 50+ partite', heading: 'Analizziamo 50+ partite al giorno', shortDesc: 'Analizziamo tutti i principali campionati, confrontando quote di più bookmaker con il nostro modello di probabilità.', annotation: '↑ Ogni card mostra la partita, le quote e il livello di fiducia di EUGINE. Verde = vantaggio rilevato.', trigger: 'Mentre leggi questo, EUGINE sta già analizzando le partite di domani.' },
+        step2: { title: '2. Troviamo dove il bookmaker sbaglia', heading: 'Troviamo dove il bookmaker sbaglia', shortDesc: "Quando la nostra probabilità calcolata supera la quota offerta, c'è valore. È allora che ricevi l'avviso.", annotation: '↑ L\'analisi confronta la probabilità del bookmaker con quella di EUGINE. La barra verde mostra il tuo vantaggio reale (edge).', trigger: 'Il bookmaker calcola veloce. EUGINE calcola meglio.' },
+        step3: { title: '3. Scommetti con vantaggio', heading: 'Scommetti con vantaggio', shortDesc: 'Ogni suggerimento mostra QUANTO vantaggio hai. Nel tempo, vantaggio costante = risultato costante.', annotation: '↑ Guarda i 7 fattori che EUGINE analizza: forma, H2H, quote, gol, possesso, calci d\'angolo e cartellini. Tutto trasparente.', trigger: 'Immagina aprire l\'app e sapere esattamente dove si trova il vantaggio.' },
       },
       impactPhrase: 'Non devi vincere ogni scommessa. Devi solo avere il vantaggio.',
       closingLine: "L'intelligenza batte la fortuna. I dati battono l'opinione. La disciplina batte l'impulso.",
@@ -369,9 +379,9 @@ export default function Landing() {
 
   const stepTitles = [l.steps.step1.title, l.steps.step2.title, l.steps.step3.title];
   const stepData = [
-    { heading: l.steps.step1.heading, shortDesc: l.steps.step1.shortDesc, description: l.steps.step1.description },
-    { heading: l.steps.step2.heading, shortDesc: l.steps.step2.shortDesc, description: l.steps.step2.description },
-    { heading: l.steps.step3.heading, shortDesc: l.steps.step3.shortDesc, description: l.steps.step3.description },
+    { heading: l.steps.step1.heading, shortDesc: l.steps.step1.shortDesc, annotation: l.steps.step1.annotation, trigger: l.steps.step1.trigger },
+    { heading: l.steps.step2.heading, shortDesc: l.steps.step2.shortDesc, annotation: l.steps.step2.annotation, trigger: l.steps.step2.trigger },
+    { heading: l.steps.step3.heading, shortDesc: l.steps.step3.shortDesc, annotation: l.steps.step3.annotation, trigger: l.steps.step3.trigger },
   ];
 
   return (
@@ -554,88 +564,102 @@ export default function Landing() {
 
       {/* How It Works — Visual steps */}
       <section id="how-it-works" className="relative px-5 py-16 sm:py-24">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-4">
-            {l.steps.title}
-          </h2>
-          <p className="text-muted-foreground text-sm sm:text-base text-center mb-12 max-w-2xl mx-auto">
-            {language === 'pt' ? 'Veja como funciona na prática — telas reais do sistema' :
-             language === 'es' ? 'Mira cómo funciona en la práctica — pantallas reales del sistema' :
-             language === 'it' ? 'Guarda come funziona nella pratica — schermate reali del sistema' :
-             'See how it works in practice — real screenshots from the system'}
-          </p>
+        <div className="max-w-6xl mx-auto">
+          <ScrollFadeIn>
+            <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-3">
+              {l.steps.title}
+            </h2>
+            <p className="text-muted-foreground text-sm sm:text-base text-center mb-16 max-w-2xl mx-auto">
+              {l.steps.subtitle}
+            </p>
+          </ScrollFadeIn>
 
-          {/* Step 1 — Game Selection */}
-          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-14">
-            <div className="w-full md:w-1/2 order-2 md:order-1">
-              <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl shadow-primary/5">
-                <img src={stepCardsImg} alt="EUGINE game cards" className="w-full h-auto" loading="lazy" />
+          {/* Step 1 — Alternating: Image LEFT, Text RIGHT */}
+          <ScrollFadeIn className="mb-20 sm:mb-28">
+            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-14">
+              <div className="w-full md:w-[55%] order-2 md:order-1">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl" style={{ boxShadow: '0 25px 50px -12px hsla(199, 89%, 48%, 0.15)' }}>
+                    <img src={stepCardsImg} alt="EUGINE game cards" className="w-full h-auto" loading="lazy" />
+                  </div>
+                </div>
+              </div>
+              <div className="w-full md:w-[45%] order-1 md:order-2">
+                <span className="inline-block px-4 py-1.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4 tracking-wider">
+                  {language === 'pt' ? 'PASSO 1' : language === 'es' ? 'PASO 1' : language === 'it' ? 'PASSO 1' : 'STEP 1'}
+                </span>
+                <h3 className="text-foreground font-black text-2xl sm:text-3xl mb-4 leading-tight">{stepData[0]?.heading}</h3>
+                <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
+                  {stepData[0]?.shortDesc}
+                </p>
+                <p className="text-muted-foreground/60 text-xs sm:text-sm leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
+                  {stepData[0]?.annotation}
+                </p>
+                <p className="text-primary/80 text-xs font-semibold italic">
+                  ⚡ {stepData[0]?.trigger}
+                </p>
               </div>
             </div>
-            <div className="w-full md:w-1/2 order-1 md:order-2">
-              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-3">
-                {language === 'pt' ? 'PASSO 1' : language === 'es' ? 'PASO 1' : language === 'it' ? 'PASSO 1' : 'STEP 1'}
-              </span>
-              <h3 className="text-foreground font-bold text-xl sm:text-2xl mb-3">{stepData[0]?.heading}</h3>
-              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
-                {stepData[0]?.shortDesc}
-              </p>
-              <p className="text-muted-foreground/70 text-xs sm:text-sm leading-relaxed">
-                {language === 'pt' ? '↑ Cada card mostra o jogo, as odds e o nível de confiança do EUGINE. Verde = vantagem detectada.' :
-                 language === 'es' ? '↑ Cada tarjeta muestra el partido, las cuotas y el nivel de confianza de EUGINE. Verde = ventaja detectada.' :
-                 language === 'it' ? '↑ Ogni card mostra la partita, le quote e il livello di fiducia di EUGINE. Verde = vantaggio rilevato.' :
-                 '↑ Each card shows the match, odds and EUGINE confidence level. Green = edge detected.'}
-              </p>
-            </div>
-          </div>
+          </ScrollFadeIn>
 
-          {/* Step 2 — Full Analysis */}
-          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-14">
-            <div className="w-full md:w-1/2">
-              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-3">
-                {language === 'pt' ? 'PASSO 2' : language === 'es' ? 'PASO 2' : language === 'it' ? 'PASSO 2' : 'STEP 2'}
-              </span>
-              <h3 className="text-foreground font-bold text-xl sm:text-2xl mb-3">{stepData[1]?.heading}</h3>
-              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
-                {stepData[1]?.shortDesc}
-              </p>
-              <p className="text-muted-foreground/70 text-xs sm:text-sm leading-relaxed">
-                {language === 'pt' ? '↑ A análise compara a probabilidade da casa com a do EUGINE. A barra verde mostra sua vantagem real (edge).' :
-                 language === 'es' ? '↑ El análisis compara la probabilidad de la casa con la de EUGINE. La barra verde muestra tu ventaja real (edge).' :
-                 language === 'it' ? '↑ L\'analisi confronta la probabilità del bookmaker con quella di EUGINE. La barra verde mostra il tuo vantaggio reale (edge).' :
-                 '↑ The analysis compares the bookmaker\'s probability with EUGINE\'s. The green bar shows your real edge.'}
-              </p>
-            </div>
-            <div className="w-full md:w-1/2">
-              <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl shadow-primary/5">
-                <img src={stepAnalysisMainImg} alt="EUGINE analysis" className="w-full h-auto" loading="lazy" />
+          {/* Step 2 — Alternating: Text LEFT, Image RIGHT */}
+          <ScrollFadeIn className="mb-20 sm:mb-28">
+            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-14">
+              <div className="w-full md:w-[45%]">
+                <span className="inline-block px-4 py-1.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4 tracking-wider">
+                  {language === 'pt' ? 'PASSO 2' : language === 'es' ? 'PASO 2' : language === 'it' ? 'PASSO 2' : 'STEP 2'}
+                </span>
+                <h3 className="text-foreground font-black text-2xl sm:text-3xl mb-4 leading-tight">{stepData[1]?.heading}</h3>
+                <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
+                  {stepData[1]?.shortDesc}
+                </p>
+                <p className="text-muted-foreground/60 text-xs sm:text-sm leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
+                  {stepData[1]?.annotation}
+                </p>
+                <p className="text-primary/80 text-xs font-semibold italic">
+                  🎯 {stepData[1]?.trigger}
+                </p>
+              </div>
+              <div className="w-full md:w-[55%]">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-l from-primary/20 to-transparent rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl" style={{ boxShadow: '0 25px 50px -12px hsla(199, 89%, 48%, 0.15)' }}>
+                    <img src={stepAnalysisMainImg} alt="EUGINE analysis" className="w-full h-auto" loading="lazy" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </ScrollFadeIn>
 
-          {/* Step 3 — Factors & Decision */}
-          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
-            <div className="w-full md:w-1/2 order-2 md:order-1">
-              <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl shadow-primary/5">
-                <img src={stepAnalysisFactorsImg} alt="EUGINE analysis factors" className="w-full h-auto" loading="lazy" />
+          {/* Step 3 — Alternating: Image LEFT, Text RIGHT */}
+          <ScrollFadeIn>
+            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-14">
+              <div className="w-full md:w-[55%] order-2 md:order-1">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl" style={{ boxShadow: '0 25px 50px -12px hsla(199, 89%, 48%, 0.15)' }}>
+                    <img src={stepAnalysisFactorsImg} alt="EUGINE analysis factors" className="w-full h-auto" loading="lazy" />
+                  </div>
+                </div>
+              </div>
+              <div className="w-full md:w-[45%] order-1 md:order-2">
+                <span className="inline-block px-4 py-1.5 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4 tracking-wider">
+                  {language === 'pt' ? 'PASSO 3' : language === 'es' ? 'PASO 3' : language === 'it' ? 'PASSO 3' : 'STEP 3'}
+                </span>
+                <h3 className="text-foreground font-black text-2xl sm:text-3xl mb-4 leading-tight">{stepData[2]?.heading}</h3>
+                <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4">
+                  {stepData[2]?.shortDesc}
+                </p>
+                <p className="text-muted-foreground/60 text-xs sm:text-sm leading-relaxed mb-4 border-l-2 border-primary/30 pl-3">
+                  {stepData[2]?.annotation}
+                </p>
+                <p className="text-primary/80 text-xs font-semibold italic">
+                  🧠 {stepData[2]?.trigger}
+                </p>
               </div>
             </div>
-            <div className="w-full md:w-1/2 order-1 md:order-2">
-              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-3">
-                {language === 'pt' ? 'PASSO 3' : language === 'es' ? 'PASO 3' : language === 'it' ? 'PASSO 3' : 'STEP 3'}
-              </span>
-              <h3 className="text-foreground font-bold text-xl sm:text-2xl mb-3">{stepData[2]?.heading}</h3>
-              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-3">
-                {stepData[2]?.shortDesc}
-              </p>
-              <p className="text-muted-foreground/70 text-xs sm:text-sm leading-relaxed">
-                {language === 'pt' ? '↑ Veja os 7 fatores que o EUGINE analisa: forma, H2H, odds, gols, posse, cantos e cartões. Tudo transparente.' :
-                 language === 'es' ? '↑ Mira los 7 factores que EUGINE analiza: forma, H2H, cuotas, goles, posesión, córners y tarjetas. Todo transparente.' :
-                 language === 'it' ? '↑ Guarda i 7 fattori che EUGINE analizza: forma, H2H, quote, gol, possesso, calci d\'angolo e cartellini. Tutto trasparente.' :
-                 '↑ See the 7 factors EUGINE analyzes: form, H2H, odds, goals, possession, corners and cards. Fully transparent.'}
-              </p>
-            </div>
-          </div>
+          </ScrollFadeIn>
 
           {/* CTA after How It Works */}
           <ScrollFadeIn className="mt-16">
