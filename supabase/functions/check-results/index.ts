@@ -19,59 +19,59 @@ interface PendingBet {
 }
 
 // Determine if bet won based on score and bet type
-function evaluateBet(betType: string, homeGoals: number, awayGoals: number): 'win' | 'loss' {
+function evaluateBet(betType: string, homeGoals: number, awayGoals: number): 'won' | 'lost' {
   const totalGoals = homeGoals + awayGoals;
   const bothScored = homeGoals > 0 && awayGoals > 0;
 
   // Normalize bet type for comparison
   const normalized = betType.toUpperCase().trim();
 
-  if (normalized.includes('VITÓRIA CASA') || normalized === 'HOME WIN') {
-    return homeGoals > awayGoals ? 'win' : 'loss';
+  if (normalized.includes('VITÓRIA CASA') || normalized.includes('VICTORIA LOCAL') || normalized === 'HOME WIN') {
+    return homeGoals > awayGoals ? 'won' : 'lost';
   }
-  if (normalized.includes('VITÓRIA FORA') || normalized === 'AWAY WIN') {
-    return awayGoals > homeGoals ? 'win' : 'loss';
+  if (normalized.includes('VITÓRIA FORA') || normalized.includes('VICTORIA VISIT') || normalized === 'AWAY WIN') {
+    return awayGoals > homeGoals ? 'won' : 'lost';
   }
   if (normalized.includes('EMPATE') || normalized === 'DRAW') {
-    return homeGoals === awayGoals ? 'win' : 'loss';
+    return homeGoals === awayGoals ? 'won' : 'lost';
   }
-  if (normalized.includes('MAIS DE 2.5') || normalized === 'OVER 2.5') {
-    return totalGoals > 2.5 ? 'win' : 'loss';
+  if (normalized.includes('MAIS DE 2.5') || normalized.includes('MÁS DE 2.5') || normalized === 'OVER 2.5 GOALS' || normalized === 'OVER 2.5') {
+    return totalGoals > 2.5 ? 'won' : 'lost';
   }
-  if (normalized.includes('MENOS DE 2.5') || normalized === 'UNDER 2.5') {
-    return totalGoals < 2.5 ? 'win' : 'loss';
+  if (normalized.includes('MENOS DE 2.5') || normalized === 'UNDER 2.5 GOALS' || normalized === 'UNDER 2.5') {
+    return totalGoals < 2.5 ? 'won' : 'lost';
   }
-  if (normalized.includes('MAIS DE 1.5') || normalized === 'OVER 1.5') {
-    return totalGoals > 1.5 ? 'win' : 'loss';
+  if (normalized.includes('MAIS DE 1.5') || normalized.includes('MÁS DE 1.5') || normalized === 'OVER 1.5') {
+    return totalGoals > 1.5 ? 'won' : 'lost';
   }
   if (normalized.includes('MENOS DE 1.5') || normalized === 'UNDER 1.5') {
-    return totalGoals < 1.5 ? 'win' : 'loss';
+    return totalGoals < 1.5 ? 'won' : 'lost';
   }
-  if (normalized.includes('MAIS DE 3.5') || normalized === 'OVER 3.5') {
-    return totalGoals > 3.5 ? 'win' : 'loss';
+  if (normalized.includes('MAIS DE 3.5') || normalized.includes('MÁS DE 3.5') || normalized === 'OVER 3.5') {
+    return totalGoals > 3.5 ? 'won' : 'lost';
   }
   if (normalized.includes('MENOS DE 3.5') || normalized === 'UNDER 3.5') {
-    return totalGoals < 3.5 ? 'win' : 'loss';
+    return totalGoals < 3.5 ? 'won' : 'lost';
   }
-  if (normalized.includes('AMBAS MARCAM SIM') || normalized === 'BTTS YES') {
-    return bothScored ? 'win' : 'loss';
+  if (normalized.includes('AMBAS MARCAM') || normalized.includes('AMBOS MARCAN') || normalized === 'BTTS YES' || normalized === 'BOTH TEAMS SCORE') {
+    return bothScored ? 'won' : 'lost';
   }
-  if (normalized.includes('AMBAS MARCAM NÃO') || normalized === 'BTTS NO') {
-    return !bothScored ? 'win' : 'loss';
+  if (normalized.includes('AMBAS NÃO MARCAM') || normalized === 'BTTS NO') {
+    return !bothScored ? 'won' : 'lost';
   }
-  if (normalized.includes('DUPLA CHANCE 1X')) {
-    return homeGoals >= awayGoals ? 'win' : 'loss';
+  if (normalized.includes('DUPLA CHANCE 1X') || normalized.includes('DOUBLE CHANCE 1X')) {
+    return homeGoals >= awayGoals ? 'won' : 'lost';
   }
-  if (normalized.includes('DUPLA CHANCE X2')) {
-    return awayGoals >= homeGoals ? 'win' : 'loss';
+  if (normalized.includes('DUPLA CHANCE X2') || normalized.includes('DOUBLE CHANCE X2')) {
+    return awayGoals >= homeGoals ? 'won' : 'lost';
   }
-  if (normalized.includes('DUPLA CHANCE 12')) {
-    return homeGoals !== awayGoals ? 'win' : 'loss';
+  if (normalized.includes('DUPLA CHANCE 12') || normalized.includes('DOUBLE CHANCE 12')) {
+    return homeGoals !== awayGoals ? 'won' : 'lost';
   }
 
   // Default: can't evaluate
   console.warn(`Unknown bet type: ${betType}`);
-  return 'loss';
+  return 'lost';
 }
 
 // Fetch fixture result from API-Football
@@ -197,8 +197,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    const winsCount = results.filter(r => r.result === 'win').length;
-    const lossesCount = results.filter(r => r.result === 'loss').length;
+    const winsCount = results.filter(r => r.result === 'won').length;
+    const lossesCount = results.filter(r => r.result === 'lost').length;
     const dayHitRate = updated > 0 ? ((winsCount / updated) * 100).toFixed(1) : '0';
 
     const summary = {
@@ -235,7 +235,7 @@ Deno.serve(async (req) => {
 
             if (adminEmails.length > 0) {
               const resultsHtml = results.map(r => 
-                `<tr><td style="padding:6px 12px;border-bottom:1px solid #333">${r.match}</td><td style="padding:6px 12px;border-bottom:1px solid #333">${r.score}</td><td style="padding:6px 12px;border-bottom:1px solid #333;color:${r.result === 'win' ? '#22c55e' : '#ef4444'}">${r.result === 'win' ? '✅ Acerto' : '❌ Erro'}</td></tr>`
+                `<tr><td style="padding:6px 12px;border-bottom:1px solid #333">${r.match}</td><td style="padding:6px 12px;border-bottom:1px solid #333">${r.score}</td><td style="padding:6px 12px;border-bottom:1px solid #333;color:${r.result === 'won' ? '#22c55e' : '#ef4444'}">${r.result === 'won' ? '✅ Acerto' : '❌ Erro'}</td></tr>`
               ).join('');
 
               const emailHtml = `
