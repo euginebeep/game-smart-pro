@@ -87,15 +87,15 @@ export function BacktestDashboard() {
   });
 
   // Stats
-  const resolved = filteredBets.filter(b => b.result === 'win' || b.result === 'loss');
-  const wins = filteredBets.filter(b => b.result === 'win').length;
-  const losses = filteredBets.filter(b => b.result === 'loss').length;
+  const resolved = filteredBets.filter(b => b.result === 'won' || b.result === 'lost');
+  const wins = filteredBets.filter(b => b.result === 'won').length;
+  const losses = filteredBets.filter(b => b.result === 'lost').length;
   const pending = filteredBets.filter(b => !b.result || b.result === 'pending').length;
   const hitRate = resolved.length > 0 ? (wins / resolved.length) * 100 : 0;
   
   // ROI calculation
   const totalRoi = resolved.reduce((sum, b) => {
-    if (b.result === 'win') return sum + (b.odd - 1);
+    if (b.result === 'won') return sum + (b.odd - 1);
     return sum - 1;
   }, 0);
   const yieldPerBet = resolved.length > 0 ? (totalRoi / resolved.length) * 100 : 0;
@@ -119,16 +119,16 @@ export function BacktestDashboard() {
   // By bet type
   const byBetType = betTypes.map(type => {
     const typeBets = filteredBets.filter(b => b.bet_type === type);
-    const typeResolved = typeBets.filter(b => b.result === 'win' || b.result === 'loss');
-    const typeWins = typeBets.filter(b => b.result === 'win').length;
+    const typeResolved = typeBets.filter(b => b.result === 'won' || b.result === 'lost');
+    const typeWins = typeBets.filter(b => b.result === 'won').length;
     const typeRate = typeResolved.length > 0 ? (typeWins / typeResolved.length) * 100 : 0;
-    const typeRoi = typeResolved.reduce((sum, b) => b.result === 'win' ? sum + (b.odd - 1) : sum - 1, 0);
+    const typeRoi = typeResolved.reduce((sum, b) => b.result === 'won' ? sum + (b.odd - 1) : sum - 1, 0);
     return {
       name: type.length > 18 ? type.substring(0, 18) + '...' : type,
       fullName: type,
       total: typeBets.length,
       wins: typeWins,
-      losses: typeBets.filter(b => b.result === 'loss').length,
+      losses: typeBets.filter(b => b.result === 'lost').length,
       pending: typeBets.filter(b => !b.result || b.result === 'pending').length,
       hitRate: typeRate,
       roi: typeRoi,
@@ -138,10 +138,10 @@ export function BacktestDashboard() {
   // By league
   const byLeague = leagues.map(league => {
     const leagueBets = filteredBets.filter(b => b.league === league);
-    const leagueResolved = leagueBets.filter(b => b.result === 'win' || b.result === 'loss');
-    const leagueWins = leagueBets.filter(b => b.result === 'win').length;
+    const leagueResolved = leagueBets.filter(b => b.result === 'won' || b.result === 'lost');
+    const leagueWins = leagueBets.filter(b => b.result === 'won').length;
     const leagueRate = leagueResolved.length > 0 ? (leagueWins / leagueResolved.length) * 100 : 0;
-    const leagueRoi = leagueResolved.reduce((sum, b) => b.result === 'win' ? sum + (b.odd - 1) : sum - 1, 0);
+    const leagueRoi = leagueResolved.reduce((sum, b) => b.result === 'won' ? sum + (b.odd - 1) : sum - 1, 0);
     return {
       name: league.length > 15 ? league.substring(0, 15) + '...' : league,
       fullName: league,
@@ -166,8 +166,8 @@ export function BacktestDashboard() {
   ];
   const confData = confRanges.map(r => {
     const rangeBets = filteredBets.filter(b => b.confidence >= r.min && b.confidence < r.max);
-    const rangeResolved = rangeBets.filter(b => b.result === 'win' || b.result === 'loss');
-    const rangeWins = rangeBets.filter(b => b.result === 'win').length;
+    const rangeResolved = rangeBets.filter(b => b.result === 'won' || b.result === 'lost');
+    const rangeWins = rangeBets.filter(b => b.result === 'won').length;
     return {
       name: r.range,
       total: rangeBets.length,
@@ -178,7 +178,7 @@ export function BacktestDashboard() {
   // Cumulative ROI over time (sorted by match_date)
   const roiOverTime = (() => {
     const resolvedSorted = [...filteredBets]
-      .filter(b => b.result === 'win' || b.result === 'loss')
+      .filter(b => b.result === 'won' || b.result === 'lost')
       .sort((a, b) => new Date(a.match_date).getTime() - new Date(b.match_date).getTime());
     
     let cumRoi = 0;
@@ -186,7 +186,7 @@ export function BacktestDashboard() {
     let cumTotal = 0;
     return resolvedSorted.map(b => {
       cumTotal++;
-      if (b.result === 'win') {
+      if (b.result === 'won') {
         cumRoi += (b.odd - 1);
         cumWins++;
       } else {
@@ -335,8 +335,8 @@ export function BacktestDashboard() {
                 <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="win">Acerto ✅</SelectItem>
-                  <SelectItem value="loss">Erro ❌</SelectItem>
+                  <SelectItem value="won">Acerto ✅</SelectItem>
+                  <SelectItem value="lost">Erro ❌</SelectItem>
                   <SelectItem value="pending">Pendente ⏳</SelectItem>
                 </SelectContent>
               </Select>
@@ -654,9 +654,9 @@ export function BacktestDashboard() {
                       {bet.actual_score || '—'}
                     </TableCell>
                     <TableCell className="text-center">
-                      {bet.result === 'win' ? (
+                      {bet.result === 'won' ? (
                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30">✅ Acerto</Badge>
-                      ) : bet.result === 'loss' ? (
+                      ) : bet.result === 'lost' ? (
                         <Badge className="bg-red-500/20 text-red-400 border-red-500/30">❌ Erro</Badge>
                       ) : (
                         <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">⏳ Pendente</Badge>
