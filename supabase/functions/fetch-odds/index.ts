@@ -456,6 +456,197 @@ function calculateDynamicWeights(leagueName: string, betType: 'result' | 'over_u
   return weights;
 }
 
+// ============================================================================
+// CÁLCULO ESPECÍFICO PARA MERCADO 1X2 (QUEM GANHA)
+// ============================================================================
+function calculate1X2Score(game: any, market: 'home' | 'away' | 'draw'): number {
+  let score = 50;
+  
+  const homeOdd = game.odds.home || 2.0;
+  const awayOdd = game.odds.away || 2.0;
+  const drawOdd = game.odds.draw || 3.0;
+  
+  // ===== 1. FORÇA RELATIVA VIA ODDS (peso 30%) =====
+  const homeImplied = (1 / homeOdd) * 100;
+  const awayImplied = (1 / awayOdd) * 100;
+  
+  if (market === 'home') {
+    if (homeImplied > 55) score += 12;
+    else if (homeImplied > 45) score += 6;
+    else if (homeImplied > 35) score += 0;
+    else if (homeImplied > 25) score -= 8;
+    else score -= 15;
+  } else if (market === 'away') {
+    if (awayImplied > 55) score += 12;
+    else if (awayImplied > 45) score += 6;
+    else if (awayImplied > 35) score += 0;
+    else if (awayImplied > 25) score -= 8;
+    else score -= 15;
+  } else {
+    const oddDiff = Math.abs(homeOdd - awayOdd);
+    if (oddDiff < 0.30) score += 10;
+    else if (oddDiff < 0.60) score += 5;
+    else if (oddDiff < 1.00) score += 0;
+    else score -= 5;
+    
+    if (drawOdd < 3.00) score += 8;
+    else if (drawOdd < 3.30) score += 3;
+    else if (drawOdd > 3.80) score -= 5;
+  }
+  
+  // ===== 2. FORMA RECENTE (peso 25%) =====
+  const homeForm = game.advancedData?.homeForm || '';
+  const awayForm = game.advancedData?.awayForm || '';
+  
+  const homeWins5 = homeForm.slice(0, 5).split('').filter((c: string) => c === 'W').length;
+  const homeLosses5 = homeForm.slice(0, 5).split('').filter((c: string) => c === 'L').length;
+  const awayWins5 = awayForm.slice(0, 5).split('').filter((c: string) => c === 'W').length;
+  const awayLosses5 = awayForm.slice(0, 5).split('').filter((c: string) => c === 'L').length;
+  
+  if (market === 'home') {
+    score += (homeWins5 - homeLosses5) * 3;
+    score -= (awayWins5 - awayLosses5) * 2;
+  } else if (market === 'away') {
+    score += (awayWins5 - awayLosses5) * 3;
+    score -= (homeWins5 - homeLosses5) * 2;
+  } else {
+    const homeFormBalance = Math.abs(homeWins5 - homeLosses5);
+    const awayFormBalance = Math.abs(awayWins5 - awayLosses5);
+    if (homeFormBalance <= 1 && awayFormBalance <= 1) score += 6;
+  }
+  
+  // ===== 3. H2H (peso 20%) =====
+  const h2h = game.advancedData?.h2h;
+  if (h2h && (h2h.totalMatches || h2h.totalGames) >= 3) {
+    const totalH2H = h2h.totalMatches || h2h.totalGames || 1;
+    const homeH2HRate = (h2h.homeWins || 0) / totalH2H;
+    const awayH2HRate = (h2h.awayWins || 0) / totalH2H;
+    const drawH2HRate = (h2h.draws || 0) / totalH2H;
+    
+    if (market === 'home') {
+      if (homeH2HRate > 0.50) score += 8;
+      else if (homeH2HRate > 0.35) score += 3;
+      else if (homeH2HRate < 0.20) score -= 10;
+    } else if (market === 'away') {
+      if (awayH2HRate > 0.50) score += 8;
+      else if (awayH2HRate > 0.35) score += 3;
+      else if (awayH2HRate < 0.20) score -= 10;
+    } else {
+      if (drawH2HRate > 0.35) score += 8;
+      else if (drawH2HRate > 0.25) score += 4;
+    }
+  }
+  
+  // ===== 4. FATOR CASA (peso 15%) =====
+  if (market === 'home') {
+    score += 5;
+  } else if (market === 'away') {
+    score -= 3;
+  }
+  
+  // ===== 5. STANDINGS (se disponível) =====
+  const standings = game.advancedData?.standings;
+  if (standings && standings.homePosition && standings.awayPosition && standings.totalTeams) {
+    const posDiff = standings.awayPosition - standings.homePosition;
+    const relativeStrength = posDiff / standings.totalTeams;
+    
+    if (market === 'home') {
+      if (relativeStrength > 0.40) score += 10;
+      else if (relativeStrength > 0.20) score += 5;
+      else if (relativeStrength < -0.40) score -= 10;
+      else if (relativeStrength < -0.20) score -= 5;
+    } else if (market === 'away') {
+      if (relativeStrength < -0.40) score += 10;
+      else if (relativeStrength < -0.20) score += 5;
+      else if (relativeStrength > 0.40) score -= 10;
+      else if (relativeStrength > 0.20) score -= 5;
+    }
+    
+    const homeGD = standings.homeGoalDiff || 0;
+    const awayGD = standings.awayGoalDiff || 0;
+    if (market === 'home' && homeGD > 10 && awayGD < -5) score += 5;
+    if (market === 'away' && awayGD > 10 && homeGD < -5) score += 5;
+  }
+  
+  // ===== 6. VALIDAÇÃO DE SEGURANÇA =====
+  if (market === 'home' && homeOdd > 3.00 && score < 70) {
+    score = Math.min(score, 35);
+  }
+  if (market === 'away' && awayOdd > 3.00 && score < 70) {
+    score = Math.min(score, 35);
+  }
+  if (market === 'away' && awayOdd > 2.50) {
+    score = Math.min(score, 40);
+  }
+  
+  return Math.max(10, Math.min(90, score));
+}
+
+// ============================================================================
+// PRIORIDADE DE MERCADO (baseado em backtest)
+// ============================================================================
+function getMarketPriorityMultiplier(betType: string): number {
+  const type = (betType || '').toLowerCase();
+  
+  if (type.includes('over') || type.includes('mais de 2.5') || type.includes('más de 2.5') || type.includes('more than 2.5')) return 1.5;
+  if (type.includes('btts') || type.includes('ambas') || type.includes('ambos')) return 1.3;
+  if (type.includes('under') || type.includes('menos de 2.5') || type.includes('less than 2.5')) return 0.7;
+  if (type.includes('home') || type.includes('casa') || type.includes('local') || type.includes('vitória') || type.includes('victoria')) return 0.5;
+  if (type.includes('draw') || type.includes('empat')) return 0.4;
+  if (type.includes('away') || type.includes('fora') || type.includes('visitante')) return 0.2;
+  
+  return 0.5;
+}
+
+// ============================================================================
+// NORMALIZAR TIPO DE MERCADO (para tracking)
+// ============================================================================
+function normalizeMarketType(type: string): string {
+  const t = (type || '').toLowerCase();
+  if (t.includes('over') || t.includes('mais de 2.5') || t.includes('más de 2.5') || t.includes('more than 2.5')) return 'over25';
+  if (t.includes('under') || t.includes('menos de 2.5') || t.includes('less than 2.5')) return 'under25';
+  if (t.includes('btts') || t.includes('ambas') || t.includes('ambos')) return 'btts';
+  if (t.includes('away') || t.includes('fora') || t.includes('visitante')) return 'away_win';
+  if (t.includes('home') || t.includes('casa') || t.includes('local')) return 'home_win';
+  if (t.includes('draw') || t.includes('empat')) return 'draw';
+  return 'unknown';
+}
+
+// ============================================================================
+// FILTRO DE MERCADO PARA ACUMULADAS
+// ============================================================================
+function isMarketSafeForAccumulator(betType: string, riskLevel: string): boolean {
+  const type = (betType || '').toLowerCase();
+  
+  const isOver = type.includes('over') || type.includes('mais de 2.5') || type.includes('más de 2.5');
+  const isBTTS = type.includes('btts') || type.includes('ambas') || type.includes('ambos');
+  const isUnder = type.includes('under') || type.includes('menos de 2.5');
+  const isHomeWin = type.includes('home') || type.includes('casa') || type.includes('local') || type.includes('vitória') || type.includes('victoria');
+  const isAwayWin = type.includes('away') || type.includes('fora') || type.includes('visitante');
+  
+  if (riskLevel === 'safe' || riskLevel === 'low') {
+    return isOver || isBTTS;
+  }
+  
+  if (riskLevel === 'medium' || riskLevel === 'balanced') {
+    return isOver || isBTTS || isUnder || isHomeWin;
+  }
+  
+  // Bold: aceita tudo exceto vitória fora
+  return !isAwayWin;
+}
+
+// Validar composição: mínimo 50% mercados de gols
+function validateComboComposition(bets: any[]): boolean {
+  const goalMarkets = bets.filter(b => {
+    const t = ((b.betType || b.betLabel || '') as string).toLowerCase();
+    return t.includes('over') || t.includes('mais') || t.includes('más') ||
+           t.includes('btts') || t.includes('ambas') || t.includes('ambos');
+  });
+  
+  return goalMarkets.length >= Math.ceil(bets.length * 0.5);
+}
+
 // ============= VALUE BETTING FUNCTIONS =============
 
 const MIN_VALUE_THRESHOLD = 2;     // Voltou para 2 (mínimo 2pp de edge)
@@ -1458,15 +1649,106 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
     }
   }
 
+  // ============================================================================
+  // SISTEMA DE PESOS POR MERCADO (baseado em backtest 43 jogos)
+  // ============================================================================
+
+  // --- AJUSTE DE SCORE PARA UNDER 2.5 (53% acerto, restringir) ---
+  {
+    let underSupportFactors = 0;
+    if (game.odds.under && game.odds.under < 1.80) underSupportFactors++;
+    
+    const homeGPGU = adv?.homeStats?.avgGoalsScored || 0;
+    const awayGPGU = adv?.awayStats?.avgGoalsScored || 0;
+    if (homeGPGU > 0 && awayGPGU > 0 && (homeGPGU + awayGPGU) < 2.3) underSupportFactors++;
+    
+    if (h2hAvgGoals !== null && h2hAvgGoals < 2.2) underSupportFactors++;
+    
+    if (poissonProbs && (poissonProbs.expectedHomeGoals + poissonProbs.expectedAwayGoals) < 2.3) underSupportFactors++;
+    
+    if (underSupportFactors < 2) {
+      under25Score = Math.min(under25Score, 40);
+      secureLog('info', 'UNDER_RESTRICTED', {
+        game: `${game.homeTeam} vs ${game.awayTeam}`,
+        supportFactors: underSupportFactors,
+        scoreCapped: 40,
+      });
+    }
+    
+    if (game.odds.under && game.odds.under > 2.00) {
+      under25Score = Math.min(under25Score, 35);
+    }
+  }
+
+  // --- AJUSTE DE SCORE PARA 1X2 (35% Poisson + 65% calculate1X2Score) ---
+  {
+    const newHomeScore = calculate1X2Score(game, 'home');
+    const newAwayScore = calculate1X2Score(game, 'away');
+    const newDrawScore = calculate1X2Score(game, 'draw');
+    
+    homeWinScore = Math.round(homeWinScore * 0.35 + newHomeScore * 0.65);
+    awayWinScore = Math.round(awayWinScore * 0.35 + newAwayScore * 0.65);
+    drawScore = Math.round(drawScore * 0.35 + newDrawScore * 0.65);
+    
+    secureLog('info', 'SCORE_1X2_ADJUSTED', {
+      game: `${game.homeTeam} vs ${game.awayTeam}`,
+      homeScore: homeWinScore,
+      awayScore: awayWinScore,
+      drawScore: drawScore,
+    });
+  }
+
+  // --- RESTRIÇÃO: VITÓRIA FORA (0% acerto no backtest) ---
+  {
+    let awayAllowed = false;
+    const awayFormStr = game.advancedData?.awayForm || '';
+    
+    if (game.odds.away < 1.60) {
+      const awayWinsRecent = awayFormStr.slice(0, 5).split('').filter((c: string) => c === 'W').length;
+      if (awayWinsRecent >= 4) awayAllowed = true;
+      
+      if (adv?.h2h && (adv.h2h.totalGames || 0) >= 3) {
+        const awayH2HRate = (adv.h2h.awayWins || 0) / adv.h2h.totalGames;
+        if (awayH2HRate > 0.50) awayAllowed = true;
+      }
+    }
+    
+    if (!awayAllowed) {
+      awayWinScore = Math.min(awayWinScore, 30);
+    }
+  }
+
+  // --- RESTRIÇÃO: VITÓRIA CASA (25% acerto, só favoritos) ---
+  {
+    let homeAllowed = false;
+    const homeFormStr = game.advancedData?.homeForm || '';
+    
+    if (game.odds.home < 2.20) {
+      homeAllowed = true;
+    } else if (game.odds.home < 2.80) {
+      const homeWinsRecent = homeFormStr.slice(0, 5).split('').filter((c: string) => c === 'W').length;
+      if (homeWinsRecent >= 3) homeAllowed = true;
+    }
+    
+    if (!homeAllowed) {
+      homeWinScore = Math.min(homeWinScore, 35);
+    }
+  }
+
+  // --- RESTRIÇÃO: EMPATE (só jogos equilibrados) ---
+  {
+    const oddDiffDraw = Math.abs(game.odds.home - game.odds.away);
+    if (oddDiffDraw > 1.5) drawScore = Math.min(drawScore, 30);
+    if (game.odds.draw > 3.60) drawScore = Math.min(drawScore, 35);
+  }
+
   // ============= BÔNUS: OVER 2.5 TEM TRACK RECORD =============
-  // Backtest mostrou 78% de acerto em Over 2.5. Dar bônus leve ao score.
   if (over25Score > 45) {
-    over25Score = Math.min(95, Math.round(over25Score * 1.08)); // +8% no score
+    over25Score = Math.min(95, Math.round(over25Score * 1.08));
   }
   
-  // BTTS também tem bom track record
   if (bttsScore > 45) {
-    bttsScore = Math.min(95, Math.round(bttsScore * 1.06)); // +6% no score
+    bttsScore = Math.min(95, Math.round(bttsScore * 1.06));
   }
 
   // ===== DETERMINAR MELHOR APOSTA COM VALUE =====
@@ -1509,9 +1791,15 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   }
   // ============= FIM DEBUG =============
 
-  // Ordenar por score (confiança)
-  scoresWithValue.sort((a, b) => b.score - a.score);
-  const best = scoresWithValue[0];
+  // Aplicar multiplicador de prioridade de mercado ao score
+  const scoresWithPriority = scoresWithValue.map(bet => ({
+    ...bet,
+    priorityScore: bet.score * getMarketPriorityMultiplier(bet.type || bet.betType || ''),
+  }));
+  
+  // Ordenar por priorityScore (não mais por score puro)
+  scoresWithPriority.sort((a, b) => b.priorityScore - a.priorityScore);
+  const best = scoresWithPriority[0];
   
   // ============= FILTRO 1: POSIÇÃO NA TABELA / ODDS PROXY =============
   if (best.betType === 'home' || best.betType === 'away') {
@@ -1749,6 +2037,9 @@ function isGameSafeForAccumulator(game: any, riskLevel: string = 'safe'): boolea
   const a = game.analysis;
   if (!a || a.isSkip) return false;
   
+  // Filtro de mercado: verificar se o tipo de aposta é adequado para o nível de risco
+  if (!isMarketSafeForAccumulator(a.type || '', riskLevel)) return false;
+  
   if (a.skipReason === 'underdog_vs_favorite' || a.skipReason === 'underdog_vs_heavy_favorite') return false;
   if (a.skipReason === 'sanity_check_failed' || a.skipReason === 'table_position_mismatch') return false;
   
@@ -1853,8 +2144,12 @@ function buildSmartAccumulators(
     return [];
   }
   
-  // 2. Ordenar por edge (maior primeiro)
-  eligible.sort((a, b) => b.edge - a.edge);
+  // 2. Ordenar por edge × prioridade de mercado (Over/BTTS primeiro)
+  eligible.sort((a, b) => {
+    const aPriority = a.edge * getMarketPriorityMultiplier(a.betType);
+    const bPriority = b.edge * getMarketPriorityMultiplier(b.betType);
+    return bPriority - aPriority;
+  });
   
   // 3. Montar até 3 combos diferentes
   const results: SmartAccumulator[] = [];
@@ -1872,19 +2167,24 @@ function buildSmartAccumulators(
   // COMBO 1: Top 5 por edge (ou todos se menos de 5)
   const combo1Size = Math.min(5, eligible.length);
   const combo1 = eligible.slice(0, combo1Size);
-  results.push(makeSmartCombo(combo1, '🛡️', `${titles.safe} — ${combo1Size} ${gamesLabel}`, combo1Size, 50, 'medium'));
+  if (validateComboComposition(combo1)) {
+    results.push(makeSmartCombo(combo1, '🛡️', `${titles.safe} — ${combo1Size} ${gamesLabel}`, combo1Size, 50, 'medium'));
+  }
   
-  // COMBO 2: Se tem 8+ jogos, pegar posições 3-8 (jogos diferentes do combo 1)
+  // COMBO 2: Se tem 8+ jogos, pegar posições 3-8
   if (eligible.length >= 8) {
     const combo2Size = Math.min(6, eligible.length - 3);
     const combo2 = eligible.slice(3, 3 + combo2Size);
-    results.push(makeSmartCombo(combo2, '🧠', `${titles.balanced} — ${combo2Size} ${gamesLabel}`, combo2Size, 30, 'medium'));
+    if (validateComboComposition(combo2)) {
+      results.push(makeSmartCombo(combo2, '🧠', `${titles.balanced} — ${combo2Size} ${gamesLabel}`, combo2Size, 30, 'medium'));
+    }
   }
   
   // COMBO 3: Se tem 12+ jogos, pegar mix de odds altas
   if (eligible.length >= 12) {
     const highOddGames = [...eligible].sort((a, b) => b.odd - a.odd);
     const combo3 = highOddGames.slice(0, Math.min(5, highOddGames.length));
+    // Bold combo doesn't need composition validation
     results.push(makeSmartCombo(combo3, '🚀', `${titles.bold} — ${combo3.length} ${gamesLabel}`, combo3.length, 20, 'high'));
   }
   
