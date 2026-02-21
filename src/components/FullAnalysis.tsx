@@ -536,7 +536,14 @@ export function FullAnalysis({ game, userTier = 'free' }: FullAnalysisProps) {
         {/* Bet Suggestion */}
         <div className="bg-slate-800/50 rounded-xl p-4 mb-5">
           <p className="text-slate-400 text-sm mb-1">{l.suggestedBet}:</p>
-          <p className="text-emerald-400 font-bold text-xl sm:text-2xl">{analysis?.type || `${game.homeTeam}`}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-emerald-400 font-bold text-xl sm:text-2xl">{analysis?.type || `${game.homeTeam}`}</p>
+            {analysis?.isLowConfidence && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                Vantagem Marginal
+              </span>
+            )}
+          </div>
         </div>
         
         {/* Stats Grid - Responsive */}

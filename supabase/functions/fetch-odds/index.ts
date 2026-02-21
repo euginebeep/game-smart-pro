@@ -458,8 +458,8 @@ function calculateDynamicWeights(leagueName: string, betType: 'result' | 'over_u
 
 // ============= VALUE BETTING FUNCTIONS =============
 
-const MIN_VALUE_THRESHOLD = 3; // 3 pontos percentuais de edge mínimo (aumentado de 2)
-const MIN_CONFIDENCE_THRESHOLD = 12; // 12% de probabilidade mínima (aumentado de 8)
+const MIN_VALUE_THRESHOLD = 2;     // Voltou para 2 (mínimo 2pp de edge)
+const MIN_CONFIDENCE_THRESHOLD = 10; // Reduzido de 12 para 10
 
 function calculateImpliedProbability(odds: number): number {
   if (odds <= 1) return 100;
@@ -504,25 +504,26 @@ function calculateCalibratedProbability(score: number, odd: number): number {
   // Quanto menor a odd, mais eficiente o mercado, menor o edge possível
   // maxEdgePoints: Máximo de pontos percentuais que o EUGINE pode discordar da casa
   // Valores CONSERVADORES v4 — mercados são eficientes, edges grandes são raríssimos
+  // maxEdgePoints REBALANCEADO — conservador mas funcional
   let maxEdgePoints: number;
   if (odd <= 1.20) {
-    maxEdgePoints = 2;    // Super favorito — mercado quase perfeito
+    maxEdgePoints = 3;    // Super favorito
   } else if (odd <= 1.40) {
-    maxEdgePoints = 3;    // Favorito forte
+    maxEdgePoints = 4;    // Favorito forte
   } else if (odd <= 1.60) {
-    maxEdgePoints = 4;    // Favorito moderado
+    maxEdgePoints = 5;    // Favorito moderado
   } else if (odd <= 2.00) {
-    maxEdgePoints = 5;    // Leve favorito — máximo realista
+    maxEdgePoints = 7;    // Leve favorito — faixa mais comum
   } else if (odd <= 2.50) {
-    maxEdgePoints = 6;    // Jogo equilibrado
+    maxEdgePoints = 8;    // Jogo equilibrado
   } else if (odd <= 3.50) {
-    maxEdgePoints = 5;    // Underdog leve — mercado mais volátil mas edge raro
+    maxEdgePoints = 7;    // Underdog leve
   } else if (odd <= 5.00) {
-    maxEdgePoints = 4;    // Underdog — casas precificam bem
+    maxEdgePoints = 5;    // Underdog
   } else if (odd <= 8.00) {
-    maxEdgePoints = 3;    // Underdog forte — edge quase impossível
+    maxEdgePoints = 4;    // Underdog forte
   } else {
-    maxEdgePoints = 2;    // Zebra — edge > 2% seria milagre
+    maxEdgePoints = 3;    // Zebra
   }
   
   // 3. Converter score (0-100) em fator de ajuste
@@ -1455,6 +1456,17 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
     if (h2hAvgGoals !== null && h2hAvgGoals < 1.8) {
       over25Score = Math.min(over25Score, 35);
     }
+  }
+
+  // ============= BÔNUS: OVER 2.5 TEM TRACK RECORD =============
+  // Backtest mostrou 78% de acerto em Over 2.5. Dar bônus leve ao score.
+  if (over25Score > 45) {
+    over25Score = Math.min(95, Math.round(over25Score * 1.08)); // +8% no score
+  }
+  
+  // BTTS também tem bom track record
+  if (bttsScore > 45) {
+    bttsScore = Math.min(95, Math.round(bttsScore * 1.06)); // +6% no score
   }
 
   // ===== DETERMINAR MELHOR APOSTA COM VALUE =====
@@ -2961,6 +2973,63 @@ async function fetchOddsFromAPI(lang: string = 'pt') {
                    `${alerts.future} ${diaTexto}`;
   
   secureLog('info', 'Jogos processados com sucesso', { count: gamesWithOdds.length });
+  
+  // ============= FALLBACK: MÍNIMO DE JOGOS =============
+  let recommendedGames = gamesWithOdds.filter((g: any) => g.analysis && !g.analysis.isSkip);
+  
+  if (recommendedGames.length < 3 && gamesWithOdds.length > 10) {
+    secureLog('warn', 'TOO_FEW_RECOMMENDATIONS', {
+      recommended: recommendedGames.length,
+      total: gamesWithOdds.length,
+      action: 'relaxing_filters',
+    });
+    
+    const skippedWithEdge = gamesWithOdds
+      .filter((g: any) => g.analysis && g.analysis.isSkip && (g.analysis.estimatedProbability || 0) > (g.analysis.impliedProbability || 0))
+      .sort((a: any, b: any) => {
+        const edgeA = (a.analysis.estimatedProbability || 0) - (a.analysis.impliedProbability || 0);
+        const edgeB = (b.analysis.estimatedProbability || 0) - (b.analysis.impliedProbability || 0);
+        return edgeB - edgeA;
+      })
+      .slice(0, 5);
+    
+    for (const game of skippedWithEdge) {
+      game.analysis.isSkip = false;
+      game.analysis.type = game.analysis.type === 'skip' ? 'marginal' : game.analysis.type;
+      game.analysis.confidence = Math.max(game.analysis.confidence || 0, 40);
+      game.analysis.isLowConfidence = true;
+    }
+    
+    recommendedGames = gamesWithOdds.filter((g: any) => g.analysis && !g.analysis.isSkip);
+    
+    secureLog('info', 'FALLBACK_APPLIED', {
+      nowRecommended: recommendedGames.length,
+      recovered: skippedWithEdge.length,
+    });
+  }
+  
+  // ============= RESUMO DE ANÁLISE =============
+  const summary = {
+    totalGames: gamesWithOdds.length,
+    analyzed: gamesWithOdds.filter((g: any) => g.analysis).length,
+    recommended: gamesWithOdds.filter((g: any) => g.analysis && !g.analysis.isSkip).length,
+    skipped: gamesWithOdds.filter((g: any) => g.analysis && g.analysis.isSkip).length,
+    skipReasons: {} as Record<string, number>,
+    marketDistribution: {} as Record<string, number>,
+  };
+  
+  for (const game of gamesWithOdds) {
+    if ((game as any).analysis?.isSkip) {
+      const reason = (game as any).analysis.skipReason || 'unknown';
+      summary.skipReasons[reason] = (summary.skipReasons[reason] || 0) + 1;
+    }
+    if ((game as any).analysis && !(game as any).analysis.isSkip) {
+      const market = (game as any).analysis.type || 'unknown';
+      summary.marketDistribution[market] = (summary.marketDistribution[market] || 0) + 1;
+    }
+  }
+  
+  secureLog('info', 'ANALYSIS_SUMMARY', summary);
   
   // ===== SMART ACCUMULATOR BUILDER (PREMIUM) =====
   let smartAccumulators: SmartAccumulator[] = [];
