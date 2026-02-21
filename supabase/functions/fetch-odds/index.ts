@@ -1240,6 +1240,84 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   awayWinScore = Math.round(poissonProbs.awayWin * 0.6 + awayWinScore * 0.4);
   drawScore = Math.round(poissonProbs.draw * 0.6 + drawScore * 0.4);
 
+  // ============= FILTRO 2: PERFIL OFENSIVO PARA OVER/UNDER =============
+  if (adv?.homeStats && adv?.awayStats) {
+    const homeGPG = adv.homeStats.avgGoalsScored || 0;
+    const awayGPG = adv.awayStats.avgGoalsScored || 0;
+    const combinedAvg = homeGPG + awayGPG;
+    
+    // Se um dos times quase não marca (< 0.90/jogo), PENALIZAR Over 2.5 pesadamente
+    if (homeGPG < 0.90 || awayGPG < 0.90) {
+      over25Score = Math.min(over25Score, 35);
+      secureLog('info', 'FILTER2_WEAK_ATTACKER', {
+        home: game.homeTeam, away: game.awayTeam,
+        homeGPG: homeGPG.toFixed(2), awayGPG: awayGPG.toFixed(2),
+      });
+    }
+    
+    // Se a soma combinada é baixa (< 2.20), penalizar Over 2.5
+    if (combinedAvg < 2.20) {
+      over25Score = Math.min(over25Score, 40);
+    }
+    
+    // Se a soma combinada é muito alta (> 3.50), penalizar Under 2.5
+    if (combinedAvg > 3.50) {
+      under25Score = Math.min(under25Score, 35);
+    }
+  }
+  
+  // FILTRO 2B: Proxy via odds para Over/Under quando mercado discorda
+  if (game.odds.over && game.odds.over > 2.10 && over25Score > 60) {
+    over25Score = Math.min(over25Score, 55);
+    secureLog('info', 'FILTER2B_MARKET_DISAGREES_OVER', {
+      home: game.homeTeam, away: game.awayTeam, overOdd: game.odds.over,
+    });
+  }
+  if (game.odds.under && game.odds.under > 2.10 && under25Score > 60) {
+    under25Score = Math.min(under25Score, 55);
+  }
+  
+  // H2H: se jogos diretos têm poucos gols, penalizar Over
+  const h2hAvgGoals = adv?.h2h?.avgGoals || null;
+  if (h2hAvgGoals !== null && h2hAvgGoals < 2.0) {
+    over25Score = Math.min(over25Score, Math.round(over25Score * 0.70));
+    secureLog('info', 'FILTER2_H2H_LOW_GOALS', {
+      home: game.homeTeam, away: game.awayTeam, h2hAvgGoals,
+    });
+  }
+
+  // ============= FILTRO 3: H2H DESFAVORÁVEL =============
+  if (adv?.h2h && adv.h2h.totalGames >= 3) {
+    const h2hData = adv.h2h;
+    const homeWinRateH2H = (h2hData.homeWins || 0) / h2hData.totalGames;
+    const awayWinRateH2H = (h2hData.awayWins || 0) / h2hData.totalGames;
+    
+    // Penalizar vitória do mandante se H2H é muito desfavorável
+    if (homeWinRateH2H < 0.20 && awayWinRateH2H > 0.50) {
+      homeWinScore = Math.min(homeWinScore, 30);
+      secureLog('info', 'FILTER3_H2H_UNFAVORABLE_HOME', {
+        home: game.homeTeam, away: game.awayTeam,
+        homeWinRate: (homeWinRateH2H * 100).toFixed(0) + '%',
+        awayWinRate: (awayWinRateH2H * 100).toFixed(0) + '%',
+      });
+    }
+    
+    // Penalizar vitória do visitante se H2H é muito desfavorável
+    if (awayWinRateH2H < 0.20 && homeWinRateH2H > 0.50) {
+      awayWinScore = Math.min(awayWinScore, 30);
+      secureLog('info', 'FILTER3_H2H_UNFAVORABLE_AWAY', {
+        home: game.homeTeam, away: game.awayTeam,
+        homeWinRate: (homeWinRateH2H * 100).toFixed(0) + '%',
+        awayWinRate: (awayWinRateH2H * 100).toFixed(0) + '%',
+      });
+    }
+    
+    // Se H2H tem poucos gols, penalizar Over mais
+    if (h2hAvgGoals !== null && h2hAvgGoals < 1.8) {
+      over25Score = Math.min(over25Score, 35);
+    }
+  }
+
   // ===== DETERMINAR MELHOR APOSTA COM VALUE =====
   const allScores = [
     { type: t.over25, score: over25Score, odd: game.odds.over, betType: 'over25' as const },
@@ -1284,6 +1362,71 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   // Ordenar por score (confiança)
   scoresWithValue.sort((a, b) => b.score - a.score);
   const best = scoresWithValue[0];
+  
+  // ============= FILTRO 1: POSIÇÃO NA TABELA / ODDS PROXY =============
+  if (best.betType === 'home' || best.betType === 'away') {
+    // FILTRO 1A: Posição na tabela (se disponível)
+    if (adv?.homePosition && adv?.awayPosition) {
+      // Estimar total de times (usar 20 como padrão)
+      const totalTeams = 20;
+      const bottomThird = Math.ceil(totalTeams * 0.67);
+      const topThird = Math.ceil(totalTeams * 0.33);
+      
+      const recommendedPos = best.betType === 'home' ? adv.homePosition : adv.awayPosition;
+      const opponentPos = best.betType === 'home' ? adv.awayPosition : adv.homePosition;
+      
+      const isRecommendedWeak = recommendedPos >= bottomThird;
+      const isOpponentStrong = opponentPos <= topThird;
+      
+      if (isRecommendedWeak && isOpponentStrong) {
+        const recentForm = best.betType === 'home' ? adv.homeForm : adv.awayForm;
+        const recentWins = recentForm ? recentForm.split('').filter((c: string) => c === 'W').length : 0;
+        
+        if (recentWins < 3) {
+          secureLog('warn', 'FILTER1_TABLE_POSITION_BLOCK', {
+            home: game.homeTeam, away: game.awayTeam,
+            recommendedPos, opponentPos, recentWins,
+          });
+          return {
+            type: t.skip,
+            reason: `Time na posição ${recommendedPos}º contra time do topo (${opponentPos}º). Risco alto.`,
+            profit: 0, confidence: best.estimatedProb,
+            factors: factors.slice(0, 3),
+            valuePercentage: best.value,
+            impliedProbability: best.impliedProb,
+            estimatedProbability: best.estimatedProb,
+            isSkip: true, skipReason: 'table_position_mismatch',
+          };
+        }
+      }
+    }
+    
+    // FILTRO 1B: Proxy via odds quando standings não disponível
+    const recommendedOdd = best.odd;
+    const opponentOdd = best.betType === 'home' ? game.odds.away : game.odds.home;
+    
+    if (recommendedOdd > 2.50 && opponentOdd < 1.80) {
+      const recentForm = best.betType === 'home' ? adv?.homeForm : adv?.awayForm;
+      const recentWins = recentForm ? recentForm.split('').filter((c: string) => c === 'W').length : 0;
+      
+      if (recentWins < 3) {
+        secureLog('warn', 'FILTER1B_UNDERDOG_BLOCK', {
+          home: game.homeTeam, away: game.awayTeam,
+          recommendedOdd, opponentOdd, recentWins,
+        });
+        return {
+          type: t.skip,
+          reason: `Underdog @${recommendedOdd.toFixed(2)} contra favorito @${opponentOdd.toFixed(2)}. Arriscado.`,
+          profit: 0, confidence: best.estimatedProb,
+          factors: factors.slice(0, 3),
+          valuePercentage: best.value,
+          impliedProbability: best.impliedProb,
+          estimatedProbability: best.estimatedProb,
+          isSkip: true, skipReason: 'underdog_vs_heavy_favorite',
+        };
+      }
+    }
+  }
   
   // Confidence agora é a probabilidade calibrada, não o score bruto
   const confidence = best.estimatedProb;
@@ -1450,16 +1593,30 @@ function buildSmartAccumulators(
     const edge = a.estimatedProbability - a.impliedProbability;
     
     // VALIDAÇÃO TRIPLA DE SEGURANÇA
-    if (edge <= 3) continue; // Aumentado de 0 para 3 (mínimo 3% de edge)
-    if (a.estimatedProbability <= a.impliedProbability) continue; // Redundante mas seguro
-    if (a.confidence < 15) continue; // Mínimo 15% de confiança
+    if (edge <= 3) continue;
+    if (a.estimatedProbability <= a.impliedProbability) continue;
+    if (a.confidence < 15) continue;
     
-    // Log de segurança
+    // ============= FILTRO 4: ANTI-ARMADILHA PARA ACUMULADAS =============
+    // Regra: Não incluir jogos marcados como armadilha
+    if (a.skipReason === 'table_position_mismatch') continue;
+    if (a.skipReason === 'underdog_vs_heavy_favorite') continue;
+    
+    // Regra: Probabilidade estimada mínima de 40% para jogo individual
+    if ((a.estimatedProbability || 0) < 40) continue;
+    
+    // Regra: Confidence mínima de 35%
+    if ((a.confidence || 0) < 35) continue;
+    
+    // Regra: Não incluir underdogs pesados (@3.50+) em acumuladas
+    const gameOdd = a.recommendedOdd || (a.profit ? (a.profit / 40) + 1 : 0);
+    if (gameOdd > 3.50) continue;
+    
     secureLog('info', 'SMART_ACC_ELIGIBLE', {
       game: `${game.homeTeam} vs ${game.awayTeam}`,
       edge: Math.round(edge * 100) / 100,
       confidence: a.confidence,
-      odd: a.recommendedOdd || 'N/A'
+      odd: gameOdd || 'N/A'
     });
     
     // Calcular odd do jogo
