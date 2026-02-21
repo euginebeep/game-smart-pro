@@ -1936,7 +1936,7 @@ function getDayLabel(dataJogo: Date, lang: string = 'pt'): string {
 // ============================================================================
 // RATE LIMIT CONTROLLER FOR API-FOOTBALL
 // ============================================================================
-const API_CALLS_LIMIT = 30; // Max extra calls per execution
+const API_CALLS_LIMIT = 120; // Max calls per execution (standings cached = ~10 + 50 games * 2 calls avg)
 let apiCallsUsed = 0;
 
 // Helper function to make API-Football requests with rate limit
