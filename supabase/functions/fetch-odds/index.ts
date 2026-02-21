@@ -437,14 +437,12 @@ function calculateValue(estimatedProb: number, odds: number): number {
 }
 
 function shouldSkipBet(confidence: number, value: number): { skip: boolean; reason?: string } {
-  // Com calibração, value agora é em pontos percentuais (ex: +5 = 5% de edge)
-  // Edge mínimo de 2 pontos para valer o risco
-  if (value < 3) {
-    return { skip: true, reason: 'Vantagem insuficiente para justificar aposta' };
+  // Value agora é em pontos percentuais (edge = estimatedProb - impliedProb)
+  if (value < MIN_VALUE_THRESHOLD) {
+    return { skip: true, reason: `Edge insuficiente (${value.toFixed(1)}pp < ${MIN_VALUE_THRESHOLD}pp mínimo)` };
   }
-  // Confiança muito baixa (prob calibrada < 12%)
-  if (confidence < 12) {
-    return { skip: true, reason: 'Probabilidade muito baixa' };
+  if (confidence < MIN_CONFIDENCE_THRESHOLD) {
+    return { skip: true, reason: `Probabilidade muito baixa (${confidence}% < ${MIN_CONFIDENCE_THRESHOLD}% mínimo)` };
   }
   return { skip: false };
 }
@@ -467,25 +465,27 @@ function calculateCalibratedProbability(score: number, odd: number): number {
   
   // 2. Edge máximo permitido por faixa de odd
   // Quanto menor a odd, mais eficiente o mercado, menor o edge possível
+  // maxEdgePoints: Máximo de pontos percentuais que o EUGINE pode discordar da casa
+  // Valores CONSERVADORES v4 — mercados são eficientes, edges grandes são raríssimos
   let maxEdgePoints: number;
   if (odd <= 1.20) {
-    maxEdgePoints = 2;    // Super favorito — mercado quase perfeito (reduzido de 3)
+    maxEdgePoints = 2;    // Super favorito — mercado quase perfeito
   } else if (odd <= 1.40) {
-    maxEdgePoints = 3;    // Favorito forte (reduzido de 5)
+    maxEdgePoints = 3;    // Favorito forte
   } else if (odd <= 1.60) {
-    maxEdgePoints = 4;    // Favorito moderado (reduzido de 7)
+    maxEdgePoints = 4;    // Favorito moderado
   } else if (odd <= 2.00) {
-    maxEdgePoints = 6;    // Leve favorito (reduzido de 10)
+    maxEdgePoints = 5;    // Leve favorito — máximo realista
   } else if (odd <= 2.50) {
-    maxEdgePoints = 7;    // Jogo equilibrado (reduzido de 12)
+    maxEdgePoints = 6;    // Jogo equilibrado
   } else if (odd <= 3.50) {
-    maxEdgePoints = 8;    // Underdog leve (reduzido de 14)
+    maxEdgePoints = 5;    // Underdog leve — mercado mais volátil mas edge raro
   } else if (odd <= 5.00) {
-    maxEdgePoints = 7;    // Underdog (reduzido de 12)
+    maxEdgePoints = 4;    // Underdog — casas precificam bem
   } else if (odd <= 8.00) {
-    maxEdgePoints = 5;    // Underdog forte (reduzido de 8)
+    maxEdgePoints = 3;    // Underdog forte — edge quase impossível
   } else {
-    maxEdgePoints = 3;    // Zebra — casas raramente erram tanto (reduzido de 5)
+    maxEdgePoints = 2;    // Zebra — edge > 2% seria milagre
   }
   
   // 3. Converter score (0-100) em fator de ajuste
@@ -1248,7 +1248,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
     
     // Se um dos times quase não marca (< 0.90/jogo), PENALIZAR Over 2.5 pesadamente
     if (homeGPG < 0.90 || awayGPG < 0.90) {
-      over25Score = Math.min(over25Score, 35);
+      over25Score = Math.min(over25Score, 30);
       secureLog('info', 'FILTER2_WEAK_ATTACKER', {
         home: game.homeTeam, away: game.awayTeam,
         homeGPG: homeGPG.toFixed(2), awayGPG: awayGPG.toFixed(2),
@@ -1267,14 +1267,16 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   }
   
   // FILTRO 2B: Proxy via odds para Over/Under quando mercado discorda
-  if (game.odds.over && game.odds.over > 2.10 && over25Score > 60) {
-    over25Score = Math.min(over25Score, 55);
-    secureLog('info', 'FILTER2B_MARKET_DISAGREES_OVER', {
-      home: game.homeTeam, away: game.awayTeam, overOdd: game.odds.over,
+  if (game.odds.over && game.odds.over > 2.10 && over25Score > 55) {
+    over25Score = Math.min(over25Score, 50);
+    secureLog('info', 'MARKET_DISAGREES_OVER', {
+      game: `${game.homeTeam} vs ${game.awayTeam}`,
+      overOdd: game.odds.over,
+      scoreCapped: 50,
     });
   }
-  if (game.odds.under && game.odds.under > 2.10 && under25Score > 60) {
-    under25Score = Math.min(under25Score, 55);
+  if (game.odds.under && game.odds.under > 2.10 && under25Score > 55) {
+    under25Score = Math.min(under25Score, 50);
   }
   
   // H2H: se jogos diretos têm poucos gols, penalizar Over
@@ -1343,21 +1345,20 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
     };
   });
   
-  // ============= DEBUG LOGGING =============
+  // ============= DEBUG: LOG CADA APOSTA =============
   for (const bet of scoresWithValue) {
-    secureLog('info', 'BET_ANALYSIS_DEBUG', {
+    secureLog('info', 'BET_DEBUG', {
       game: `${game.homeTeam} vs ${game.awayTeam}`,
-      league: game.league,
       betType: bet.betType,
       odd: bet.odd,
-      score: bet.score,
+      rawScore: bet.score,
       impliedProb: Math.round(bet.impliedProb),
       estimatedProb: Math.round(bet.estimatedProb),
+      edge: Math.round((bet.estimatedProb - bet.impliedProb) * 10) / 10,
       value: Math.round(bet.value * 100) / 100,
-      shouldSkip: shouldSkipBet(bet.estimatedProb, bet.value).skip,
     });
   }
-  // ============= FIM DEBUG LOGGING =============
+  // ============= FIM DEBUG =============
 
   // Ordenar por score (confiança)
   scoresWithValue.sort((a, b) => b.score - a.score);
@@ -1431,28 +1432,46 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
   // Confidence agora é a probabilidade calibrada, não o score bruto
   const confidence = best.estimatedProb;
   
-  // Verificar se deve fazer skip
-  const skipCheck = shouldSkipBet(confidence, best.value);
+  // ============= VERIFICAÇÃO DE SANIDADE =============
+  // Se estimatedProb <= impliedProb, não há edge. SEMPRE skip.
+  const sanityFailed = best.estimatedProb <= best.impliedProb;
   
-  // VERIFICAÇÃO DE SANIDADE: Se a probabilidade estimada é menor que a implícita, SEMPRE fazer skip
-  const sanityCheck = best.estimatedProb <= best.impliedProb;
-  
-  if (skipCheck.skip || sanityCheck) {
-    const skipReason = sanityCheck 
-      ? 'Falha na verificação de sanidade: prob. estimada ≤ prob. implícita'
-      : (skipCheck.reason || t.noEdge);
-      
-    secureLog('warn', 'BET_SKIPPED', {
+  if (sanityFailed) {
+    secureLog('warn', 'SANITY_FAIL', {
       game: `${game.homeTeam} vs ${game.awayTeam}`,
-      reason: skipReason,
+      betType: best.betType,
       estimatedProb: best.estimatedProb,
       impliedProb: best.impliedProb,
-      value: best.value
     });
     
     return {
       type: t.skip,
-      reason: skipReason,
+      reason: 'Sem vantagem matemática identificada.',
+      profit: 0,
+      confidence,
+      factors: factors.slice(0, 3),
+      valuePercentage: 0,
+      impliedProbability: best.impliedProb,
+      estimatedProbability: best.estimatedProb,
+      isSkip: true,
+      skipReason: 'sanity_check_failed',
+    };
+  }
+  
+  // ============= SKIP CHECK NORMAL =============
+  const skipCheck = shouldSkipBet(confidence, best.value);
+  
+  if (skipCheck.skip) {
+    secureLog('info', 'BET_SKIPPED', {
+      game: `${game.homeTeam} vs ${game.awayTeam}`,
+      reason: skipCheck.reason,
+      value: best.value,
+      confidence,
+    });
+    
+    return {
+      type: t.skip,
+      reason: skipCheck.reason || t.noEdge,
       profit: 0,
       confidence,
       factors: factors.slice(0, 3),
@@ -1460,7 +1479,7 @@ function analyzeAdvanced(game: Game, lang: string = 'pt'): BettingAnalysis {
       impliedProbability: best.impliedProb,
       estimatedProbability: best.estimatedProb,
       isSkip: true,
-      skipReason: skipReason,
+      skipReason: skipCheck.reason,
     };
   }
   
@@ -1576,6 +1595,38 @@ interface SmartAccumulator {
   qualityScore: number;
 }
 
+// ============= VALIDAÇÃO ANTI-ARMADILHA PARA ACUMULADAS =============
+function isGameSafeForAccumulator(game: any, riskLevel: string = 'safe'): boolean {
+  const a = game.analysis;
+  if (!a || a.isSkip) return false;
+  
+  if (a.skipReason === 'underdog_vs_favorite' || a.skipReason === 'underdog_vs_heavy_favorite') return false;
+  if (a.skipReason === 'sanity_check_failed' || a.skipReason === 'table_position_mismatch') return false;
+  
+  const edge = (a.estimatedProbability || 0) - (a.impliedProbability || 0);
+  
+  if (riskLevel === 'safe' || riskLevel === 'low') {
+    if (edge < 3) return false;
+    if ((a.estimatedProbability || 0) < 45) return false;
+    const odd = a.recommendedOdd || (a.profit ? (a.profit / 40) + 1 : 0);
+    if (odd > 2.50) return false;
+    return true;
+  }
+  
+  if (riskLevel === 'medium' || riskLevel === 'balanced') {
+    if (edge < 2) return false;
+    if ((a.estimatedProbability || 0) < 35) return false;
+    const odd = a.recommendedOdd || (a.profit ? (a.profit / 40) + 1 : 0);
+    if (odd > 3.50) return false;
+    return true;
+  }
+  
+  // Bold
+  if (edge < 1) return false;
+  if ((a.estimatedProbability || 0) < 20) return false;
+  return true;
+}
+
 function buildSmartAccumulators(
   analyzedGames: any[],
   lang: string = 'pt'
@@ -1598,9 +1649,8 @@ function buildSmartAccumulators(
     if (a.confidence < 15) continue;
     
     // ============= FILTRO 4: ANTI-ARMADILHA PARA ACUMULADAS =============
-    // Regra: Não incluir jogos marcados como armadilha
-    if (a.skipReason === 'table_position_mismatch') continue;
-    if (a.skipReason === 'underdog_vs_heavy_favorite') continue;
+    // Bloquear qualquer jogo com skipReason (armadilha detectada)
+    if (a.skipReason) continue;
     
     // Regra: Probabilidade estimada mínima de 40% para jogo individual
     if ((a.estimatedProbability || 0) < 40) continue;
