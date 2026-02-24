@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -91,9 +91,9 @@ export default {
         "pulse-slow": "pulse-slow 2s ease-in-out infinite",
       },
       boxShadow: {
-        glow: "0 0 40px hsla(272, 62%, 47%, 0.12)",
-        "glow-lg": "0 0 60px hsla(272, 62%, 47%, 0.2)",
-        purple: "0 4px 30px hsla(272, 62%, 47%, 0.2)",
+        glow: "0 0 40px hsla(45, 100%, 50%, 0.15)",
+        "glow-lg": "0 0 60px hsla(45, 100%, 50%, 0.25)",
+        gold: "0 4px 30px hsla(45, 100%, 50%, 0.2)",
       },
     },
   },
