@@ -604,24 +604,24 @@ export default function Auth() {
               <button
                 type="button"
                 onClick={() => setMode('login')}
-                className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-2.5 px-4 rounded-lg font-bold transition-all ${
                   mode === 'login'
-                    ? 'text-white'
-                    : 'bg-secondary text-muted-foreground hover:text-foreground'
+                    ? ''
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
-                style={mode === 'login' ? { background: '#0A1A2F', fontFamily: "'Montserrat', sans-serif" } : { fontFamily: "'Montserrat', sans-serif" }}
+                style={mode === 'login' ? { background: '#FFD700', color: '#0A1A2F', fontFamily: "'Montserrat', sans-serif" } : { background: 'transparent', fontFamily: "'Montserrat', sans-serif" }}
               >
                 {t('auth.login')}
               </button>
               <button
                 type="button"
                 onClick={() => setMode('register')}
-                className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-2.5 px-4 rounded-lg font-bold transition-all ${
                   mode === 'register'
-                    ? 'text-white'
-                    : 'bg-secondary text-muted-foreground hover:text-foreground'
+                    ? ''
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
-                style={mode === 'register' ? { background: '#0A1A2F', fontFamily: "'Montserrat', sans-serif" } : { fontFamily: "'Montserrat', sans-serif" }}
+                style={mode === 'register' ? { background: '#FFD700', color: '#0A1A2F', fontFamily: "'Montserrat', sans-serif" } : { background: 'transparent', fontFamily: "'Montserrat', sans-serif" }}
               >
                 {t('auth.register')}
               </button>
