@@ -155,7 +155,7 @@ export function AccumulatorCard({
             {/* Odd Total */}
             <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 px-2 py-3 sm:p-3.5 text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                ODD
+                COTA
               </p>
               <p className={`text-2xl sm:text-3xl font-extrabold ${style.accent} whitespace-nowrap`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 {totalOdd.toFixed(2)}
@@ -165,7 +165,7 @@ export function AccumulatorCard({
             {/* Chance EUGINE */}
             <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 px-2 py-3 sm:p-3.5 text-center">
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                CHANCE
+                PROB.
               </p>
               <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${
                 chancePercent >= 40 ? 'text-emerald-400' :
@@ -182,7 +182,7 @@ export function AccumulatorCard({
               edge > 0 ? 'bg-emerald-500/15 border-2 border-emerald-500/30' : 'bg-secondary/50'
             }`}>
               <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                EDGE
+                LUCRO+
               </p>
               <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${
                 edge > 0 ? 'text-emerald-400' : 'text-muted-foreground'
