@@ -540,7 +540,7 @@ export default function Auth() {
         {/* Logo/Brand */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src={eugineLogo} alt="EUGINE" className="h-20 w-auto" />
+            <img src={eugineLogo} alt="EUGINE" className="h-[120px] w-auto" />
           </div>
           <p className="text-sm mt-2" style={{ color: '#a0a8b0', fontFamily: "'Poppins', sans-serif" }}>{t('auth.systemName')}</p>
           <div className="mt-3 flex justify-center">
