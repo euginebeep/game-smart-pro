@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import eugineLogo from '@/assets/eugine-logo-horizontal.png';
 import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -201,11 +202,8 @@ export default function LandingB() {
 
       {/* ═══════ NAV ═══════ */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 sm:px-10" style={{ height: 64, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', borderBottom: `1px solid ${C.border}` }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: C.navy }}>
-            <span className="text-white font-bold text-sm">E</span>
-          </div>
-          <span className="font-bold text-lg tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif", color: C.navy }}>EUGINE</span>
+        <div className="flex items-center">
+          <img src={eugineLogo} alt="EUGINE" className="h-10 w-auto" />
         </div>
         <div className="hidden md:flex items-center gap-8">
           <button onClick={() => scrollTo('b-how')} className="text-sm hover:opacity-70 transition-opacity" style={{ color: C.textSecondary }}>{l.nav.howItWorks}</button>
@@ -522,10 +520,7 @@ export default function LandingB() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Logo */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: C.navyMid }}><span className="text-white font-bold text-sm">E</span></div>
-                <span className="text-white font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>EUGINE</span>
-              </div>
+              <img src={eugineLogo} alt="EUGINE" className="h-10 w-auto mb-3 brightness-0 invert" />
               <p className="text-xs" style={{ color: '#a0a8b0' }}>Análise de Apostas com IA</p>
             </div>
             {/* Product */}
