@@ -17,15 +17,21 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
 
   const analysis = useMemo(() => analyzeBet(game), [game]);
 
-  // Format time - prefer brazilTime if available
+  // Format time using user's local timezone (auto-detected by browser)
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTzAbbr = useMemo(() => {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short', timeZone: userTimezone }).formatToParts(new Date());
+      return parts.find(p => p.type === 'timeZoneName')?.value || '';
+    } catch { return ''; }
+  }, [userTimezone]);
+
   const formatTime = (game: Game) => {
-    if (game.brazilTime) {
-      return game.brazilTime;
-    }
     const d = new Date(game.startTime);
-    return d.toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', {
+    return d.toLocaleTimeString(undefined, {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: userTimezone,
     });
   };
 
@@ -143,7 +149,7 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
             <span className="font-bold text-lg tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
               {formatTime(game)}
             </span>
-            <span className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider">(BRT)</span>
+            {userTzAbbr && <span className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider">({userTzAbbr})</span>}
           </div>
           <div className="flex items-center gap-2.5">
             {game.leagueLogo && (
