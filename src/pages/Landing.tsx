@@ -680,8 +680,8 @@ export default function Landing() {
                     {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
                   </button>
                 </div>
-                <p className="text-xs sm:text-sm mt-3 flex items-center justify-center lg:justify-start gap-1.5 animate-pulse" style={{ color: '#FF6D00', textShadow: '0 0 8px rgba(255,109,0,0.5)' }}>
-                  <Check className="w-4 h-4 shrink-0" style={{ color: '#FF6D00' }} />
+                <p className="text-xs sm:text-sm mt-3 flex items-center justify-center lg:justify-start gap-1.5 animate-pulse font-bold" style={{ color: '#39FF14', textShadow: '0 0 10px rgba(57,255,20,0.6), 0 0 20px rgba(57,255,20,0.3)' }}>
+                  <Check className="w-4 h-4 shrink-0" style={{ color: '#39FF14' }} />
                   {l.hero.ctaSubtext}
                 </p>
               </div>
@@ -1211,8 +1211,8 @@ export default function Landing() {
               >
                 {l.finalCta.cta}
               </button>
-              <p className="text-xs mt-4 flex items-center justify-center gap-1.5 animate-pulse" style={{ color: '#FF6D00', textShadow: '0 0 8px rgba(255,109,0,0.5)' }}>
-                <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#FF6D00' }} />
+              <p className="text-xs mt-4 flex items-center justify-center gap-1.5 animate-pulse font-bold" style={{ color: '#39FF14', textShadow: '0 0 10px rgba(57,255,20,0.6), 0 0 20px rgba(57,255,20,0.3)' }}>
+                <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#39FF14' }} />
                 {l.hero.ctaSubtext}
               </p>
             </div>
