@@ -207,7 +207,7 @@ export default function Landing() {
     pt: {
       nav: { howItWorks: 'Como Funciona', plans: 'Planos', login: 'Login', getStarted: 'Comece Agora' },
       hero: {
-        badge: '🔥 +2.300 apostadores já usam o EUGINE',
+        badge: '🔥 Usado em mais de 30 países',
         title: 'Pare de perder dinheiro em apostas.',
         titleHighlight: 'Comece a apostar com vantagem matemática.',
         subtitle: 'O EUGINE escaneia 50+ jogos por dia e mostra EXATAMENTE onde a probabilidade real é maior que a odd. Você só aposta quando tem edge.',
@@ -310,7 +310,7 @@ export default function Landing() {
     en: {
       nav: { howItWorks: 'How It Works', plans: 'Plans', login: 'Login', getStarted: 'Get Started' },
       hero: {
-        badge: '🔥 2,300+ bettors already use EUGINE',
+        badge: '🔥 Used in 30+ countries',
         title: 'Stop losing money on bets.',
         titleHighlight: 'Start betting with mathematical edge.',
         subtitle: "EUGINE scans 50+ matches daily and shows EXACTLY where the real probability beats the bookmaker's odds. You only bet when you have edge.",
@@ -391,7 +391,7 @@ export default function Landing() {
     es: {
       nav: { howItWorks: 'Cómo Funciona', plans: 'Planes', login: 'Iniciar Sesión', getStarted: 'Comenzar' },
       hero: {
-        badge: '🔥 +2.300 apostadores ya usan EUGINE',
+        badge: '🔥 Usado en más de 30 países',
         title: 'Deja de perder dinero en apuestas.',
         titleHighlight: 'Apuesta solo con ventaja matemática.',
         subtitle: 'EUGINE escanea 50+ partidos al día y muestra EXACTAMENTE dónde la probabilidad real supera la cuota. Solo apuestas cuando tienes edge.',
@@ -472,7 +472,7 @@ export default function Landing() {
     it: {
       nav: { howItWorks: 'Come Funziona', plans: 'Piani', login: 'Accedi', getStarted: 'Inizia Ora' },
       hero: {
-        badge: '🔥 +2.300 scommettitori usano già EUGINE',
+        badge: '🔥 Usato in oltre 30 paesi',
         title: 'Smetti di perdere soldi nelle scommesse.',
         titleHighlight: 'Scommetti solo con vantaggio matematico.',
         subtitle: 'EUGINE analizza 50+ partite al giorno e mostra ESATTAMENTE dove la probabilità reale supera la quota. Scommetti solo con edge.',
@@ -660,16 +660,55 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Hero Image */}
-            <div className="flex-1 w-full max-w-lg lg:max-w-none">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-transparent to-accent/10 rounded-3xl blur-2xl opacity-60" />
-                <img 
-                  src={heroDashboardImg} 
-                  alt="EUGINE Dashboard"
-                  className="relative rounded-2xl w-full h-auto"
-                  style={{ filter: 'drop-shadow(0 25px 50px hsla(199, 89%, 48%, 0.2))' }}
-                />
+            {/* Hero Phone Mockup with Tech Animation */}
+            <div className="flex-1 w-full max-w-lg lg:max-w-none flex items-center justify-center">
+              <div className="relative w-[280px] sm:w-[320px] lg:w-[360px]">
+                {/* Outer rotating ring */}
+                <div className="absolute -inset-8 sm:-inset-10 rounded-full border border-primary/20 animate-[spin_20s_linear_infinite]">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-[0_0_12px_hsla(199,89%,48%,0.8)]" />
+                </div>
+                {/* Second ring */}
+                <div className="absolute -inset-14 sm:-inset-16 rounded-full border border-accent/10 animate-[spin_30s_linear_infinite_reverse]">
+                  <div className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-accent/60 shadow-[0_0_8px_hsla(260,80%,60%,0.6)]" />
+                </div>
+                {/* Pulsing glow behind phone */}
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/10 to-accent/20 rounded-[3rem] blur-3xl animate-[pulse_3s_ease-in-out_infinite] opacity-60" />
+                {/* Scan line effect */}
+                <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden z-10 pointer-events-none">
+                  <div className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/80 to-transparent animate-[scanline_3s_ease-in-out_infinite]" />
+                </div>
+                {/* Phone frame */}
+                <div className="relative bg-gradient-to-b from-[hsl(var(--secondary))] to-[hsl(var(--background))] rounded-[2.5rem] p-2 border border-primary/30 shadow-[0_0_60px_hsla(199,89%,48%,0.15),inset_0_1px_0_hsla(0,0%,100%,0.05)]">
+                  {/* Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[hsl(var(--background))] rounded-b-2xl z-20" />
+                  {/* Screen */}
+                  <div className="rounded-[2rem] overflow-hidden">
+                    <img 
+                      src={heroDashboardImg} 
+                      alt="EUGINE Dashboard"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                </div>
+                {/* Floating data badges */}
+                <div className="absolute -right-4 sm:-right-8 top-1/4 bg-[hsl(var(--secondary))] border border-primary/40 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(199,89%,48%,0.2)] animate-[float_4s_ease-in-out_infinite] z-20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                    <span className="text-xs font-bold text-primary">65% hit rate</span>
+                  </div>
+                </div>
+                <div className="absolute -left-4 sm:-left-8 top-1/2 bg-[hsl(var(--secondary))] border border-accent/40 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(260,80%,60%,0.2)] animate-[float_5s_ease-in-out_infinite_0.5s] z-20">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-3 h-3 text-accent" />
+                    <span className="text-xs font-bold text-accent">+Edge</span>
+                  </div>
+                </div>
+                <div className="absolute -right-2 sm:-right-6 bottom-1/4 bg-[hsl(var(--secondary))] border border-primary/30 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(199,89%,48%,0.15)] animate-[float_4.5s_ease-in-out_infinite_1s] z-20">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-3 h-3 text-primary" />
+                    <span className="text-xs font-bold text-foreground">30+ {language === 'pt' ? 'países' : language === 'es' ? 'países' : language === 'it' ? 'paesi' : 'countries'}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
