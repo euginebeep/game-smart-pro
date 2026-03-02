@@ -62,7 +62,7 @@ export function ZebraSection({ games, userTier = 'free', maxZebras }: ZebraSecti
         </div>
       )}
 
-      <div className={`grid gap-4 sm:gap-5 lg:gap-6 ${isPremium ? 'sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 max-w-2xl mx-auto'}`}>
+      <div className={`grid gap-6 sm:gap-7 lg:gap-8 ${isPremium ? 'sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 max-w-2xl mx-auto'}`}>
         {zebras.map((z, idx) => {
           const bet = createZebraBet(z.game, z.fallback);
           const config = chanceMap[z.level];
