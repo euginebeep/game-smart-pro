@@ -103,33 +103,6 @@ export function TrackingStats() {
         </div>
       </div>
 
-      {/* Stats por mercado */}
-      <div className="bg-secondary/20 rounded-xl border border-border/50 p-4">
-        <h4 className="font-bold text-foreground text-sm mb-3">
-          {t('tracking.byMarket') || 'Acerto por Mercado'}
-        </h4>
-        <div className="space-y-2">
-          {stats.map((stat) => (
-            <div key={stat.bet_type} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {betTypeLabels[stat.bet_type] || stat.bet_type}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {stat.wins}/{stat.total_bets} {t('tracking.bets') || 'apostas'} • {t('tracking.avgEdge') || 'Edge médio'}: +{stat.avg_edge}%
-                </p>
-              </div>
-              <p className={`text-lg font-bold ${
-                stat.hit_rate >= 55 ? 'text-emerald-400' :
-                stat.hit_rate >= 45 ? 'text-primary' :
-                'text-red-400'
-              }`}>
-                {stat.hit_rate}%
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Últimos resultados */}
       {recent.length > 0 && (
