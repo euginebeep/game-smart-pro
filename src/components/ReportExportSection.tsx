@@ -41,7 +41,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     if (!contentRef.current) throw new Error('No content ref');
     const element = contentRef.current;
     
-    const canvasWidth = isMobile() ? Math.max(element.scrollWidth, 800) : Math.max(element.scrollWidth, 1200);
+    const canvasWidth = isMobile() ? Math.min(element.scrollWidth, 800) : Math.min(element.scrollWidth, 1200);
     
     const wrapper = document.createElement('div');
     wrapper.style.cssText = `
@@ -49,7 +49,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
       left: -9999px;
       top: 0;
       width: ${canvasWidth}px;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      background: #0f172a;
       padding: 30px;
       overflow: hidden;
       z-index: -1;
@@ -57,8 +57,8 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     
     const header = document.createElement('div');
     header.innerHTML = `
-      <div style="text-align: center; padding: 40px 20px; margin-bottom: 30px; background: rgba(30, 41, 59, 0.95); border-radius: 20px; border: 2px solid rgba(251, 191, 36, 0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-        <h1 style="font-size: 2.5rem; font-weight: 900; color: #fbbf24; margin-bottom: 12px; text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);">🎯 EUGINE Analytics</h1>
+      <div style="text-align: center; padding: 40px 20px; margin-bottom: 30px; background: rgba(30, 41, 59, 0.95); border-radius: 20px; border: 2px solid rgba(251, 191, 36, 0.4);">
+        <h1 style="font-size: 2.5rem; font-weight: 900; color: #fbbf24; margin-bottom: 12px;">EUGINE Analytics</h1>
         <p style="color: #94a3b8; font-size: 1rem; margin-bottom: 8px;">${t('export.generatedAt')}: ${new Date().toLocaleString(locale)}</p>
         <p style="color: #fbbf24; font-size: 1.1rem; font-weight: 600;">${t('export.totalGames')}: ${games.length} | Premium Report</p>
       </div>
@@ -70,40 +70,58 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
     clone.style.overflow = 'hidden';
     clone.style.height = 'auto';
     clone.style.minHeight = '0';
+    
+    // Remove all images/svgs/canvas that could cause taint errors
+    clone.querySelectorAll('img, svg, canvas, video').forEach(el => {
+      const placeholder = document.createElement('span');
+      placeholder.textContent = el.getAttribute('alt') || '';
+      el.replaceWith(placeholder);
+    });
+    
     wrapper.appendChild(clone);
     
     const footer = document.createElement('div');
     footer.innerHTML = `
       <div style="text-align: center; padding: 30px 20px; margin-top: 30px; color: #64748b; font-size: 0.875rem; border-top: 1px solid rgba(100, 116, 139, 0.3);">
-        <p style="margin-bottom: 8px;">EUGINE Analytics™ v3.0 • GS ITALYINVESTMENTS</p>
+        <p style="margin-bottom: 8px;">EUGINE Analytics v3.0 - GS ITALYINVESTMENTS</p>
         <p style="color: #475569;">Premium Report - ${new Date().toLocaleDateString(locale)}</p>
       </div>
     `;
     wrapper.appendChild(footer);
     
     document.body.appendChild(wrapper);
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    const actualHeight = wrapper.scrollHeight;
+    const actualHeight = Math.min(wrapper.scrollHeight, 15000);
     
-    const scale = isMobile() ? 1 : 2;
+    const scale = isMobile() ? 1 : 1.5;
     
-    const canvas = await html2canvas(wrapper, {
-      backgroundColor: '#0f172a',
-      scale,
-      useCORS: true,
-      logging: false,
-      allowTaint: true,
-      width: wrapper.scrollWidth,
-      height: actualHeight,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: wrapper.scrollWidth,
-      windowHeight: actualHeight,
-    });
-
-    document.body.removeChild(wrapper);
-    return canvas;
+    try {
+      const canvas = await html2canvas(wrapper, {
+        backgroundColor: '#0f172a',
+        scale,
+        useCORS: true,
+        logging: false,
+        allowTaint: false,
+        foreignObjectRendering: false,
+        removeContainer: false,
+        width: wrapper.scrollWidth,
+        height: actualHeight,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: wrapper.scrollWidth,
+        windowHeight: actualHeight,
+        ignoreElements: (el) => {
+          const tag = el.tagName?.toLowerCase();
+          return tag === 'video' || tag === 'iframe';
+        },
+      });
+      document.body.removeChild(wrapper);
+      return canvas;
+    } catch (err) {
+      document.body.removeChild(wrapper);
+      throw err;
+    }
   };
 
   const downloadFile = (blob: Blob, filename: string) => {
