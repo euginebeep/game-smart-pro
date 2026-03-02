@@ -163,12 +163,12 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-6">
           
-          {/* Teams Section — Horizontal centered like reference */}
+          {/* Teams Section — Horizontal centered */}
           <div className="flex-shrink-0 w-full lg:w-auto">
-            <div className="flex items-center justify-center gap-5 sm:gap-8">
+            <div className="flex items-center justify-center gap-6 sm:gap-10">
               {/* Home Team */}
-              <div className="flex flex-col items-center text-center min-w-0">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-2">
+              <div className="flex flex-col items-center text-center" style={{ minWidth: '100px', maxWidth: '140px' }}>
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-1.5">
                   <img
                     src={game.homeTeamLogo || `https://media.api-sports.io/football/teams/${game.homeTeamId || 0}.png`}
                     alt={game.homeTeam}
@@ -176,17 +176,20 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                   />
                 </div>
-                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight truncate max-w-[120px]" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
                   {game.homeTeam}
                 </p>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-primary mt-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                  {language === 'pt' ? 'Casa' : language === 'es' ? 'Local' : language === 'it' ? 'Casa' : 'Home'}
+                </span>
               </div>
 
-              {/* VS */}
-              <span className="text-muted-foreground text-sm font-medium tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>v</span>
+              {/* X */}
+              <span className="text-foreground text-xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>X</span>
 
               {/* Away Team */}
-              <div className="flex flex-col items-center text-center min-w-0">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-2">
+              <div className="flex flex-col items-center text-center" style={{ minWidth: '100px', maxWidth: '140px' }}>
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-1.5">
                   <img
                     src={game.awayTeamLogo || `https://media.api-sports.io/football/teams/${game.awayTeamId || 0}.png`}
                     alt={game.awayTeam}
@@ -194,9 +197,12 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                   />
                 </div>
-                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight truncate max-w-[120px]" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
                   {game.awayTeam}
                 </p>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-accent mt-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                  {language === 'pt' ? 'Fora' : language === 'es' ? 'Visitante' : language === 'it' ? 'Ospite' : 'Away'}
+                </span>
               </div>
             </div>
           </div>
