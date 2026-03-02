@@ -747,7 +747,7 @@ const translations: Record<Language, any> = {
   },
   en: {
     auth: {
-      systemName: "Eugine Analytics Intelligent System",
+      systemName: "Intelligent Sports Analysis System With AI",
       login: "Login",
       register: "Sign Up",
       email: "Email",
@@ -1422,7 +1422,7 @@ const translations: Record<Language, any> = {
   },
   es: {
     auth: {
-      systemName: "Sistema Inteligente Eugine Analytics",
+      systemName: "Sistema Inteligente de Análisis Deportivo Con IA",
       login: "Iniciar Sesión",
       register: "Registrarse",
       email: "Correo",
@@ -2097,7 +2097,7 @@ const translations: Record<Language, any> = {
   },
   it: {
     auth: {
-      systemName: "Sistema Intelligente Eugine Analytics",
+      systemName: "Sistema Intelligente di Analisi Sportiva Con IA",
       login: "Accedi",
       register: "Registrati",
       email: "Email",
