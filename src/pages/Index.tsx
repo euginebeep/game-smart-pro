@@ -24,7 +24,7 @@ import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Search } from 'lucide-react';
+import { Search, BarChart3 } from 'lucide-react';
 
 /**
  * Index Page - Main dashboard displaying games and analysis
@@ -382,7 +382,7 @@ const Index = () => {
               <div ref={gamesContentRef} className="space-y-6" id="eugine-report-content">
                 {/* Section Title */}
                 <div className="mb-6">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground italic">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                     {t('matchCard.gamesOfDay')}
                     {filteredGames.length !== games.length && (
                       <span className="text-muted-foreground text-lg font-normal ml-2">
@@ -430,12 +430,12 @@ const Index = () => {
               </div>
 
               {/* Seção de Transparência / Resultados */}
-              <div className="glass-card p-6 sm:p-8">
+              <div className="glass-card p-6 sm:p-8" style={{ borderColor: 'rgba(255,215,0,0.1)' }}>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-lg">📊</span>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,215,0,0.15)' }}>
+                    <BarChart3 className="w-5 h-5" style={{ color: '#FFD700' }} />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-foreground">
+                  <h3 className="text-xl sm:text-2xl font-bold text-foreground" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                     {t('tracking.title') || 'Nossos Resultados'}
                   </h3>
                 </div>
@@ -451,24 +451,47 @@ const Index = () => {
           )}
         </main>
 
-        {/* Footer */}
-        <footer className="mt-8 sm:mt-12 lg:mt-16 py-8 border-t border-border/30">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <span className="text-sm font-semibold text-foreground">EUGINE</span>
-            <p className="text-muted-foreground text-xs">
-              by <span className="font-semibold inline-flex items-center gap-1"><USFlag3D className="w-4 h-3" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-4 h-3" /></span>
-            </p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
-              <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{t('main.terms')}</a>
-              <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{t('main.privacy')}</a>
-              <a href="/about" className="hover:text-foreground transition-colors">{t('main.about')}</a>
+        {/* Footer — matching LandingB pattern */}
+        <footer className="mt-8 sm:mt-12 lg:mt-16 rounded-2xl p-8 sm:p-10" style={{ background: '#0A1A2F' }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid sm:grid-cols-3 gap-8 mb-8">
+              {/* Logo */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#1a3a52' }}>
+                    <span className="text-white font-bold text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>E</span>
+                  </div>
+                  <span className="text-white font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>EUGINE</span>
+                </div>
+                <p className="text-xs" style={{ color: '#a0a8b0' }}>
+                  by <span className="font-semibold inline-flex items-center gap-1"><USFlag3D className="w-4 h-3" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-4 h-3" /></span>
+                </p>
+              </div>
+              {/* Links */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>Links</h4>
+                <div className="space-y-2">
+                  <a href="/termos-de-uso" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{t('main.terms')}</a>
+                  <a href="/politica-de-privacidade" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{t('main.privacy')}</a>
+                  <a href="/about" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{t('main.about')}</a>
+                </div>
+              </div>
+              {/* Legal */}
+              <div>
+                <h4 className="text-white font-semibold text-sm mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>Legal</h4>
+                <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>
+                  {language === 'pt' ? 'Jogo Responsável' : language === 'es' ? 'Juego Responsable' : language === 'it' ? 'Gioco Responsabile' : 'Responsible Gambling'}
+                </a>
+              </div>
             </div>
-            <p className="text-muted-foreground/40 text-[10px] sm:text-xs max-w-md">
-              {t('main.disclaimer')}
-            </p>
-            <p className="text-muted-foreground/30 text-[10px]">
-              <span className="inline-flex items-center gap-1">© {new Date().getFullYear()} <USFlag3D className="w-3.5 h-2.5" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-3.5 h-2.5" /></span>
-            </p>
+            <div className="pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <p className="text-xs leading-relaxed mb-3" style={{ color: '#808A94' }}>
+                {t('main.disclaimer')}
+              </p>
+              <p className="text-xs" style={{ color: '#808A94' }}>
+                <span className="inline-flex items-center gap-1">© {new Date().getFullYear()} <USFlag3D className="w-3.5 h-2.5" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-3.5 h-2.5" /></span>
+              </p>
+            </div>
           </div>
         </footer>
       </div>

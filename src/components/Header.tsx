@@ -1,4 +1,4 @@
-import { Zap, TrendingUp, LogOut, Search, Crown, Sparkles, Loader2, Shield, ChevronDown, Info } from 'lucide-react';
+import { Zap, TrendingUp, LogOut, Search, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
@@ -20,10 +20,10 @@ interface HeaderProps {
 }
 
 const tierConfig = {
-  free: { label: 'Trial', className: 'bg-muted/60 text-muted-foreground border-border' },
-  basic: { label: 'Basic', className: 'bg-primary/15 text-primary border-primary/30' },
-  advanced: { label: 'Advanced', className: 'bg-success/15 text-success border-success/30' },
-  premium: { label: 'Premium', className: 'bg-warning/15 text-warning border-warning/30' },
+  free: { label: 'Trial', className: 'border-border text-muted-foreground', style: { background: 'rgba(255,255,255,0.05)' } },
+  basic: { label: 'Basic', className: 'border-primary/30 text-primary', style: { background: 'rgba(0,180,216,0.1)' } },
+  advanced: { label: 'Advanced', className: 'border', style: { background: 'rgba(34,197,94,0.1)', color: '#22C55E', borderColor: 'rgba(34,197,94,0.3)' } },
+  premium: { label: 'Premium', className: 'border font-bold', style: { background: 'rgba(255,215,0,0.15)', color: '#FFD700', borderColor: 'rgba(255,215,0,0.4)' } },
 };
 
 export function Header({ 
@@ -51,17 +51,15 @@ export function Header({
         <div className="flex items-center gap-3">
           <div 
             className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(160 70% 40%) 100%)',
-            }}
+            style={{ background: '#0A1A2F' }}
           >
-            <TrendingUp className="w-4.5 h-4.5 text-primary-foreground" />
+            <TrendingUp className="w-4.5 h-4.5" style={{ color: '#FFD700' }} />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none">
+            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none" style={{ fontFamily: "'Montserrat', sans-serif" }}>
               EUGINE
             </h1>
-            <p className="text-muted-foreground text-[11px] font-medium leading-none mt-0.5">
+            <p className="text-muted-foreground text-[11px] font-medium leading-none mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
               Sports Analytics
             </p>
           </div>
@@ -93,7 +91,7 @@ export function Header({
 
           {/* Tier Badge */}
           {!subscriptionLoading && (
-            <span className={`hidden sm:inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold border ${currentTier.className}`}>
+            <span className={`hidden sm:inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold border ${currentTier.className}`} style={currentTier.style}>
               {currentTier.label}
             </span>
           )}
@@ -113,7 +111,8 @@ export function Header({
                 <button
                   onClick={onFetch}
                   disabled={loading || (isTrial && dailySearchesRemaining === 0) || cooldownRemaining > 0}
-                  className="btn-primary flex items-center gap-2 text-sm px-5 py-2 min-w-[130px] justify-center disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                  className="flex items-center gap-2 text-sm px-5 py-2 min-w-[130px] justify-center disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden rounded-lg font-bold transition-all duration-300 hover:opacity-90"
+                  style={{ background: '#FFD700', color: '#0A1A2F', boxShadow: '0 4px 16px rgba(255,215,0,0.3)' }}
                 >
                   {cooldownRemaining > 0 && (
                     <div 
