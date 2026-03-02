@@ -725,19 +725,16 @@ export default function Landing() {
       </section>
 
       {/* ═══════ 11. FOOTER ═══════ */}
-      <footer className="relative px-5 py-12 border-t border-border/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col items-center gap-6">
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-muted-foreground">
-              <a href="/about" className="hover:text-foreground transition-colors">{l.footer.about}</a>
-              <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{l.footer.terms}</a>
-              <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{l.footer.privacy}</a>
-              <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">{l.footer.responsible}</a>
-              <a href="mailto:support@eugineai.com" className="hover:text-foreground transition-colors">{l.footer.contact}</a>
-            </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground/60 max-w-3xl mx-auto text-center leading-relaxed">{l.footer.disclaimer}</p>
-            <p className="text-muted-foreground/40 text-xs">{l.footer.copyright}</p>
+      <footer className="relative px-5 py-12" style={{ background: '#0A1A2F' }}>
+        <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm" style={{ color: '#7EB8D0' }}>
+            <a href="/about" className="hover:text-white transition-colors">{l.footer.about}</a>
+            <a href="/termos-de-uso" className="hover:text-white transition-colors">{l.footer.terms}</a>
+            <a href="/politica-de-privacidade" className="hover:text-white transition-colors">{l.footer.privacy}</a>
+            <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{l.footer.responsible}</a>
           </div>
+          <p className="text-[10px] sm:text-xs max-w-2xl leading-relaxed" style={{ color: '#808A94' }}>{l.footer.disclaimer}</p>
+          <p className="text-xs" style={{ color: '#808A94' }}>{l.footer.copyright}</p>
         </div>
       </footer>
 
