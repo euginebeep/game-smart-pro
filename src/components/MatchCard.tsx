@@ -129,15 +129,15 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
 
   return (
     <article
-      className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-card/95 via-card/90 to-card/95 border border-border/20 shadow-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 animate-fade-in-up opacity-0 hover:border-primary/20"
+      className="group relative overflow-hidden rounded-2xl bg-card border-2 border-border/40 shadow-xl hover:shadow-2xl hover:border-primary/30 transition-all duration-300 animate-fade-in-up opacity-0"
       style={{ animationDelay: `${delay * 80}ms` }}
     >
       {/* Hover overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/3 via-transparent to-accent/3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-      <div className="relative p-5 sm:p-6">
-        {/* Header: Time & League */}
-        <div className="flex items-center justify-between mb-5 pb-4 border-b border-border/30">
+      <div className="relative">
+        {/* ===== HEADER: Time & League ===== */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/30">
           <div className="flex items-center gap-2.5 bg-muted/40 px-3.5 py-2 rounded-xl">
             <Clock className="w-5 h-5 text-primary" />
             <span className="font-bold text-lg tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
@@ -160,141 +160,135 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-          
-          {/* Teams Section — Horizontal centered */}
-          <div className="flex-shrink-0 w-full lg:w-auto">
-            <div className="flex items-center justify-center gap-6 sm:gap-10">
-              {/* Home Team */}
-              <div className="flex flex-col items-center text-center" style={{ minWidth: '100px', maxWidth: '140px' }}>
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-1.5">
-                  <img
-                    src={game.homeTeamLogo || `https://media.api-sports.io/football/teams/${game.homeTeamId || 0}.png`}
-                    alt={game.homeTeam}
-                    className="w-full h-full object-contain"
-                    onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-                  />
-                </div>
-                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
-                  {game.homeTeam}
-                </p>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-primary mt-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  {language === 'pt' ? 'Casa' : language === 'es' ? 'Local' : language === 'it' ? 'Casa' : 'Home'}
-                </span>
+        {/* ===== TEAMS: Centered horizontal ===== */}
+        <div className="px-5 py-5 border-b border-border/30">
+          <div className="flex items-center justify-center gap-6 sm:gap-10">
+            {/* Home Team */}
+            <div className="flex flex-col items-center text-center" style={{ minWidth: '100px', maxWidth: '140px' }}>
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-1.5">
+                <img
+                  src={game.homeTeamLogo || `https://media.api-sports.io/football/teams/${game.homeTeamId || 0}.png`}
+                  alt={game.homeTeam}
+                  className="w-full h-full object-contain"
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
               </div>
+              <p className="font-bold text-sm sm:text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                {game.homeTeam}
+              </p>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary mt-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {language === 'pt' ? 'Casa' : language === 'es' ? 'Local' : language === 'it' ? 'Casa' : 'Home'}
+              </span>
+            </div>
 
-              {/* X */}
-              <span className="text-foreground text-xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>X</span>
+            {/* X */}
+            <span className="text-foreground text-xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>X</span>
 
-              {/* Away Team */}
-              <div className="flex flex-col items-center text-center" style={{ minWidth: '100px', maxWidth: '140px' }}>
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-1.5">
-                  <img
-                    src={game.awayTeamLogo || `https://media.api-sports.io/football/teams/${game.awayTeamId || 0}.png`}
-                    alt={game.awayTeam}
-                    className="w-full h-full object-contain"
-                    onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-                  />
-                </div>
-                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
-                  {game.awayTeam}
-                </p>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-accent mt-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  {language === 'pt' ? 'Fora' : language === 'es' ? 'Visitante' : language === 'it' ? 'Ospite' : 'Away'}
-                </span>
+            {/* Away Team */}
+            <div className="flex flex-col items-center text-center" style={{ minWidth: '100px', maxWidth: '140px' }}>
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-1.5">
+                <img
+                  src={game.awayTeamLogo || `https://media.api-sports.io/football/teams/${game.awayTeamId || 0}.png`}
+                  alt={game.awayTeam}
+                  className="w-full h-full object-contain"
+                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                />
               </div>
+              <p className="font-bold text-sm sm:text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                {game.awayTeam}
+              </p>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-accent mt-0.5" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {language === 'pt' ? 'Fora' : language === 'es' ? 'Visitante' : language === 'it' ? 'Ospite' : 'Away'}
+              </span>
             </div>
           </div>
+        </div>
 
-          {/* Vertical Divider */}
-          <div className="hidden lg:block w-px h-36 bg-gradient-to-b from-transparent via-border/40 to-transparent" />
+        {/* ===== ODDS: 3 columns ===== */}
+        <div className="px-5 py-4 border-b border-border/30">
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { label: l.home, odd: game.odds.home, prob: homeProb, color: 'text-primary' },
+              { label: l.draw, odd: game.odds.draw, prob: drawProb, color: 'text-warning' },
+              { label: l.away, odd: game.odds.away, prob: awayProb, color: 'text-accent' },
+            ].map((item) => (
+              <div key={item.label} className="text-center p-3 rounded-xl bg-muted/30 border border-border/30">
+                <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-semibold mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                  {item.label}
+                </p>
+                <p className="font-extrabold text-xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                  {item.odd.toFixed(2)}
+                </p>
+                <p className={`${item.color} text-xs font-semibold mt-0.5`} style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {item.prob}%
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-          {/* Analysis Section */}
-          <div className="flex-1 space-y-4">
-            {/* Odds Row */}
-            <div className="grid grid-cols-3 gap-2.5">
-              {[
-                { label: l.home, odd: game.odds.home, prob: homeProb, color: 'text-primary' },
-                { label: l.draw, odd: game.odds.draw, prob: drawProb, color: 'text-warning' },
-                { label: l.away, odd: game.odds.away, prob: awayProb, color: 'text-accent' },
-              ].map((item) => (
-                <div key={item.label} className="text-center p-3 rounded-xl bg-muted/30 border border-border/20">
-                  <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-semibold mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {item.label}
-                  </p>
-                  <p className="font-extrabold text-xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
-                    {item.odd.toFixed(2)}
-                  </p>
-                  <p className={`${item.color} text-xs font-semibold mt-0.5`} style={{ fontFamily: "'Poppins', sans-serif" }}>
-                    {item.prob}%
-                  </p>
-                </div>
-              ))}
+        {/* ===== RECOMMENDATION ===== */}
+        <div className="px-5 py-4 border-b border-border/30">
+          <div className="bg-gradient-to-r from-primary/8 to-primary/3 border border-primary/20 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Target className="w-4.5 h-4.5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-primary/70 text-[10px] font-bold uppercase tracking-widest mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                  {l.suggestedBet}
+                </p>
+                <p className="font-bold text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                  {betSuggestion.text}
+                  {betSuggestion.subtext && (
+                    <span className="text-muted-foreground font-normal text-xs ml-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      {betSuggestion.subtext}
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
 
-            {/* Recommendation Box */}
-            <div className="bg-gradient-to-r from-primary/8 to-primary/3 border border-primary/20 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                  <Target className="w-4.5 h-4.5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-primary/70 text-[10px] font-bold uppercase tracking-widest mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {l.suggestedBet}
+            {/* Stats Row */}
+            <div className="flex items-center gap-6 mt-3.5 pt-3 border-t border-primary/15">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-warning" />
+                <div>
+                  <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                    {l.confidence}
                   </p>
-                  <p className="font-bold text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
-                    {betSuggestion.text}
-                    {betSuggestion.subtext && (
-                      <span className="text-muted-foreground font-normal text-xs ml-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                        {betSuggestion.subtext}
-                      </span>
-                    )}
+                  <p className={`font-extrabold text-lg tracking-tight ${getConfidenceColor(analysis?.confidence || 0)}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                    {analysis?.confidence || 0}%
                   </p>
                 </div>
               </div>
-
-              {/* Stats Row */}
-              <div className="flex items-center gap-6 mt-3.5 pt-3 border-t border-primary/15">
+              {analysis?.valuePercentage && analysis.valuePercentage > 0 && (
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-warning" />
+                  <TrendingUp className="w-4 h-4 text-success" />
                   <div>
                     <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                      {l.confidence}
+                      {l.value}
                     </p>
-                    <p className={`font-extrabold text-lg tracking-tight ${getConfidenceColor(analysis?.confidence || 0)}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                      {analysis?.confidence || 0}%
+                    <p className="text-success font-extrabold text-lg tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                      +{analysis.valuePercentage.toFixed(0)}%
                     </p>
                   </div>
                 </div>
-                {analysis?.valuePercentage && analysis.valuePercentage > 0 && (
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-success" />
-                    <div>
-                      <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                        {l.value}
-                      </p>
-                      <p className="text-success font-extrabold text-lg tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                        +{analysis.valuePercentage.toFixed(0)}%
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* Action Button */}
-          <div className="lg:ml-3 flex-shrink-0">
-            <button 
-              onClick={handleViewAnalysis}
-              className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm text-primary-foreground bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
-              style={{ fontFamily: "'Montserrat', sans-serif" }}
-            >
-              <span className="tracking-wide">{l.viewAnalysis}</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+        {/* ===== ACTION BUTTON ===== */}
+        <div className="px-5 py-4">
+          <button 
+            onClick={handleViewAnalysis}
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm text-primary-foreground bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
+            style={{ fontFamily: "'Montserrat', sans-serif" }}
+          >
+            <span className="tracking-wide">{l.viewAnalysis}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </article>
