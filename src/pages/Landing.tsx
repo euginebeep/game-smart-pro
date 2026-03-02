@@ -644,7 +644,7 @@ export default function Landing() {
                   <button
                     onClick={handleLeadCapture}
                     disabled={leadLoading}
-                    className="btn-primary px-5 sm:px-8 py-4 rounded-xl text-sm sm:text-base font-bold whitespace-nowrap flex items-center justify-center gap-2"
+                    className="btn-primary px-5 sm:px-8 py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 shrink-0 min-w-fit"
                   >
                     {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
                   </button>
