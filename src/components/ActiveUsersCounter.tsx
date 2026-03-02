@@ -75,7 +75,7 @@ export function ActiveUsersCounter() {
         border: '1px solid rgba(255,255,255,0.2)',
       }}
     >
-      <Users className="w-3.5 h-3.5 text-white" />
+      <Users className="w-3.5 h-3.5 animate-pulse" style={{ color: '#39FF14', filter: 'drop-shadow(0 0 4px #39FF14)' }} />
       <span
         className="text-xs font-medium text-white tabular-nums"
         style={{ fontFamily: "'Montserrat', sans-serif" }}
