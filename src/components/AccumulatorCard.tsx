@@ -36,7 +36,12 @@ export function AccumulatorCard({
   const [expanded, setExpanded] = useState(false);
 
   // Strip everything after "#" from title
-  const cleanTitle = title.includes('#') ? title.substring(0, title.indexOf('#')).trim() : title;
+  let cleanTitle = title.includes('#') ? title.substring(0, title.indexOf('#')).trim() : title;
+  // Rename goal-related "ousada" cards
+  const isGoalOusada = riskLevel === 'high' && /gol|goal|goles/i.test(cleanTitle);
+  if (isGoalOusada) {
+    cleanTitle = t('accumulators.goalBetLabel') || 'Aposta Em Gols';
+  }
 
   const totalOdd = bets.reduce((acc, b) => acc * b.odd, 1);
   const potentialReturn = Math.round(betAmount * totalOdd * 100) / 100;
