@@ -75,7 +75,7 @@ export function ZebraSection({ games, userTier = 'free', maxZebras }: ZebraSecti
             <AccumulatorCard
               key={idx}
               emoji="🦓"
-              title={`${t('zebra.title')} - ${config.label}`}
+              title={t('zebra.title') || 'Zebra Do Dia'}
               typeId="zebra"
               bets={[{ match: bet.match, bet: bet.bet, odd: bet.odd }]}
               betAmount={betAmount}
