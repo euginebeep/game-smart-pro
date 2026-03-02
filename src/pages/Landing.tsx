@@ -633,19 +633,19 @@ export default function Landing() {
 
               {/* Lead Capture */}
               <div className="max-w-md mx-auto lg:mx-0 mb-4">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="email"
                     placeholder={l.hero.emailPlaceholder}
                     value={leadEmail}
                     onChange={(e) => setLeadEmail(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleLeadCapture()}
-                    className="flex-1 px-4 py-4 rounded-xl bg-secondary/80 border border-border text-foreground placeholder-muted-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    className="w-full sm:flex-1 px-4 py-4 rounded-xl bg-secondary/80 border border-border text-foreground placeholder-muted-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all min-w-0"
                   />
                   <button
                     onClick={handleLeadCapture}
                     disabled={leadLoading}
-                    className="btn-primary px-5 sm:px-8 py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 shrink-0 min-w-fit"
+                    className="btn-primary w-full sm:w-auto px-6 py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2"
                   >
                     {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
                   </button>
