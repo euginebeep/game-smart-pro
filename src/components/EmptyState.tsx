@@ -1,4 +1,4 @@
-import { Zap } from 'lucide-react';
+import { Target, BarChart3, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function EmptyState() {
@@ -35,10 +35,23 @@ export function EmptyState() {
 
   return (
     <div className="flex flex-col items-center justify-center py-20 sm:py-28 text-center">
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3">
+      {/* Icon cluster */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,215,0,0.1)' }}>
+          <Target className="w-6 h-6" style={{ color: '#FFD700' }} />
+        </div>
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,215,0,0.15)', border: '1px solid rgba(255,215,0,0.2)' }}>
+          <BarChart3 className="w-7 h-7" style={{ color: '#FFD700' }} />
+        </div>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,215,0,0.1)' }}>
+          <Globe className="w-6 h-6" style={{ color: '#FFD700' }} />
+        </div>
+      </div>
+
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>
         {l.title}
       </h2>
-      <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md">
+      <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md" style={{ fontFamily: "'Poppins', sans-serif" }}>
         {l.subtitle}
       </p>
 
