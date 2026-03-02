@@ -150,12 +150,12 @@ export function AccumulatorCard({
         {/* BLOCO 2 — MÉTRICAS: 3 colunas (Odd, Chance, Vantagem)     */}
         {/* ========================================================= */}
         <div className="px-5 pb-5 border-t border-border/20 pt-4">
-          <div className="flex items-stretch gap-2 sm:gap-3 flex-nowrap">
+          <div className="flex items-stretch gap-3 flex-nowrap">
 
             {/* Odd Total */}
-            <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 px-2 py-3 sm:p-3.5 text-center">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                COTA
+            <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 p-3.5 text-center">
+              <p className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 whitespace-nowrap truncate font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                {t('accumulators.totalOdd') || 'Cotação'}
               </p>
               <p className={`text-2xl sm:text-3xl font-extrabold ${style.accent} whitespace-nowrap`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 {totalOdd.toFixed(2)}
@@ -163,9 +163,9 @@ export function AccumulatorCard({
             </div>
 
             {/* Chance EUGINE */}
-            <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 px-2 py-3 sm:p-3.5 text-center">
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                PROB.
+            <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 p-3.5 text-center">
+              <p className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 whitespace-nowrap truncate font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                {t('accumulators.chance') || 'Chance'}
               </p>
               <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${
                 chancePercent >= 40 ? 'text-emerald-400' :
@@ -178,11 +178,11 @@ export function AccumulatorCard({
             </div>
 
             {/* Vantagem */}
-            <div className={`flex-1 min-w-0 rounded-xl px-2 py-3 sm:p-3.5 text-center relative overflow-hidden ${
+            <div className={`flex-1 min-w-0 rounded-xl p-3.5 text-center relative overflow-hidden ${
               edge > 0 ? 'bg-emerald-500/15 border-2 border-emerald-500/30' : 'bg-secondary/50'
             }`}>
-              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                LUCRO+
+              <p className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-wider mb-1.5 whitespace-nowrap truncate font-semibold" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                {t('accumulators.eugineEdge') || 'Vantagem'}
               </p>
               <p className={`text-2xl sm:text-3xl font-extrabold whitespace-nowrap ${
                 edge > 0 ? 'text-emerald-400' : 'text-muted-foreground'
