@@ -358,8 +358,27 @@ const Index = () => {
                 <FreeUserBanner type="partial-report" />
               )}
               
-              {/* Day Alert */}
-              
+              {/* Day Alert Card */}
+              <div className="glass-card p-4 sm:p-5 border border-accent/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-destructive inline-block animate-pulse" />
+                      <h3 className="text-base sm:text-lg font-extrabold tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                        <span className="text-white">{t('matchCard.gamesOf')}</span>{' '}
+                        <span style={{ color: '#FFD700' }}>{t('matchCard.today')}</span>
+                      </h3>
+                    </div>
+                    <p className="text-muted-foreground text-sm mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      {isToday ? t('main.showingToday') : t('main.showingNext')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               
               {/* Export Section - Premium Only */}
               <ReportExportSection 
@@ -377,25 +396,6 @@ const Index = () => {
               
               {/* Games Content for Export - Full Report */}
               <div ref={gamesContentRef} className="space-y-6" id="eugine-report-content">
-                {/* Section Title */}
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-2">
-                    <CheckCircle2 className="w-6 h-6 text-muted-foreground/70" />
-                    <span className="w-3 h-3 rounded-full bg-destructive inline-block animate-pulse" />
-                    <h2 className="text-xl sm:text-2xl font-extrabold tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                      <span className="text-white">{t('matchCard.gamesOf')}</span>{' '}
-                      <span style={{ color: '#FFD700' }}>{t('matchCard.today')}</span>
-                      {filteredGames.length !== games.length && (
-                        <span className="text-muted-foreground text-base font-normal ml-2">
-                          ({filteredGames.length}/{games.length})
-                        </span>
-                      )}
-                    </h2>
-                  </div>
-                  <p className="text-muted-foreground text-sm ml-[52px]" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                    {isToday ? t('main.showingToday') : t('main.showingNext')}
-                  </p>
-                </div>
 
                 {/* Match Cards - New Compact Design */}
                 <div className="space-y-4">
