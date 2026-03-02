@@ -10,6 +10,7 @@ import USFlag3D from '@/components/USFlag3D';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, 
+  Check,
   CheckCircle, 
   Zap,
   Brain,
@@ -207,13 +208,13 @@ export default function Landing() {
     pt: {
       nav: { howItWorks: 'Como Funciona', plans: 'Planos', login: 'Login', getStarted: 'Comece Agora' },
       hero: {
-        badge: '🔥 Usado em mais de 30 países',
+        badge: 'Usado em mais de 30 países',
         title: 'Pare de perder dinheiro em apostas.',
         titleHighlight: 'Comece a apostar com vantagem matemática.',
         subtitle: 'O EUGINE escaneia 50+ jogos por dia e mostra EXATAMENTE onde a probabilidade real é maior que a odd. Você só aposta quando tem edge.',
         emailPlaceholder: 'Seu melhor e-mail',
         ctaButton: 'Quero minha vantagem →',
-        ctaSubtext: '✅ Grátis por 3 dias · Sem cartão · Cancele quando quiser',
+        ctaSubtext: 'Grátis por 3 dias · Sem cartão · Cancele quando quiser',
         emailError: 'Digite um e-mail válido',
         trust1: '30+ ligas',
         trust2: '50+ jogos/dia',
@@ -289,7 +290,7 @@ export default function Landing() {
       closingLine: 'Inteligência supera sorte. Dados superam opinião. Disciplina supera impulso.',
       pricing: {
         title: 'Escolha Seu Plano',
-        guarantee: '🔒 Teste grátis por 7 dias sem risco',
+        guarantee: 'Teste grátis por 7 dias sem risco',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/dia', features: ['Acesso Premium Completo por 24h', 'Análises Avançadas Ilimitadas', 'Pagamento Único (PIX)', 'Sem Recorrência'], cta: 'Comprar Day Use' },
         basic: { name: 'BASIC', price: '$29,90', period: '/mês', features: ['5 Jogos por Dia', 'Análise Simples', '1 Dupla Diária'], cta: 'Começar grátis →' },
         advanced: { name: 'ADVANCED', badge: '⭐ MAIS POPULAR', price: '$49,90', period: '/mês', features: ['10 Jogos por Dia', 'Análise Completa', '3 Duplas Diárias', 'Acumuladores'], cta: 'Assinar Advanced' },
@@ -310,13 +311,13 @@ export default function Landing() {
     en: {
       nav: { howItWorks: 'How It Works', plans: 'Plans', login: 'Login', getStarted: 'Get Started' },
       hero: {
-        badge: '🔥 Used in 30+ countries',
+        badge: 'Used in 30+ countries',
         title: 'Stop losing money on bets.',
         titleHighlight: 'Start betting with mathematical edge.',
         subtitle: "EUGINE scans 50+ matches daily and shows EXACTLY where the real probability beats the bookmaker's odds. You only bet when you have edge.",
         emailPlaceholder: 'Your best email',
         ctaButton: 'Get my edge →',
-        ctaSubtext: '✅ Free for 3 days · No card · Cancel anytime',
+        ctaSubtext: 'Free for 3 days · No card · Cancel anytime',
         emailError: 'Enter a valid email',
         trust1: '30+ leagues', trust2: '50+ matches/day', trust3: 'Real-time odds',
         hitRateLabel: 'hit rate in the last 30 days',
@@ -374,7 +375,7 @@ export default function Landing() {
       closingLine: 'Intelligence beats luck. Data beats opinion. Discipline beats impulse.',
       pricing: {
         title: 'Choose Your Plan',
-        guarantee: '🔒 Free trial for 7 days — zero risk',
+        guarantee: 'Free trial for 7 days — zero risk',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7.77', period: '/day', features: ['Full Premium Access for 24h', 'Unlimited Advanced Analysis', 'One-Time Payment', 'No Recurring Charges'], cta: 'Buy Day Use' },
         basic: { name: 'BASIC', price: '$29.90', period: '/month', features: ['5 Games per Day', 'Simple Analysis', '1 Daily Double'], cta: 'Start free →' },
         advanced: { name: 'ADVANCED', badge: '⭐ MOST POPULAR', price: '$49.90', period: '/month', features: ['10 Games per Day', 'Complete Analysis', '3 Daily Doubles', 'Accumulators'], cta: 'Subscribe Advanced' },
@@ -391,13 +392,13 @@ export default function Landing() {
     es: {
       nav: { howItWorks: 'Cómo Funciona', plans: 'Planes', login: 'Iniciar Sesión', getStarted: 'Comenzar' },
       hero: {
-        badge: '🔥 Usado en más de 30 países',
+        badge: 'Usado en más de 30 países',
         title: 'Deja de perder dinero en apuestas.',
         titleHighlight: 'Apuesta solo con ventaja matemática.',
         subtitle: 'EUGINE escanea 50+ partidos al día y muestra EXACTAMENTE dónde la probabilidad real supera la cuota. Solo apuestas cuando tienes edge.',
         emailPlaceholder: 'Tu mejor correo',
         ctaButton: 'Quiero mi ventaja →',
-        ctaSubtext: '✅ Gratis 3 días · Sin tarjeta · Cancela cuando quieras',
+        ctaSubtext: 'Gratis 3 días · Sin tarjeta · Cancela cuando quieras',
         emailError: 'Ingresa un correo válido',
         trust1: '30+ ligas', trust2: '50+ partidos/día', trust3: 'Cuotas en tiempo real',
         hitRateLabel: 'de acierto en los últimos 30 días',
@@ -455,7 +456,7 @@ export default function Landing() {
       closingLine: 'La inteligencia supera a la suerte. Los datos superan a la opinión.',
       pricing: {
         title: 'Elige Tu Plan',
-        guarantee: '🔒 Prueba gratis por 7 días sin riesgo',
+        guarantee: 'Prueba gratis por 7 días sin riesgo',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/día', features: ['Acceso Premium por 24h', 'Análisis Ilimitados', 'Pago Único', 'Sin Recurrencia'], cta: 'Comprar Day Use' },
         basic: { name: 'BASIC', price: '$29,90', period: '/mes', features: ['5 Juegos por Día', 'Análisis Simple', '1 Doble Diario'], cta: 'Empezar gratis →' },
         advanced: { name: 'ADVANCED', badge: '⭐ MÁS POPULAR', price: '$49,90', period: '/mes', features: ['10 Juegos por Día', 'Análisis Completo', '3 Dobles Diarios', 'Acumuladores'], cta: 'Suscribir Advanced' },
@@ -472,13 +473,13 @@ export default function Landing() {
     it: {
       nav: { howItWorks: 'Come Funziona', plans: 'Piani', login: 'Accedi', getStarted: 'Inizia Ora' },
       hero: {
-        badge: '🔥 Usato in oltre 30 paesi',
+        badge: 'Usato in oltre 30 paesi',
         title: 'Smetti di perdere soldi nelle scommesse.',
         titleHighlight: 'Scommetti solo con vantaggio matematico.',
         subtitle: 'EUGINE analizza 50+ partite al giorno e mostra ESATTAMENTE dove la probabilità reale supera la quota. Scommetti solo con edge.',
         emailPlaceholder: 'La tua email migliore',
         ctaButton: 'Voglio il mio vantaggio →',
-        ctaSubtext: '✅ Gratis 3 giorni · Senza carta · Cancella quando vuoi',
+        ctaSubtext: 'Gratis 3 giorni · Senza carta · Cancella quando vuoi',
         emailError: 'Inserisci una email valida',
         trust1: '30+ campionati', trust2: '50+ partite/giorno', trust3: 'Quote in tempo reale',
         hitRateLabel: 'di successo negli ultimi 30 giorni',
@@ -536,7 +537,7 @@ export default function Landing() {
       closingLine: "L'intelligenza batte la fortuna. I dati battono l'opinione.",
       pricing: {
         title: 'Scegli il Tuo Piano',
-        guarantee: '🔒 Prova gratuita per 7 giorni senza rischio',
+        guarantee: 'Prova gratuita per 7 giorni senza rischio',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/giorno', features: ['Accesso Premium per 24h', 'Analisi Illimitate', 'Pagamento Unico', 'Senza Ricorrenza'], cta: 'Acquista Day Use' },
         basic: { name: 'BASIC', price: '$29,90', period: '/mese', features: ['5 Partite al Giorno', 'Analisi Semplice', '1 Doppia'], cta: 'Inizia gratis →' },
         advanced: { name: 'ADVANCED', badge: '⭐ PIÙ POPOLARE', price: '$49,90', period: '/mese', features: ['10 Partite al Giorno', 'Analisi Completa', '3 Doppie', 'Accumulatori'], cta: 'Abbonati Advanced' },
@@ -649,7 +650,10 @@ export default function Landing() {
                     {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
                   </button>
                 </div>
-                <p className="text-muted-foreground/70 text-xs sm:text-sm mt-3">{l.hero.ctaSubtext}</p>
+                <p className="text-muted-foreground/70 text-xs sm:text-sm mt-3 flex items-center justify-center lg:justify-start gap-1.5">
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                  {l.hero.ctaSubtext}
+                </p>
               </div>
 
               {/* Trust bar */}
@@ -957,7 +961,10 @@ export default function Landing() {
           <ScrollFadeIn>
             <p className="text-sm text-muted-foreground text-center max-w-md mx-auto mb-4">{l.closingLine}</p>
             <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-4">{l.pricing.title}</h2>
-            <p className="text-center text-primary/80 text-sm font-semibold mb-12">{l.pricing.guarantee}</p>
+            <p className="text-center text-primary/80 text-sm font-semibold mb-12 flex items-center justify-center gap-2">
+              <Shield className="w-4 h-4" />
+              {l.pricing.guarantee}
+            </p>
           </ScrollFadeIn>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
@@ -1058,7 +1065,10 @@ export default function Landing() {
               >
                 {l.finalCta.cta}
               </button>
-              <p className="text-muted-foreground/50 text-xs mt-4">{l.hero.ctaSubtext}</p>
+              <p className="text-muted-foreground/50 text-xs mt-4 flex items-center justify-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                {l.hero.ctaSubtext}
+              </p>
             </div>
           </ScrollFadeIn>
         </div>
