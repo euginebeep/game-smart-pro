@@ -49,12 +49,86 @@ const TIER_PRICES: Record<Currency, Record<Tier, string>> = {
   },
 };
 
+// Country code → currency mapping
+const COUNTRY_TO_CURRENCY: Record<string, Currency> = {
+  BR: 'brl',
+  US: 'usd', GB: 'usd', CA: 'usd', AU: 'usd', NZ: 'usd',
+  // Euro zone
+  IT: 'eur', ES: 'eur', DE: 'eur', FR: 'eur', PT: 'eur', NL: 'eur',
+  BE: 'eur', AT: 'eur', IE: 'eur', FI: 'eur', GR: 'eur', LU: 'eur',
+  MT: 'eur', CY: 'eur', SK: 'eur', SI: 'eur', EE: 'eur', LV: 'eur',
+  LT: 'eur', HR: 'eur',
+};
+
 const LANGUAGE_TO_CURRENCY: Record<string, Currency> = {
   pt: 'brl',
   en: 'usd',
   es: 'eur',
   it: 'eur',
 };
+
+// Detect country from IP using free API
+async function detectCountryFromIP(req: Request): Promise<string | null> {
+  try {
+    // Try X-Forwarded-For, then CF headers, then direct connection
+    const forwarded = req.headers.get('x-forwarded-for');
+    const cfCountry = req.headers.get('cf-ipcountry');
+    
+    // Cloudflare already provides country code
+    if (cfCountry && cfCountry !== 'XX') {
+      logStep("Country from CF header", { country: cfCountry });
+      return cfCountry.toUpperCase();
+    }
+
+    const ip = forwarded?.split(',')[0]?.trim();
+    if (!ip || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+      return null;
+    }
+
+    const resp = await fetch(`https://ipapi.co/${ip}/country/`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (resp.ok) {
+      const country = (await resp.text()).trim().toUpperCase();
+      if (country.length === 2) {
+        logStep("Country from IP lookup", { ip, country });
+        return country;
+      }
+    }
+  } catch (e) {
+    logStep("IP detection failed, will use fallback", { error: String(e) });
+  }
+  return null;
+}
+
+// Resolve currency with IP + profile cross-check
+function resolveCurrency(
+  ipCountry: string | null,
+  profileCountry: string | null,
+  languageFallback: string
+): { currency: Currency; source: string } {
+  const ipCurrency = ipCountry ? COUNTRY_TO_CURRENCY[ipCountry] : null;
+  const profileCurrency = profileCountry ? COUNTRY_TO_CURRENCY[profileCountry.toUpperCase()] : null;
+
+  // Both match → use that currency (most secure)
+  if (ipCurrency && profileCurrency && ipCurrency === profileCurrency) {
+    return { currency: ipCurrency, source: 'ip+profile_match' };
+  }
+
+  // Profile exists but IP doesn't match → trust profile (VPN case)
+  if (profileCurrency) {
+    return { currency: profileCurrency, source: 'profile_country' };
+  }
+
+  // Only IP available → use IP
+  if (ipCurrency) {
+    return { currency: ipCurrency, source: 'ip_country' };
+  }
+
+  // Fallback to language
+  const langCurrency = LANGUAGE_TO_CURRENCY[languageFallback] || 'brl';
+  return { currency: langCurrency, source: 'language_fallback' };
+}
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -69,19 +143,10 @@ serve(async (req) => {
     const body = await req.json();
     const tier = body.tier as Tier;
     const language = (body.language as string) || 'pt';
-    const currency: Currency = LANGUAGE_TO_CURRENCY[language] || 'brl';
     
     const validTiers: Tier[] = ['basic', 'advanced', 'premium', 'dayuse'];
     if (!tier || !validTiers.includes(tier)) {
       throw new Error(`Invalid tier: ${tier}. Valid options: basic, advanced, premium, dayuse`);
-    }
-    
-    const isDayUse = tier === 'dayuse';
-    const priceId = TIER_PRICES[currency][tier];
-    logStep("Tier and currency selected", { tier, currency, language, priceId });
-
-    if (priceId.startsWith('price_dayuse_')) {
-      throw new Error('Day Use ainda não está disponível. Em breve!');
     }
 
     const authHeader = req.headers.get("Authorization");
@@ -121,6 +186,37 @@ serve(async (req) => {
 
     logStep("User authenticated", { email: user.email });
 
+    // --- CURRENCY RESOLUTION: IP + Profile ---
+    // 1. Detect country from IP
+    const ipCountry = await detectCountryFromIP(req);
+
+    // 2. Get country_code from user profile
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const { data: profile } = await adminClient
+      .from('profiles')
+      .select('country_code')
+      .eq('user_id', user.id)
+      .single();
+    
+    const profileCountry = profile?.country_code || null;
+
+    // 3. Resolve currency
+    const { currency, source } = resolveCurrency(ipCountry, profileCountry, language);
+    logStep("Currency resolved", { currency, source, ipCountry, profileCountry, language });
+
+    const isDayUse = tier === 'dayuse';
+    const priceId = TIER_PRICES[currency][tier];
+
+    if (priceId.startsWith('price_dayuse_')) {
+      throw new Error('Day Use ainda não está disponível. Em breve!');
+    }
+
+    logStep("Tier and price selected", { tier, currency, priceId });
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
     });
@@ -146,6 +242,7 @@ serve(async (req) => {
         user_id: user.id,
         tier: tier,
         is_dayuse: isDayUse ? 'true' : 'false',
+        currency_source: source,
       },
     });
 
