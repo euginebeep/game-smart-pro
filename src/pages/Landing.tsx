@@ -349,10 +349,10 @@ export default function Landing() {
       socialProof: {
         title: 'What our users say',
         testimonials: [
-          { name: 'James W.', role: 'Bettor for 4 years', text: "I used to rely on gut feeling. EUGINE changed everything — now I only place bets when the numbers back it up. Game changer.", stars: 5 },
-          { name: 'Mike R.', role: 'Sports trader', text: "This is the first tool I've seen that actually shows the math. No hype, no tips — just cold, hard probability analysis.", stars: 5 },
-          { name: 'David K.', role: 'Premium subscriber', text: "Went from losing monthly to actually being profitable. The edge detection is incredibly accurate and transparent.", stars: 5 },
-          { name: 'Chris B.', role: 'Weekend bettor', text: "Love that they publish every single result — wins AND losses. That level of honesty is rare in this space.", stars: 4 },
+          { name: 'Thomas Anderson', role: 'Bettor for 4 years', text: "I used to rely on gut feeling. EUGINE changed everything — now I only place bets when the numbers back it up. Game changer.", stars: 5 },
+          { name: 'William Hughes', role: 'Sports trader', text: "This is the first tool I've seen that actually shows the math. No hype, no tips — just cold, hard probability analysis.", stars: 5 },
+          { name: 'Daniel Cooper', role: 'Premium subscriber', text: "Went from losing monthly to actually being profitable. The edge detection is incredibly accurate and transparent.", stars: 5 },
+          { name: 'Robert Evans', role: 'Weekend bettor', text: "Love that they publish every single result — wins AND losses. That level of honesty is rare in this space.", stars: 4 },
         ],
       },
       stats: { title: 'Real Results. No Filter.', subtitle: 'We publish ALL results — hits and misses. Total transparency.', hitRate: 'Hit Rate', wins: 'Wins', total: 'Total Analyzed', leagues: 'Leagues Monitored' },
@@ -435,10 +435,10 @@ export default function Landing() {
       socialProof: {
         title: 'Lo que dicen nuestros usuarios',
         testimonials: [
-          { name: 'Alejandro G.', role: 'Apostador hace 5 años', text: 'Llevaba años perdiendo dinero por apostar con el corazón. EUGINE me enseñó a apostar con la cabeza. Mi bankroll por fin crece.', stars: 5 },
-          { name: 'Diego M.', role: 'Trader deportivo', text: 'Es la única herramienta que he visto que realmente calcula probabilidades. No son predicciones, es matemática pura aplicada al fútbol.', stars: 5 },
-          { name: 'Pablo R.', role: 'Suscriptor Premium', text: 'Empecé con el plan básico para probar. En dos semanas ya era premium. La diferencia en mis resultados es brutal.', stars: 5 },
-          { name: 'Javier L.', role: 'Apostador de fin de semana', text: 'Me encanta que publican absolutamente todo, incluso cuando fallan. Esa honestidad no se ve en ningún otro sitio.', stars: 4 },
+          { name: 'Alejandro García', role: 'Apostador hace 5 años', text: 'Llevaba años perdiendo dinero por apostar con el corazón. EUGINE me enseñó a apostar con la cabeza. Mi bankroll por fin crece.', stars: 5 },
+          { name: 'Diego Martínez', role: 'Trader deportivo', text: 'Es la única herramienta que he visto que realmente calcula probabilidades. No son predicciones, es matemática pura aplicada al fútbol.', stars: 5 },
+          { name: 'Pablo Rodríguez', role: 'Suscriptor Premium', text: 'Empecé con el plan básico para probar. En dos semanas ya era premium. La diferencia en mis resultados es brutal.', stars: 5 },
+          { name: 'Javier López', role: 'Apostador de fin de semana', text: 'Me encanta que publican absolutamente todo, incluso cuando fallan. Esa honestidad no se ve en ningún otro sitio.', stars: 4 },
         ],
       },
       stats: { title: 'Resultados Reales. Sin Filtro.', subtitle: 'Publicamos TODOS los resultados — aciertos y errores. Transparencia total.', hitRate: 'Tasa de Acierto', wins: 'Aciertos', total: 'Total Analizado', leagues: 'Ligas Monitoreadas' },
@@ -521,10 +521,10 @@ export default function Landing() {
       socialProof: {
         title: 'Cosa dicono i nostri utenti',
         testimonials: [
-          { name: 'Luca B.', role: 'Scommettitore da 4 anni', text: "Prima scommettevo a istinto e perdevo sempre. Con EUGINE ho capito cosa significa avere un vantaggio reale. I numeri parlano chiaro.", stars: 5 },
-          { name: 'Marco R.', role: 'Trader sportivo', text: "È l'unico strumento che ho trovato che calcola davvero le probabilità. Niente pronostici a caso, solo matematica applicata.", stars: 5 },
-          { name: 'Alessandro P.', role: 'Abbonato Premium', text: "Ho iniziato con il piano base per curiosità. Dopo una settimana sono passato al premium. I risultati sono incomparabili.", stars: 5 },
-          { name: 'Giovanni F.', role: 'Scommettitore del weekend', text: "La cosa che mi ha convinto è la trasparenza totale. Pubblicano ogni risultato, anche gli errori. Questo è raro e prezioso.", stars: 4 },
+          { name: 'Luca Bianchi', role: 'Scommettitore da 4 anni', text: "Prima scommettevo a istinto e perdevo sempre. Con EUGINE ho capito cosa significa avere un vantaggio reale. I numeri parlano chiaro.", stars: 5 },
+          { name: 'Marco Rossi', role: 'Trader sportivo', text: "È l'unico strumento che ho trovato che calcola davvero le probabilità. Niente pronostici a caso, solo matematica applicata.", stars: 5 },
+          { name: 'Alessandro Ferro', role: 'Abbonato Premium', text: "Ho iniziato con il piano base per curiosità. Dopo una settimana sono passato al premium. I risultati sono incomparabili.", stars: 5 },
+          { name: 'Giovanni Conti', role: 'Scommettitore del weekend', text: "La cosa che mi ha convinto è la trasparenza totale. Pubblicano ogni risultato, anche gli errori. Questo è raro e prezioso.", stars: 4 },
         ],
       },
       stats: { title: 'Risultati Reali. Senza Filtri.', subtitle: 'Pubblichiamo TUTTI i risultati — successi e errori. Trasparenza totale.', hitRate: 'Tasso Successo', wins: 'Successi', total: 'Totale Analizzato', leagues: 'Campionati Monitorati' },
