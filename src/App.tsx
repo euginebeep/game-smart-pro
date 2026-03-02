@@ -38,7 +38,7 @@ const PageFallback = () => (
 function SmartLanding() {
   const useLandingB = useMemo(() => {
     const host = window.location.hostname.toLowerCase();
-    return host.includes('eugineai.com.br') || host.includes('eugineai.com');
+    return host.includes('eugineai.com');
   }, []);
 
   if (useLandingB) {
