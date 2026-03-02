@@ -20,6 +20,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AnalysisPage = lazy(() => import("./pages/AnalysisPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const LandingB = lazy(() => import("./pages/LandingB"));
 const PremiumChatWrapper = lazy(() => import("./components/PremiumChatWrapper").then(m => ({ default: m.PremiumChatWrapper })));
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
               {/* Public Landing Page */}
               <Route path="/" element={<Landing />} />
               <Route path="/landing" element={<Landing />} />
+              <Route path="/landing-b" element={<LandingB />} />
               <Route path="/home" element={<Landing />} />
               
               {/* Auth Routes */}
