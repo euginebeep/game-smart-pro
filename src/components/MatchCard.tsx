@@ -19,11 +19,9 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
 
   // Format time - prefer brazilTime if available
   const formatTime = (game: Game) => {
-    // Se temos o horário do Brasil pré-formatado, usa ele
     if (game.brazilTime) {
       return game.brazilTime;
     }
-    // Fallback para formatação local
     const d = new Date(game.startTime);
     return d.toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', {
       hour: '2-digit',
@@ -31,7 +29,6 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
     });
   };
 
-  // Calculate probabilities from odds
   const calculateProbability = (odd: number) => {
     if (!odd || odd <= 0) return 0;
     return Math.round((1 / odd) * 100);
@@ -41,7 +38,6 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
   const drawProb = calculateProbability(game.odds.draw);
   const awayProb = calculateProbability(game.odds.away);
 
-  // Labels based on language
   const labels = {
     pt: {
       suggestedBet: 'Aposta Recomendada',
@@ -95,92 +91,72 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
 
   const l = labels[language] || labels.pt;
 
-  // Get bet suggestion with team name
   const getBetSuggestion = () => {
     if (!analysis) return { text: '-', subtext: '' };
-
     const type = analysis.type.toLowerCase();
-
     if (type.includes('casa') || type.includes('home') || type.includes('1x')) {
-      return {
-        text: `${l.victory} ${game.homeTeam}`,
-        subtext: l.homeLabel,
-      };
+      return { text: `${l.victory} ${game.homeTeam}`, subtext: l.homeLabel };
     }
-
     if (type.includes('fora') || type.includes('away') || type.includes('x2')) {
-      return {
-        text: `${l.victory} ${game.awayTeam}`,
-        subtext: l.awayLabel,
-      };
+      return { text: `${l.victory} ${game.awayTeam}`, subtext: l.awayLabel };
     }
-
     if (type.includes('empate') || type.includes('draw') || type.includes('pareggio')) {
       return { text: l.draw, subtext: '' };
     }
-
     if (type.includes('btts') || type.includes('ambos') || type.includes('both')) {
-      return {
-        text: language === 'pt' ? 'Ambos Marcam - Sim' : 'Both Teams Score - Yes',
-        subtext: '',
-      };
+      return { text: language === 'pt' ? 'Ambos Marcam - Sim' : 'Both Teams Score - Yes', subtext: '' };
     }
-
     if (type.includes('over')) {
       return { text: type.includes('3.5') ? 'Over 3.5 Gols' : 'Over 2.5 Gols', subtext: '' };
     }
-
     if (type.includes('under')) {
       return { text: type.includes('1.5') ? 'Under 1.5 Gols' : 'Under 2.5 Gols', subtext: '' };
     }
-
     return { text: analysis.type, subtext: '' };
   };
 
   const betSuggestion = getBetSuggestion();
 
-  // Get confidence color
   const getConfidenceColor = (conf: number) => {
     if (conf >= 80) return 'text-primary';
     if (conf >= 65) return 'text-warning';
     return 'text-destructive';
   };
 
-  // Navigate to full analysis page
   const handleViewAnalysis = () => {
-    navigate(`/analysis/${game.id}`, {
-      state: { game, userTier }
-    });
+    navigate(`/analysis/${game.id}`, { state: { game, userTier } });
   };
 
   return (
     <article
-      className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-card/95 via-card/90 to-card/95 border border-border/30 shadow-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 animate-fade-in-up opacity-0 hover:border-primary/30"
+      className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-card/95 via-card/90 to-card/95 border border-border/20 shadow-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 animate-fade-in-up opacity-0 hover:border-primary/20"
       style={{ animationDelay: `${delay * 80}ms` }}
     >
-      {/* Subtle gradient overlay */}
+      {/* Hover overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       <div className="relative p-5 sm:p-6">
         {/* Header: Time & League */}
-        <div className="flex items-center justify-between mb-5 pb-4 border-b border-border/50">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3 bg-muted/50 px-4 py-2.5 rounded-xl">
-              <Clock className="w-6 h-6 text-primary" />
-              <span className="text-foreground font-bold text-xl">{formatTime(game)}</span>
-              <span className="text-muted-foreground text-xs">(BRT)</span>
-            </div>
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-border/30">
+          <div className="flex items-center gap-2.5 bg-muted/40 px-3.5 py-2 rounded-xl">
+            <Clock className="w-5 h-5 text-primary" />
+            <span className="font-bold text-lg tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+              {formatTime(game)}
+            </span>
+            <span className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider">(BRT)</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {game.leagueLogo && (
               <img
                 src={game.leagueLogo}
                 alt={game.league}
-                className="w-7 h-7 object-contain"
+                className="w-6 h-6 object-contain"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             )}
-            <span className="text-foreground/80 text-lg font-semibold">{game.league}</span>
+            <span className="text-foreground/70 text-sm font-semibold tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              {game.league}
+            </span>
           </div>
         </div>
 
@@ -190,9 +166,9 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
           {/* Teams Section */}
           <div className="flex-shrink-0 lg:min-w-[220px]">
             {/* Home Team */}
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-3.5 mb-3.5">
               <div className="relative">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-muted to-muted/50 p-2 shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-1.5 shadow-md border border-border/20">
                   <img
                     src={game.homeTeamLogo || `https://media.api-sports.io/football/teams/${game.homeTeamId || 0}.png`}
                     alt={game.homeTeam}
@@ -200,28 +176,32 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                   />
                 </div>
-                <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
-                  {language === 'pt' ? 'CASA' : 'HOME'}
+                <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                  {language === 'pt' ? 'Casa' : 'Home'}
                 </span>
               </div>
               <div>
-                <p className="text-foreground font-bold text-lg leading-tight">{game.homeTeam}</p>
-                <p className="text-muted-foreground text-xs mt-0.5">{l.home}</p>
+                <p className="font-bold text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                  {game.homeTeam}
+                </p>
+                <p className="text-muted-foreground text-[11px] mt-0.5 font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {l.home}
+                </p>
               </div>
             </div>
 
             {/* VS Divider */}
-            <div className="flex items-center gap-3 my-3 ml-5">
-              <div className="w-6 h-6 rounded-full bg-muted/80 flex items-center justify-center">
-                <span className="text-muted-foreground text-[10px] font-bold">VS</span>
+            <div className="flex items-center gap-3 my-2.5 ml-4">
+              <div className="w-5 h-5 rounded-full bg-muted/60 flex items-center justify-center border border-border/30">
+                <span className="text-muted-foreground text-[9px] font-bold tracking-wider">VS</span>
               </div>
-              <div className="flex-1 h-px bg-gradient-to-r from-border/50 to-transparent" />
+              <div className="flex-1 h-px bg-gradient-to-r from-border/40 to-transparent" />
             </div>
 
             {/* Away Team */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3.5">
               <div className="relative">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-muted to-muted/50 p-2 shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-1.5 shadow-md border border-border/20">
                   <img
                     src={game.awayTeamLogo || `https://media.api-sports.io/football/teams/${game.awayTeamId || 0}.png`}
                     alt={game.awayTeam}
@@ -229,67 +209,77 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                   />
                 </div>
-                <span className="absolute -bottom-1 -right-1 bg-accent text-accent-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">
-                  {language === 'pt' ? 'FORA' : 'AWAY'}
+                <span className="absolute -bottom-1 -right-1 bg-accent text-accent-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                  {language === 'pt' ? 'Fora' : 'Away'}
                 </span>
               </div>
               <div>
-                <p className="text-foreground font-bold text-lg leading-tight">{game.awayTeam}</p>
-                <p className="text-muted-foreground text-xs mt-0.5">{l.away}</p>
+                <p className="font-bold text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                  {game.awayTeam}
+                </p>
+                <p className="text-muted-foreground text-[11px] mt-0.5 font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {l.away}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Vertical Divider */}
-          <div className="hidden lg:block w-px h-36 bg-gradient-to-b from-transparent via-border/50 to-transparent" />
+          <div className="hidden lg:block w-px h-36 bg-gradient-to-b from-transparent via-border/40 to-transparent" />
 
           {/* Analysis Section */}
-          <div className="flex-1 space-y-5">
+          <div className="flex-1 space-y-4">
             {/* Odds Row */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center p-3 rounded-xl bg-muted/40 border border-border/30">
-                <p className="text-muted-foreground text-[10px] uppercase tracking-wider mb-1">{l.home}</p>
-                <p className="text-foreground font-bold text-xl">{game.odds.home.toFixed(2)}</p>
-                <p className="text-primary text-xs font-medium">{homeProb}%</p>
-              </div>
-              <div className="text-center p-3 rounded-xl bg-muted/40 border border-border/30">
-                <p className="text-muted-foreground text-[10px] uppercase tracking-wider mb-1">{l.draw}</p>
-                <p className="text-foreground font-bold text-xl">{game.odds.draw.toFixed(2)}</p>
-                <p className="text-warning text-xs font-medium">{drawProb}%</p>
-              </div>
-              <div className="text-center p-3 rounded-xl bg-muted/40 border border-border/30">
-                <p className="text-muted-foreground text-[10px] uppercase tracking-wider mb-1">{l.away}</p>
-                <p className="text-foreground font-bold text-xl">{game.odds.away.toFixed(2)}</p>
-                <p className="text-accent text-xs font-medium">{awayProb}%</p>
-              </div>
+            <div className="grid grid-cols-3 gap-2.5">
+              {[
+                { label: l.home, odd: game.odds.home, prob: homeProb, color: 'text-primary' },
+                { label: l.draw, odd: game.odds.draw, prob: drawProb, color: 'text-warning' },
+                { label: l.away, odd: game.odds.away, prob: awayProb, color: 'text-accent' },
+              ].map((item) => (
+                <div key={item.label} className="text-center p-3 rounded-xl bg-muted/30 border border-border/20">
+                  <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-semibold mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                    {item.label}
+                  </p>
+                  <p className="font-extrabold text-xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                    {item.odd.toFixed(2)}
+                  </p>
+                  <p className={`${item.color} text-xs font-semibold mt-0.5`} style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    {item.prob}%
+                  </p>
+                </div>
+              ))}
             </div>
 
             {/* Recommendation Box */}
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/30 rounded-xl p-4">
+            <div className="bg-gradient-to-r from-primary/8 to-primary/3 border border-primary/20 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Target className="w-5 h-5 text-primary" />
+                <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                  <Target className="w-4.5 h-4.5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-primary/80 text-xs font-medium uppercase tracking-wider mb-1">
+                  <p className="text-primary/70 text-[10px] font-bold uppercase tracking-widest mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                     {l.suggestedBet}
                   </p>
-                  <p className="text-foreground font-bold text-lg leading-tight truncate">
+                  <p className="font-bold text-base leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
                     {betSuggestion.text}
                     {betSuggestion.subtext && (
-                      <span className="text-muted-foreground font-normal text-sm ml-2">{betSuggestion.subtext}</span>
+                      <span className="text-muted-foreground font-normal text-xs ml-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        {betSuggestion.subtext}
+                      </span>
                     )}
                   </p>
                 </div>
               </div>
 
               {/* Stats Row */}
-              <div className="flex items-center gap-6 mt-4 pt-3 border-t border-primary/20">
+              <div className="flex items-center gap-6 mt-3.5 pt-3 border-t border-primary/15">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-warning" />
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase">{l.confidence}</p>
-                    <p className={`font-bold text-lg ${getConfidenceColor(analysis?.confidence || 0)}`}>
+                    <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                      {l.confidence}
+                    </p>
+                    <p className={`font-extrabold text-lg tracking-tight ${getConfidenceColor(analysis?.confidence || 0)}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                       {analysis?.confidence || 0}%
                     </p>
                   </div>
@@ -298,8 +288,12 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-success" />
                     <div>
-                      <p className="text-muted-foreground text-[10px] uppercase">{l.value}</p>
-                      <p className="text-success font-bold text-lg">+{analysis.valuePercentage.toFixed(0)}%</p>
+                      <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                        {l.value}
+                      </p>
+                      <p className="text-success font-extrabold text-lg tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                        +{analysis.valuePercentage.toFixed(0)}%
+                      </p>
                     </div>
                   </div>
                 )}
@@ -307,13 +301,14 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
             </div>
           </div>
 
-          {/* Action Button - Navigate to Analysis Page */}
-          <div className="lg:ml-4 flex-shrink-0">
+          {/* Action Button */}
+          <div className="lg:ml-3 flex-shrink-0">
             <button 
               onClick={handleViewAnalysis}
-              className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold text-sm text-primary-foreground bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm text-primary-foreground bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
+              style={{ fontFamily: "'Montserrat', sans-serif" }}
             >
-              <span>{l.viewAnalysis}</span>
+              <span className="tracking-wide">{l.viewAnalysis}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
