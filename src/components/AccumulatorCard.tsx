@@ -110,34 +110,39 @@ export function AccumulatorCard({
         {/* ========================================================= */}
         <div className="px-5 pt-5 pb-3">
 
-          {/* Header: emoji + título + badge ao lado */}
-          <div className="flex items-center gap-2.5 mb-1">
-            <span className="text-3xl leading-none">{emoji}</span>
-            <div className="flex items-center gap-3 flex-wrap min-w-0">
-              <h3 className="font-bold text-foreground text-sm sm:text-base tracking-tight leading-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                {titleMain || cleanTitle}
-                {titleSub && <span className="block text-foreground">{titleSub}</span>}
-              </h3>
-              <span
-                className={`text-base sm:text-lg font-extrabold px-5 py-1.5 rounded-full border ${style.badge} tracking-wide leading-none whitespace-nowrap`}
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
-              >
-                {style.label}
-              </span>
-            </div>
+          {/* Header: emoji + título + badge — SEMPRE em uma linha */}
+          <div className="flex items-center gap-2.5 mb-1 flex-nowrap overflow-hidden">
+            <span className="text-2xl sm:text-3xl leading-none flex-shrink-0">{emoji}</span>
+            <h3 className="font-bold text-foreground text-sm sm:text-base tracking-tight leading-tight truncate flex-1 min-w-0" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              {titleMain || cleanTitle}
+              {titleSub && <span className="text-foreground ml-1">— {titleSub}</span>}
+            </h3>
+            <span
+              className={`text-xs sm:text-sm font-extrabold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border ${style.badge} tracking-wide leading-none whitespace-nowrap flex-shrink-0`}
+              style={{ fontFamily: "'Montserrat', sans-serif" }}
+            >
+              {style.label}
+            </span>
           </div>
 
-          {/* ===== HERO NUMBER: Lucro potencial ===== */}
-          <div className="text-center py-3">
-            <p className="text-sm sm:text-base text-muted-foreground uppercase tracking-widest mb-2 font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              {t('accumulators.profit') || 'Lucro potencial'}
-            </p>
-            <p className="text-5xl sm:text-6xl font-black text-emerald-400 tracking-tight leading-none" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              +{'$'}{potentialProfit.toFixed(0)}
-            </p>
-            <p className="text-sm text-muted-foreground mt-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
-              {t('accumulators.youBet') || 'Apostando'} <span className="font-semibold text-foreground">{'$'}{betAmount}</span> → <span className="font-semibold text-foreground">{'$'}{potentialReturn.toFixed(0)}</span>
-            </p>
+          {/* ===== HERO NUMBER: Lucro potencial — inline ===== */}
+          <div className="flex items-center justify-between gap-3 py-3 flex-nowrap overflow-hidden">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-bold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {t('accumulators.profit') || 'Lucro potencial'}
+              </p>
+              <p className="text-3xl sm:text-5xl font-black text-emerald-400 tracking-tight leading-none mt-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                +{'$'}{potentialProfit.toFixed(0)}
+              </p>
+            </div>
+            <div className="flex-shrink-0 text-right">
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest font-bold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {t('accumulators.youBet') || 'Apostando'}
+              </p>
+              <p className="text-lg sm:text-2xl font-bold text-foreground tracking-tight leading-none mt-1 whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {'$'}{betAmount} → {'$'}{potentialReturn.toFixed(0)}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -145,24 +150,24 @@ export function AccumulatorCard({
         {/* BLOCO 2 — MÉTRICAS: 3 colunas (Odd, Chance, Vantagem)     */}
         {/* ========================================================= */}
         <div className="px-5 pb-4">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex items-stretch gap-2 flex-nowrap">
 
             {/* Odd Total */}
-            <div className="rounded-xl bg-secondary/50 p-3.5 text-center">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 p-3 text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 whitespace-nowrap truncate" style={{ fontFamily: "'Poppins', sans-serif" }}>
                 {t('accumulators.totalOdd') || 'Cotação'}
               </p>
-              <p className={`text-2xl sm:text-3xl font-extrabold ${style.accent}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <p className={`text-xl sm:text-2xl font-extrabold ${style.accent} whitespace-nowrap`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 {totalOdd.toFixed(2)}
               </p>
             </div>
 
             {/* Chance EUGINE */}
-            <div className="rounded-xl bg-secondary/50 p-3.5 text-center">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            <div className="flex-1 min-w-0 rounded-xl bg-secondary/50 p-3 text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 whitespace-nowrap truncate" style={{ fontFamily: "'Poppins', sans-serif" }}>
                 {t('accumulators.chance') || 'Chance'}
               </p>
-              <p className={`text-2xl sm:text-3xl font-extrabold ${
+              <p className={`text-xl sm:text-2xl font-extrabold whitespace-nowrap ${
                 chancePercent >= 40 ? 'text-emerald-400' :
                 chancePercent >= 20 ? 'text-sky-400' :
                 chancePercent >= 10 ? 'text-amber-400' :
@@ -172,14 +177,14 @@ export function AccumulatorCard({
               </p>
             </div>
 
-            {/* Vantagem (EFEITO VON RESTORFF) */}
-            <div className={`rounded-xl p-3.5 text-center relative overflow-hidden ${
+            {/* Vantagem */}
+            <div className={`flex-1 min-w-0 rounded-xl p-3 text-center relative overflow-hidden ${
               edge > 0 ? 'bg-emerald-500/15 border border-emerald-500/30' : 'bg-secondary/50'
             }`}>
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 whitespace-nowrap truncate" style={{ fontFamily: "'Poppins', sans-serif" }}>
                 {t('accumulators.eugineEdge') || 'Vantagem'}
               </p>
-              <p className={`text-2xl sm:text-3xl font-extrabold ${
+              <p className={`text-xl sm:text-2xl font-extrabold whitespace-nowrap ${
                 edge > 0 ? 'text-emerald-400' : 'text-muted-foreground'
               }`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 {edge > 0 ? `+${edge}%` : '0%'}
@@ -190,12 +195,12 @@ export function AccumulatorCard({
             </div>
           </div>
 
-          {/* ===== BARRA DE EDGE (PROGRESSO VISUAL = DOPAMINA) ===== */}
+          {/* ===== BARRA DE EDGE ===== */}
           {calculatedBookmaker > 0 && edge > 0 && (
             <div className="mt-3">
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                <span>{t('accumulators.bookmakerSays') || 'Casa diz'} {calculatedBookmaker}%</span>
-                <span className="font-bold text-emerald-400">EUGINE {chancePercent}%</span>
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1 flex-nowrap">
+                <span className="whitespace-nowrap">{t('accumulators.bookmakerSays') || 'Casa diz'} {calculatedBookmaker}%</span>
+                <span className="font-bold text-emerald-400 whitespace-nowrap">EUGINE {chancePercent}%</span>
               </div>
               <div className="h-2 rounded-full bg-secondary/80 overflow-hidden">
                 <div className="h-full relative">
@@ -235,23 +240,23 @@ export function AccumulatorCard({
               {bets.map((bet, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between py-3 px-4 rounded-xl bg-secondary/30 border border-border/30"
+                  className="flex items-center justify-between py-2.5 px-3 sm:px-4 rounded-xl bg-secondary/30 border border-border/30 flex-nowrap overflow-hidden gap-2"
                 >
-                  <div className="min-w-0 flex-1 mr-3">
-                    <p className="font-semibold text-foreground text-sm leading-snug truncate">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-foreground text-xs sm:text-sm leading-snug truncate">
                       {bet.match}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                       {bet.bet}
                     </p>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className={`text-lg font-black ${style.accent}`}>
+                  <div className="text-right flex-shrink-0 flex items-center gap-2">
+                    <p className={`text-base sm:text-lg font-black ${style.accent} whitespace-nowrap`}>
                       @{bet.odd.toFixed(2)}
                     </p>
                     {bet.estimatedProb && (
-                      <p className="text-[10px] text-emerald-400 font-medium">
-                        {bet.estimatedProb}% {t('accumulators.eugineProb') || 'prob.'}
+                      <p className="text-[10px] text-emerald-400 font-medium whitespace-nowrap">
+                        {bet.estimatedProb}%
                       </p>
                     )}
                   </div>
