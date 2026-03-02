@@ -101,8 +101,9 @@ export function ActiveUsersCounter() {
         className="text-xs font-medium text-white tabular-nums"
         style={{ fontFamily: "'Montserrat', sans-serif" }}
       >
-        {displayCount} {labels[language] || labels.pt} {flag}
+        {displayCount} {labels[language] || labels.pt}
       </span>
+      <span className="text-sm leading-none" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>{flag}</span>
     </div>
   );
 }
