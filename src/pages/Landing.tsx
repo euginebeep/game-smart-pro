@@ -679,53 +679,115 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Hero Phone Mockup with Tech Animation */}
+            {/* Hero Phone Mockup — Tap & Rotate Animation */}
             <div className="flex-1 w-full max-w-lg lg:max-w-none flex items-center justify-center">
-              <div className="relative w-[280px] sm:w-[320px] lg:w-[360px]">
-                {/* Outer rotating ring */}
-                <div className="absolute -inset-8 sm:-inset-10 rounded-full border border-primary/20 animate-[spin_20s_linear_infinite]">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-[0_0_12px_hsla(199,89%,48%,0.8)]" />
-                </div>
-                {/* Second ring */}
-                <div className="absolute -inset-14 sm:-inset-16 rounded-full border border-accent/10 animate-[spin_30s_linear_infinite_reverse]">
-                  <div className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-accent/60 shadow-[0_0_8px_hsla(260,80%,60%,0.6)]" />
-                </div>
-                {/* Pulsing glow behind phone */}
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/10 to-accent/20 rounded-[3rem] blur-3xl animate-[pulse_3s_ease-in-out_infinite] opacity-60" />
-                {/* Scan line effect */}
-                <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden z-10 pointer-events-none">
-                  <div className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/80 to-transparent animate-[scanline_3s_ease-in-out_infinite]" />
-                </div>
-                {/* Phone frame */}
-                <div className="relative bg-gradient-to-b from-[hsl(var(--secondary))] to-[hsl(var(--background))] rounded-[2.5rem] p-2 border border-primary/30 shadow-[0_0_60px_hsla(199,89%,48%,0.15),inset_0_1px_0_hsla(0,0%,100%,0.05)]">
-                  {/* Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[hsl(var(--background))] rounded-b-2xl z-20" />
-                  {/* Screen */}
-                  <div className="rounded-[2rem] overflow-hidden">
-                    <img 
-                      src={heroDashboardImg} 
-                      alt="EUGINE Dashboard"
-                      className="w-full h-auto"
+              <div className="relative" style={{ perspective: '1200px' }}>
+                {/* Ambient glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-accent/10 rounded-full blur-[80px] opacity-50 scale-150" />
+                
+                {/* Phone container with rotation animation */}
+                <div 
+                  className="relative"
+                  style={{
+                    animation: 'phoneRotate 8s ease-in-out infinite',
+                    transformStyle: 'preserve-3d',
+                  }}
+                >
+                  {/* Phone frame - portrait */}
+                  <div className="relative w-[260px] sm:w-[300px] lg:w-[320px] bg-gradient-to-b from-[hsl(var(--secondary))] to-[hsl(var(--background))] rounded-[2.5rem] p-2 border border-primary/30 shadow-[0_0_80px_hsla(199,89%,48%,0.12)]">
+                    {/* Notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-[hsl(var(--background))] rounded-b-2xl z-20" />
+                    {/* Screen content */}
+                    <div className="rounded-[2rem] overflow-hidden bg-[hsl(var(--background))]">
+                      <img 
+                        src={heroDashboardImg} 
+                        alt="EUGINE Dashboard"
+                        className="w-full h-auto"
+                      />
+                    </div>
+                    {/* Home indicator */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-foreground/20" />
+                  </div>
+
+                  {/* Tap cursor hand */}
+                  <div 
+                    className="absolute z-30 pointer-events-none"
+                    style={{
+                      bottom: '35%',
+                      right: '10%',
+                      animation: 'tapHand 8s ease-in-out infinite',
+                    }}
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="drop-shadow-lg">
+                      <path d="M12 1a3 3 0 0 0-3 3v4.5a3 3 0 0 0-3 3V16a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-5.5a3 3 0 0 0-3-3 3 3 0 0 0-3 3V4a3 3 0 0 0-3-3z" fill="hsl(var(--foreground))" opacity="0.9"/>
+                      <circle cx="12" cy="8" r="1.5" fill="hsl(var(--primary))" className="animate-pulse" />
+                    </svg>
+                  </div>
+
+                  {/* Tap ripple effect */}
+                  <div 
+                    className="absolute z-20 pointer-events-none"
+                    style={{
+                      bottom: '40%',
+                      right: '25%',
+                      animation: 'tapRipple 8s ease-in-out infinite',
+                    }}
+                  >
+                    <div className="w-10 h-10 rounded-full border-2 border-primary/60" 
+                      style={{ animation: 'rippleExpand 8s ease-in-out infinite' }} 
                     />
                   </div>
                 </div>
-                {/* Floating data badges */}
-                <div className="absolute -right-4 sm:-right-8 top-1/4 bg-[hsl(var(--secondary))] border border-primary/40 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(199,89%,48%,0.2)] animate-[float_4s_ease-in-out_infinite] z-20">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                    <span className="text-xs font-bold text-primary">65% hit rate</span>
+
+                {/* Results overlay — appears during landscape phase */}
+                <div 
+                  className="absolute -right-4 sm:-right-12 top-1/2 -translate-y-1/2 z-30"
+                  style={{ animation: 'resultsSlide 8s ease-in-out infinite' }}
+                >
+                  <div className="bg-[hsl(var(--secondary))] border border-primary/30 rounded-2xl p-3 sm:p-4 shadow-[0_16px_48px_hsla(199,89%,48%,0.2)] min-w-[160px] sm:min-w-[200px]">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle className="w-4 h-4 text-green-400" />
+                      <span className="text-xs font-bold text-green-400">{language === 'pt' ? 'Análise Completa' : language === 'es' ? 'Análisis Completo' : language === 'it' ? 'Analisi Completa' : 'Full Analysis'}</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-muted-foreground">Hit Rate</span>
+                        <span className="text-xs font-bold text-primary">65.2%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full" style={{ width: '65%', animation: 'barGrow 8s ease-in-out infinite' }} />
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-muted-foreground">Edge</span>
+                        <span className="text-xs font-bold text-green-400">+12.4%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-muted-foreground">ROI</span>
+                        <span className="text-xs font-bold text-accent">+8.7%</span>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-border/50 flex items-center gap-1.5">
+                      <TrendingUp className="w-3 h-3 text-green-400" />
+                      <span className="text-[10px] font-semibold text-green-400">{language === 'pt' ? 'Vantagem detectada' : language === 'es' ? 'Ventaja detectada' : language === 'it' ? 'Vantaggio rilevato' : 'Edge detected'}</span>
+                    </div>
                   </div>
                 </div>
-                <div className="absolute -left-4 sm:-left-8 top-1/2 bg-[hsl(var(--secondary))] border border-accent/40 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(260,80%,60%,0.2)] animate-[float_5s_ease-in-out_infinite_0.5s] z-20">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-3 h-3 text-accent" />
-                    <span className="text-xs font-bold text-accent">+Edge</span>
+
+                {/* Floating badges */}
+                <div className="absolute -left-4 sm:-left-10 top-1/4 z-20" style={{ animation: 'floatBadge 8s ease-in-out infinite' }}>
+                  <div className="bg-[hsl(var(--secondary))] border border-primary/30 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(199,89%,48%,0.15)]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                      <span className="text-[10px] font-bold text-primary">LIVE</span>
+                    </div>
                   </div>
                 </div>
-                <div className="absolute -right-2 sm:-right-6 bottom-1/4 bg-[hsl(var(--secondary))] border border-primary/30 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(199,89%,48%,0.15)] animate-[float_4.5s_ease-in-out_infinite_1s] z-20">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-3 h-3 text-primary" />
-                    <span className="text-xs font-bold text-foreground">30+ {language === 'pt' ? 'países' : language === 'es' ? 'países' : language === 'it' ? 'paesi' : 'countries'}</span>
+                <div className="absolute -left-2 sm:-left-8 bottom-1/4 z-20" style={{ animation: 'floatBadge 8s ease-in-out infinite 0.5s' }}>
+                  <div className="bg-[hsl(var(--secondary))] border border-accent/30 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(260,80%,60%,0.15)]">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-3 h-3 text-primary" />
+                      <span className="text-[10px] font-bold text-foreground">30+ {language === 'pt' ? 'países' : language === 'es' ? 'países' : language === 'it' ? 'paesi' : 'countries'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
