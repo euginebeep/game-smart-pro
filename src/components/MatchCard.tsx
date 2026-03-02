@@ -163,12 +163,12 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-6">
           
-          {/* Teams Section — Centered */}
-          <div className="flex-shrink-0 lg:min-w-[240px]">
-            {/* Home Team */}
-            <div className="flex items-center gap-4 mb-3 justify-center lg:justify-start">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20">
+          {/* Teams Section — Horizontal centered like reference */}
+          <div className="flex-shrink-0 w-full lg:w-auto">
+            <div className="flex items-center justify-center gap-5 sm:gap-8">
+              {/* Home Team */}
+              <div className="flex flex-col items-center text-center min-w-0">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-2">
                   <img
                     src={game.homeTeamLogo || `https://media.api-sports.io/football/teams/${game.homeTeamId || 0}.png`}
                     alt={game.homeTeam}
@@ -176,32 +176,17 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                   />
                 </div>
-                <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                  {language === 'pt' ? 'Casa' : 'Home'}
-                </span>
-              </div>
-              <div>
-                <p className="font-bold text-lg leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight truncate max-w-[120px]" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
                   {game.homeTeam}
                 </p>
-                <p className="text-muted-foreground text-[11px] mt-0.5 font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  {l.home}
-                </p>
               </div>
-            </div>
 
-            {/* VS Divider */}
-            <div className="flex items-center gap-3 my-2 justify-center lg:justify-start lg:ml-6">
-              <div className="w-6 h-6 rounded-full bg-muted/60 flex items-center justify-center border border-border/30">
-                <span className="text-muted-foreground text-[10px] font-bold tracking-wider">VS</span>
-              </div>
-              <div className="flex-1 h-px bg-gradient-to-r from-border/40 to-transparent" />
-            </div>
+              {/* VS */}
+              <span className="text-muted-foreground text-sm font-medium tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>v</span>
 
-            {/* Away Team */}
-            <div className="flex items-center gap-4 mt-3 justify-center lg:justify-start">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20">
+              {/* Away Team */}
+              <div className="flex flex-col items-center text-center min-w-0">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 shadow-md border border-border/20 mb-2">
                   <img
                     src={game.awayTeamLogo || `https://media.api-sports.io/football/teams/${game.awayTeamId || 0}.png`}
                     alt={game.awayTeam}
@@ -209,16 +194,8 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                     onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                   />
                 </div>
-                <span className="absolute -bottom-1 -right-1 bg-accent text-accent-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">
-                  {language === 'pt' ? 'Fora' : 'Away'}
-                </span>
-              </div>
-              <div>
-                <p className="font-bold text-lg leading-tight tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight truncate max-w-[120px]" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
                   {game.awayTeam}
-                </p>
-                <p className="text-muted-foreground text-[11px] mt-0.5 font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  {l.away}
                 </p>
               </div>
             </div>
