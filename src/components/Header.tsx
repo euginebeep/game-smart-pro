@@ -50,7 +50,7 @@ export function Header({
       <div className="flex items-center justify-between gap-4 py-3 border-b border-border/50">
         {/* Left: Logo */}
         <div className="flex items-center gap-3">
-          <img src={eugineLogo} alt="EUGINE" className="h-12 sm:h-14 w-auto" />
+          <img src={eugineLogo} alt="EUGINE" className="h-10 sm:h-12 w-auto" />
         </div>
 
         {/* Center: Navigation + Active Users - desktop only */}
