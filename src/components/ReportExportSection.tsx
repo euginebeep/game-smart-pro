@@ -873,44 +873,51 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
 
   return (
     <div className="glass-card p-6 sm:p-8 mb-6">
-      <div className="flex flex-col gap-5">
-        {/* Icon + Title */}
+      <div className="flex flex-col gap-4">
+        {/* Download Icon */}
+        <Download className="w-7 h-7 text-accent" strokeWidth={2.5} />
+
+        {/* Title with emoji */}
         <div>
-          <Download className="w-10 h-10 text-accent mb-3" strokeWidth={2.5} />
-          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-            {firstWord}{' '}
-            <span className="text-accent">{restWords}</span>
+          <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            <span>🎮</span>
+            <span>
+              {firstWord}{' '}
+              <span className="text-accent">{restWords}</span>
+            </span>
           </h3>
-          <p className="text-sm text-muted-foreground mt-1">{t('export.subtitle')}</p>
+          <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: "'Poppins', sans-serif" }}>{t('export.subtitle')}</p>
         </div>
 
-        {/* 2x2 Button Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            onClick={exportAsImage}
-            disabled={exportingImage}
-            className="h-12 rounded-xl font-bold text-sm border-2 border-accent/60 text-accent bg-accent/5 hover:bg-accent/15 hover:border-accent transition-all"
-            variant="outline"
-          >
-            {exportingImage ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Image className="w-5 h-5 mr-2" />}
-            {t('export.image')}
-          </Button>
-          <Button
-            onClick={exportAsHtml}
-            disabled={exportingHtml}
-            className="h-12 rounded-xl font-bold text-sm border-2 border-muted-foreground/30 text-muted-foreground bg-muted/5 hover:bg-muted/15 hover:border-muted-foreground/50 transition-all"
-            variant="outline"
-          >
-            {exportingHtml ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <FileText className="w-5 h-5 mr-2" />}
-            {t('export.html')}
-          </Button>
+        {/* Buttons stacked */}
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Button
+              onClick={exportAsImage}
+              disabled={exportingImage}
+              className="h-11 rounded-full font-semibold text-sm border-2 border-accent/70 text-accent bg-accent/10 hover:bg-accent/20 hover:border-accent transition-all px-5"
+              variant="outline"
+            >
+              {exportingImage ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Image className="w-4 h-4 mr-2" />}
+              {t('export.image')}
+            </Button>
+            <Button
+              onClick={exportAsHtml}
+              disabled={exportingHtml}
+              className="h-11 rounded-full font-semibold text-sm border-2 border-muted-foreground/30 text-muted-foreground bg-muted/5 hover:bg-muted/15 hover:border-muted-foreground/50 transition-all px-5"
+              variant="outline"
+            >
+              {exportingHtml ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <FileText className="w-4 h-4 mr-2" />}
+              {t('export.html')}
+            </Button>
+          </div>
           <Button
             onClick={shareViaWhatsApp}
             disabled={sharingWhatsApp}
-            className="h-12 rounded-xl font-bold text-sm border-2 border-success/60 text-success bg-success/5 hover:bg-success/15 hover:border-success transition-all col-span-2 sm:col-span-1"
+            className="h-11 rounded-full font-semibold text-sm border-2 border-success/60 text-success bg-success/5 hover:bg-success/15 hover:border-success transition-all w-full"
             variant="outline"
           >
-            {sharingWhatsApp ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <MessageCircle className="w-5 h-5 mr-2" />}
+            {sharingWhatsApp ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <MessageCircle className="w-4 h-4 mr-2" />}
             {t('export.whatsapp')}
           </Button>
         </div>
