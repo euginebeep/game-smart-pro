@@ -576,10 +576,10 @@ export default function Auth() {
             <div className="absolute inset-0 w-20 h-20 rounded-2xl border-2 border-primary/30 animate-pulse" />
           </div>
           
-          <h1 className="font-display text-3xl font-bold">
+          <h1 className="text-3xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
             <span className="text-foreground">EUGINE</span>
           </h1>
-          <p className="text-muted-foreground text-sm mt-2">{t('auth.systemName')}</p>
+          <p className="text-sm mt-2" style={{ color: '#a0a8b0', fontFamily: "'Poppins', sans-serif" }}>{t('auth.systemName')}</p>
           <div className="mt-3 flex justify-center">
             <ActiveUsersCounter />
           </div>
@@ -606,9 +606,10 @@ export default function Auth() {
                 onClick={() => setMode('login')}
                 className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
                   mode === 'login'
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'text-white'
                     : 'bg-secondary text-muted-foreground hover:text-foreground'
                 }`}
+                style={mode === 'login' ? { background: '#0A1A2F', fontFamily: "'Montserrat', sans-serif" } : { fontFamily: "'Montserrat', sans-serif" }}
               >
                 {t('auth.login')}
               </button>
@@ -617,9 +618,10 @@ export default function Auth() {
                 onClick={() => setMode('register')}
                 className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${
                   mode === 'register'
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'text-white'
                     : 'bg-secondary text-muted-foreground hover:text-foreground'
                 }`}
+                style={mode === 'register' ? { background: '#0A1A2F', fontFamily: "'Montserrat', sans-serif" } : { fontFamily: "'Montserrat', sans-serif" }}
               >
                 {t('auth.register')}
               </button>
@@ -945,7 +947,8 @@ export default function Auth() {
             <Button
               type="submit"
               disabled={loading || (mode === 'reset' && otpSent && otpTimer === 0)}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
+              className="w-full font-bold py-3 rounded-lg transition-all hover:opacity-90"
+              style={{ background: '#FFD700', color: '#0A1A2F', fontFamily: "'Montserrat', sans-serif" }}
             >
               {loading ? (
                 <>
@@ -1011,13 +1014,13 @@ export default function Auth() {
           </form>
 
           {mode === 'register' && (
-            <div className="text-center mt-4 p-3 rounded-lg bg-primary/10 border border-primary/30">
+            <div className="text-center mt-4 p-3 rounded-lg border" style={{ background: 'rgba(255,215,0,0.08)', borderColor: 'rgba(255,215,0,0.25)' }}>
               <div className="flex items-center justify-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-primary font-semibold text-sm">PREMIUM</span>
+                <Sparkles className="w-4 h-4" style={{ color: '#FFD700' }} />
+                <span className="font-semibold text-sm" style={{ color: '#FFD700', fontFamily: "'Montserrat', sans-serif" }}>PREMIUM</span>
               </div>
-              <p className="text-muted-foreground text-sm">
-                ✨ {t('auth.trialMessage')} <span className="text-primary font-semibold">{t('auth.trialDays')}</span> {t('auth.trialSuffix')}
+              <p className="text-muted-foreground text-sm" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                {t('auth.trialMessage')} <span className="font-semibold" style={{ color: '#FFD700' }}>{t('auth.trialDays')}</span> {t('auth.trialSuffix')}
               </p>
             </div>
           )}
@@ -1033,7 +1036,7 @@ export default function Auth() {
             {t('auth.privacyPolicy')}
           </Link>
         </p>
-        <StandardFooter className="mt-8" />
+        
       </div>
     </div>
   );
