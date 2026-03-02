@@ -257,12 +257,12 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
             </div>
 
             {/* Row 2: Stats side by side */}
-            <div className="flex items-stretch gap-2.5">
-              <div className="flex-1 flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2.5 border border-border/20">
+            <div className="flex items-stretch gap-2">
+              <div className="flex-1 flex items-center gap-2 bg-muted/30 rounded-lg px-2.5 py-2.5 border border-border/20">
                 <Zap className="w-4 h-4 text-warning flex-shrink-0" />
-                <div>
-                  <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {l.confidence}
+                <div className="min-w-0">
+                  <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                    {language === 'pt' ? 'Prob.' : language === 'es' ? 'Prob.' : language === 'it' ? 'Prob.' : 'Prob.'}
                   </p>
                   <p className={`font-extrabold text-lg tracking-tight leading-none ${getConfidenceColor(analysis?.confidence || 0)}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                     {analysis?.confidence || 0}%
@@ -270,11 +270,11 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                 </div>
               </div>
               {analysis?.valuePercentage && analysis.valuePercentage > 0 && (
-                <div className="flex-1 flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2.5 border border-border/20">
+                <div className="flex-1 flex items-center gap-2 bg-muted/30 rounded-lg px-2.5 py-2.5 border border-border/20">
                   <TrendingUp className="w-4 h-4 text-success flex-shrink-0" />
-                  <div>
-                    <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                      {l.value}
+                  <div className="min-w-0">
+                    <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-semibold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                      {language === 'pt' ? 'Vantagem' : language === 'es' ? 'Ventaja' : language === 'it' ? 'Vantaggio' : 'Edge'}
                     </p>
                     <p className="text-success font-extrabold text-lg tracking-tight leading-none" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                       +{analysis.valuePercentage.toFixed(0)}%
