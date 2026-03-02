@@ -220,7 +220,8 @@ export default function Landing() {
         trust2: '50+ jogos/dia',
         trust3: 'Odds em tempo real',
         hitRateLabel: 'de acerto nos últimos 30 dias',
-        avgBettorRate: 'Apostador médio: ~48%',
+        avgBettorRate: 'Apostador profissional',
+        avgBettorLabel: '~53%',
         aiAdvantage: 'Vantagem da IA',
         liveNow: 'analisando jogos agora',
       },
@@ -323,7 +324,8 @@ export default function Landing() {
         emailError: 'Enter a valid email',
         trust1: '30+ leagues', trust2: '50+ matches/day', trust3: 'Real-time odds',
         hitRateLabel: 'hit rate in the last 30 days',
-        avgBettorRate: 'Average bettor: ~48%',
+        avgBettorRate: 'Pro bettor',
+        avgBettorLabel: '~53%',
         aiAdvantage: 'AI Advantage',
         liveNow: 'analyzing matches now',
       },
@@ -411,7 +413,8 @@ export default function Landing() {
         emailError: 'Ingresa un correo válido',
         trust1: '30+ ligas', trust2: '50+ partidos/día', trust3: 'Cuotas en tiempo real',
         hitRateLabel: 'de acierto en los últimos 30 días',
-        avgBettorRate: 'Apostador promedio: ~48%',
+        avgBettorRate: 'Apostador profesional',
+        avgBettorLabel: '~53%',
         aiAdvantage: 'Ventaja de la IA',
         liveNow: 'analizando partidos ahora',
       },
@@ -499,7 +502,8 @@ export default function Landing() {
         emailError: 'Inserisci una email valida',
         trust1: '30+ campionati', trust2: '50+ partite/giorno', trust3: 'Quote in tempo reale',
         hitRateLabel: 'di successo negli ultimi 30 giorni',
-        avgBettorRate: 'Scommettitore medio: ~48%',
+        avgBettorRate: 'Scommettitore pro',
+        avgBettorLabel: '~53%',
         aiAdvantage: 'Vantaggio IA',
         liveNow: 'analizzando partite ora',
       },
@@ -647,42 +651,42 @@ export default function Landing() {
 
               {/* Live stats */}
               {statsLoaded && stats.hitRate > 0 && (
-                <div className="flex flex-col gap-2 mb-6 max-w-sm mx-auto lg:mx-0">
+                <div className="flex flex-col gap-2.5 mb-6 max-w-sm mx-auto lg:mx-0 p-4 rounded-xl bg-secondary/30 border border-border/50">
                   {/* EUGINE AI bar */}
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 min-w-[100px]">
+                    <div className="flex items-center gap-1.5 min-w-[120px]">
                       <Target className="w-4 h-4 text-primary shrink-0" />
                       <span className="text-primary text-sm font-bold">EUGINE AI</span>
                     </div>
-                    <div className="flex-1 h-7 rounded-full bg-secondary/60 overflow-hidden relative">
+                    <div className="flex-1 h-8 rounded-full bg-secondary/60 overflow-hidden relative">
                       <div 
                         className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 flex items-center justify-end pr-3 transition-all duration-1000"
                         style={{ width: `${Math.min(stats.hitRate, 100)}%` }}
                       >
-                        <span className="text-primary-foreground text-xs font-black">{stats.hitRate}%</span>
+                        <span className="text-primary-foreground text-sm font-black">{stats.hitRate}%</span>
                       </div>
                     </div>
                   </div>
-                  {/* Average bettor bar */}
+                  {/* Pro bettor bar */}
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 min-w-[100px]">
-                      <span className="text-muted-foreground text-xs">👤</span>
-                      <span className="text-muted-foreground text-xs">{l.hero.avgBettorRate?.split(':')[0] || 'Avg bettor'}</span>
+                    <div className="flex items-center gap-1.5 min-w-[120px]">
+                      <span className="text-muted-foreground text-sm">👤</span>
+                      <span className="text-muted-foreground text-xs font-medium">{l.hero.avgBettorRate}</span>
                     </div>
-                    <div className="flex-1 h-5 rounded-full bg-secondary/60 overflow-hidden relative">
+                    <div className="flex-1 h-6 rounded-full bg-secondary/60 overflow-hidden relative">
                       <div 
-                        className="h-full rounded-full bg-muted-foreground/30 flex items-center justify-end pr-3 transition-all duration-1000"
-                        style={{ width: '48%' }}
+                        className="h-full rounded-full bg-muted-foreground/25 flex items-center justify-end pr-3 transition-all duration-1000"
+                        style={{ width: '53%' }}
                       >
-                        <span className="text-muted-foreground text-[10px] font-bold">~48%</span>
+                        <span className="text-muted-foreground text-[11px] font-bold">~53%</span>
                       </div>
                     </div>
                   </div>
-                  {/* Advantage label */}
-                  <div className="flex items-center justify-center lg:justify-start gap-1.5 mt-1">
-                    <span className="text-xs text-primary/80">{l.hero.hitRateLabel}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
-                      +{stats.hitRate - 48}% {l.hero.aiAdvantage}
+                  {/* Advantage badge */}
+                  <div className="flex items-center justify-between mt-1 pt-2 border-t border-border/30">
+                    <span className="text-xs text-muted-foreground">{l.hero.hitRateLabel}</span>
+                    <span className="text-xs px-3 py-1 rounded-full bg-primary/15 text-primary font-bold">
+                      +{Math.round((stats.hitRate / 53 - 1) * 100)}% {l.hero.aiAdvantage}
                     </span>
                   </div>
                 </div>
