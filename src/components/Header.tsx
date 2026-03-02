@@ -1,4 +1,5 @@
-import { Zap, TrendingUp, LogOut, Search, Shield } from 'lucide-react';
+import { Zap, LogOut, Search, Shield } from 'lucide-react';
+import eugineLogo from '@/assets/eugine-logo-horizontal.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
@@ -49,20 +50,7 @@ export function Header({
       <div className="flex items-center justify-between gap-4 py-3 border-b border-border/50">
         {/* Left: Logo */}
         <div className="flex items-center gap-3">
-          <div 
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: '#0A1A2F' }}
-          >
-            <TrendingUp className="w-4.5 h-4.5" style={{ color: '#FFD700' }} />
-          </div>
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-none" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              EUGINE
-            </h1>
-            <p className="text-muted-foreground text-[11px] font-medium leading-none mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
-              Sports Analytics
-            </p>
-          </div>
+          <img src={eugineLogo} alt="EUGINE" className="h-8 sm:h-9 w-auto" />
         </div>
 
         {/* Center: Navigation + Active Users - desktop only */}
