@@ -69,28 +69,19 @@ export function ActiveUsersCounter() {
 
   return (
     <div
-      className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border backdrop-blur-sm"
+      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
       style={{
-        background: '#0A1A2F',
-        borderColor: 'rgba(255,255,255,0.08)',
-        fontFamily: "'Montserrat', sans-serif",
+        background: 'rgba(255,255,255,0.1)',
+        border: '1px solid rgba(255,255,255,0.2)',
       }}
     >
-      {/* Pulsing green dot */}
-      <span className="relative flex h-2.5 w-2.5">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+      <Users className="w-3.5 h-3.5 text-white" />
+      <span
+        className="text-xs font-medium text-white tabular-nums"
+        style={{ fontFamily: "'Montserrat', sans-serif" }}
+      >
+        {displayCount} usuários online agora
       </span>
-      
-      <div className="flex items-center gap-1.5">
-        <Users className="w-4 h-4 text-emerald-400" />
-        <span className="text-sm font-bold text-white tabular-nums min-w-[1.5rem] text-center">
-          {displayCount}
-        </span>
-        <span className="text-sm text-white/70 font-medium">
-          usuários online
-        </span>
-      </div>
     </div>
   );
 }
