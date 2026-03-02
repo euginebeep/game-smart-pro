@@ -37,13 +37,19 @@ export function AccumulatorCard({
 
   // Strip everything after "#" from title
   let cleanTitle = title.includes('#') ? title.substring(0, title.indexOf('#')).trim() : title;
-  // Rename goal-related "ousada" cards
-  const isGoalOusada = riskLevel === 'high' && /gol|goal|goles/i.test(cleanTitle);
-  if (isGoalOusada) {
+  
+  // For goal-related cards of ANY risk, rename to "Aposta Em Gols"
+  const isGoalCard = /gol|goal|goles/i.test(cleanTitle);
+  if (isGoalCard) {
     cleanTitle = t('accumulators.goalBetLabel') || 'Aposta Em Gols';
   }
 
-  // Better title readability: split in two lines when title has separator
+  // Remove emoji prefixes (🟢🟡🔴) and risk words from title since badge already shows risk
+  cleanTitle = cleanTitle.replace(/^[🟢🟡🔴⚖️🛡️🚀🏆]\s*/g, '').trim();
+  // Remove leading dash/separator leftovers
+  cleanTitle = cleanTitle.replace(/^—\s*/, '').trim();
+
+  // Split title on separator for two-line display
   const [titleMain, titleSub] = cleanTitle.split('—').map((part) => part.trim());
 
   const totalOdd = bets.reduce((acc, b) => acc * b.odd, 1);
