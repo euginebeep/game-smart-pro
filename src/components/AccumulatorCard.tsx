@@ -119,9 +119,9 @@ export function AccumulatorCard({
                 {titleSub && <span className="text-foreground ml-1">— {titleSub}</span>}
               </h3>
             </div>
-            <div className="mt-2 pl-[calc(2rem+0.625rem)]">
+            <div className="mt-2 pl-[calc(2rem+0.625rem)] sm:pl-[calc(2.5rem+0.625rem)]">
               <span
-                className={`inline-block text-sm sm:text-base font-extrabold px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border-2 ${style.badge} tracking-wide leading-none whitespace-nowrap`}
+                className={`inline-block text-[11px] sm:text-xs md:text-sm lg:text-base font-extrabold px-3 sm:px-4 md:px-5 py-1 sm:py-1.5 md:py-2 rounded-full border-2 ${style.badge} tracking-wide leading-none whitespace-nowrap`}
                 style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
                 {style.label}
