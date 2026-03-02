@@ -7,6 +7,12 @@
 import { useState, useEffect, useRef } from 'react';
 import eugineLogo from '@/assets/eugine-logo-horizontal.png';
 import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
+import { useActiveUsersCount } from '@/hooks/useActiveUsersCount';
+
+function LiveUsersCount() {
+  const count = useActiveUsersCount();
+  return <span>{count}</span>;
+}
 import { useNavigate } from 'react-router-dom';
 import {
   Check, Brain, Target, TrendingUp, BarChart3,
@@ -297,7 +303,7 @@ export default function LandingB() {
             {[
               { val: <AnimatedCounter end={statsLoaded ? stats.hitRate : 65} suffix="%" />, label: l.liveMatches.hitRate },
               { val: <><span>+</span><AnimatedCounter end={124} suffix="%" /></>, label: l.liveMatches.avgEdge },
-              { val: <AnimatedCounter end={97} />, label: l.liveMatches.usersOnline },
+              { val: <LiveUsersCount />, label: l.liveMatches.usersOnline },
             ].map((s, i) => (
               <ScrollFadeIn key={i} delay={i * 100}>
                 <div className="text-center rounded-lg p-6" style={{ background: C.white, border: `1px solid ${C.border}` }}>

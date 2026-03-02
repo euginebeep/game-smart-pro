@@ -14,6 +14,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import USFlag3D from '@/components/USFlag3D';
+import { useActiveUsersCount } from '@/hooks/useActiveUsersCount';
+
+function LiveUsersCount() {
+  const count = useActiveUsersCount();
+  return <span>{count}</span>;
+}
 
 // ─── Animated Counter ───
 function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '' }: { end: number; duration?: number; suffix?: string; prefix?: string }) {
@@ -509,7 +515,7 @@ export default function Landing() {
             </ScrollFadeIn>
             <ScrollFadeIn delay={200}>
               <div className="text-center">
-                <p className="text-3xl sm:text-4xl font-black text-foreground"><AnimatedCounter end={97} /></p>
+                <p className="text-3xl sm:text-4xl font-black text-foreground"><LiveUsersCount /></p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.liveMatches.usersOnline}</p>
               </div>
             </ScrollFadeIn>
