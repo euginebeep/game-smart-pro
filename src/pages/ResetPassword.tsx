@@ -10,6 +10,7 @@ import eugineLogo from '@/assets/eugine-logo-new.png';
 import { z } from 'zod';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { StandardFooter } from '@/components/StandardFooter';
 
 export default function ResetPassword() {
   const { t } = useLanguage();
@@ -145,6 +146,7 @@ export default function ResetPassword() {
             </>
           )}
         </div>
+        <StandardFooter className="mt-8" />
       </div>
     </div>
   );

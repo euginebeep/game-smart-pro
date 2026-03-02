@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
+import { StandardFooter } from '@/components/StandardFooter';
 
 export default function PrivacyPolicy() {
   const { t } = useLanguage();
@@ -71,6 +72,7 @@ export default function PrivacyPolicy() {
           <div className="pt-6 border-t border-border/30">
             <p className="text-sm text-muted-foreground/60 text-center">{t('privacy.footer')}</p>
           </div>
+        <StandardFooter className="mt-8" />
         </div>
       </div>
     </div>

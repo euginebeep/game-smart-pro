@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import USFlag3D from '@/components/USFlag3D';
+import { StandardFooter } from '@/components/StandardFooter';
 import { Onboarding } from '@/components/Onboarding';
 import { Header } from '@/components/Header';
 import { GameCard } from '@/components/GameCard';
@@ -451,49 +452,7 @@ const Index = () => {
           )}
         </main>
 
-        {/* Footer — matching LandingB pattern */}
-        <footer className="mt-8 sm:mt-12 lg:mt-16 rounded-2xl p-8 sm:p-10" style={{ background: '#0A1A2F' }}>
-          <div className="max-w-6xl mx-auto">
-            <div className="grid sm:grid-cols-3 gap-8 mb-8">
-              {/* Logo */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#1a3a52' }}>
-                    <span className="text-white font-bold text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>E</span>
-                  </div>
-                  <span className="text-white font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>EUGINE</span>
-                </div>
-                <p className="text-xs" style={{ color: '#a0a8b0' }}>
-                  by <span className="font-semibold inline-flex items-center gap-1"><USFlag3D className="w-4 h-3" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-4 h-3" /></span>
-                </p>
-              </div>
-              {/* Links */}
-              <div>
-                <h4 className="text-white font-semibold text-sm mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>Links</h4>
-                <div className="space-y-2">
-                  <a href="/termos-de-uso" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{t('main.terms')}</a>
-                  <a href="/politica-de-privacidade" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{t('main.privacy')}</a>
-                  <a href="/about" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{t('main.about')}</a>
-                </div>
-              </div>
-              {/* Legal */}
-              <div>
-                <h4 className="text-white font-semibold text-sm mb-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>Legal</h4>
-                <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>
-                  {language === 'pt' ? 'Jogo Responsável' : language === 'es' ? 'Juego Responsable' : language === 'it' ? 'Gioco Responsabile' : 'Responsible Gambling'}
-                </a>
-              </div>
-            </div>
-            <div className="pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <p className="text-xs leading-relaxed mb-3" style={{ color: '#808A94' }}>
-                {t('main.disclaimer')}
-              </p>
-              <p className="text-xs" style={{ color: '#808A94' }}>
-                <span className="inline-flex items-center gap-1">© {new Date().getFullYear()} <USFlag3D className="w-3.5 h-2.5" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-3.5 h-2.5" /></span>
-              </p>
-            </div>
-          </div>
-        </footer>
+        <StandardFooter className="mt-8 sm:mt-12 lg:mt-16" />
       </div>
     </div>
   );

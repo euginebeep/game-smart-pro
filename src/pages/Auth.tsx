@@ -13,6 +13,7 @@ import { z } from 'zod';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ParticlesBackground from '@/components/ParticlesBackground';
+import { StandardFooter } from '@/components/StandardFooter';
 import {
   Select,
   SelectContent,
@@ -1032,6 +1033,7 @@ export default function Auth() {
             {t('auth.privacyPolicy')}
           </Link>
         </p>
+        <StandardFooter className="mt-8" />
       </div>
     </div>
   );
