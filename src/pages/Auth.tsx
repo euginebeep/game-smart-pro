@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Phone, Lock, Loader2, ArrowLeft, Sparkles, Globe, Shield } from 'lucide-react';
-import eugineLogo from '@/assets/eugine-logo-new.png';
+import eugineLogo from '@/assets/eugine-logo-horizontal.png';
 import { z } from 'zod';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -537,48 +537,11 @@ export default function Auth() {
           <LanguageSelector />
         </div>
 
-        {/* Logo/Brand - Improved Brain Icon */}
+        {/* Logo/Brand */}
         <div className="text-center mb-6">
-          {/* Stylized Brain Icon */}
-          <div className="inline-flex items-center justify-center mb-4 relative">
-            <div 
-              className="w-20 h-20 rounded-2xl flex items-center justify-center animate-glow relative overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, hsl(185 100% 50%) 0%, hsl(220 80% 50%) 50%, hsl(260 80% 60%) 100%)',
-                boxShadow: '0 0 40px hsla(185, 100%, 50%, 0.4), 0 0 80px hsla(220, 80%, 50%, 0.2)',
-              }}
-            >
-              {/* Abstract brain pattern */}
-              <svg viewBox="0 0 64 64" className="w-12 h-12 text-white">
-                {/* Central neural core */}
-                <circle cx="32" cy="32" r="6" fill="currentColor" opacity="0.9"/>
-                
-                {/* Brain hemispheres */}
-                <path d="M20 24c-4 0-8 4-8 10s4 10 8 10c2 0 4-1 5-3" stroke="currentColor" strokeWidth="2.5" fill="none" opacity="0.85"/>
-                <path d="M44 24c4 0 8 4 8 10s-4 10-8 10c-2 0-4-1-5-3" stroke="currentColor" strokeWidth="2.5" fill="none" opacity="0.85"/>
-                
-                {/* Neural connections */}
-                <path d="M25 29c4-2 10-2 14 0" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7"/>
-                <path d="M25 35c4 2 10 2 14 0" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.7"/>
-                
-                {/* Top wave patterns */}
-                <path d="M18 20c3-4 8-6 14-6s11 2 14 6" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.6"/>
-                <path d="M22 16c2-2 6-4 10-4s8 2 10 4" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.4"/>
-                
-                {/* Pulse dots */}
-                <circle cx="20" cy="32" r="2" fill="currentColor" className="animate-pulse"/>
-                <circle cx="44" cy="32" r="2" fill="currentColor" className="animate-pulse"/>
-                <circle cx="32" cy="22" r="1.5" fill="currentColor" className="animate-pulse"/>
-                <circle cx="32" cy="42" r="1.5" fill="currentColor" className="animate-pulse"/>
-              </svg>
-            </div>
-            {/* Glow ring effect */}
-            <div className="absolute inset-0 w-20 h-20 rounded-2xl border-2 border-primary/30 animate-pulse" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src={eugineLogo} alt="EUGINE" className="h-20 w-auto" />
           </div>
-          
-          <h1 className="text-3xl font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-            <span className="text-foreground">EUGINE</span>
-          </h1>
           <p className="text-sm mt-2" style={{ color: '#a0a8b0', fontFamily: "'Poppins', sans-serif" }}>{t('auth.systemName')}</p>
           <div className="mt-3 flex justify-center">
             <ActiveUsersCounter />
