@@ -68,7 +68,14 @@ export function ActiveUsersCounter() {
   }, [count, displayCount]);
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm">
+    <div
+      className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border backdrop-blur-sm"
+      style={{
+        background: '#0A1A2F',
+        borderColor: 'rgba(255,255,255,0.08)',
+        fontFamily: "'Montserrat', sans-serif",
+      }}
+    >
       {/* Pulsing green dot */}
       <span className="relative flex h-2.5 w-2.5">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -76,12 +83,12 @@ export function ActiveUsersCounter() {
       </span>
       
       <div className="flex items-center gap-1.5">
-        <Users className="w-3.5 h-3.5 text-emerald-400" />
-        <span className="text-sm font-semibold text-emerald-400 tabular-nums min-w-[1.5rem] text-center">
+        <Users className="w-4 h-4 text-emerald-400" />
+        <span className="text-sm font-bold text-white tabular-nums min-w-[1.5rem] text-center">
           {displayCount}
         </span>
-        <span className="text-xs text-emerald-400/70 font-medium">
-          online
+        <span className="text-sm text-white/70 font-medium">
+          usuários online
         </span>
       </div>
     </div>
