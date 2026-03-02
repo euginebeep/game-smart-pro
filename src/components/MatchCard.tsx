@@ -233,21 +233,19 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
           </div>
         </div>
 
-        {/* ===== RECOMMENDATION — single line, never wrap ===== */}
+        {/* ===== RECOMMENDATION ===== */}
         <div className="px-5 py-4 border-b border-border/30">
-          <div className="bg-gradient-to-r from-primary/8 to-primary/3 border border-primary/20 rounded-xl px-4 py-3">
-            <div className="flex items-center gap-3 flex-nowrap overflow-hidden">
-              {/* Icon */}
-              <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <Target className="w-4 h-4 text-primary" />
+          <div className="bg-gradient-to-r from-primary/8 to-primary/3 border border-primary/20 rounded-xl px-4 py-3.5">
+            {/* Row 1: Icon + Bet suggestion */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Target className="w-4.5 h-4.5 text-primary" />
               </div>
-
-              {/* Bet info — takes remaining space, truncates */}
-              <div className="flex-1 min-w-0">
-                <p className="text-primary/70 text-[9px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <div className="min-w-0 flex-1">
+                <p className="text-primary/70 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
                   {l.suggestedBet}
                 </p>
-                <p className="font-bold text-sm leading-tight tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
+                <p className="font-bold text-sm sm:text-base leading-tight tracking-tight truncate" style={{ fontFamily: "'Montserrat', sans-serif", color: 'hsl(var(--foreground))' }}>
                   {betSuggestion.text}
                   {betSuggestion.subtext && (
                     <span className="text-muted-foreground font-normal text-xs ml-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -256,34 +254,34 @@ export function MatchCard({ game, delay, userTier = 'free' }: MatchCardProps) {
                   )}
                 </p>
               </div>
+            </div>
 
-              {/* Stats — inline, flex-shrink-0 */}
-              <div className="flex items-center gap-4 flex-shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-warning flex-shrink-0" />
-                  <div className="text-right">
-                    <p className="text-muted-foreground text-[8px] uppercase tracking-widest font-semibold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                      {l.confidence}
-                    </p>
-                    <p className={`font-extrabold text-base tracking-tight leading-none ${getConfidenceColor(analysis?.confidence || 0)}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                      {analysis?.confidence || 0}%
-                    </p>
-                  </div>
+            {/* Row 2: Stats side by side */}
+            <div className="flex items-stretch gap-2.5">
+              <div className="flex-1 flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2.5 border border-border/20">
+                <Zap className="w-4 h-4 text-warning flex-shrink-0" />
+                <div>
+                  <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                    {l.confidence}
+                  </p>
+                  <p className={`font-extrabold text-lg tracking-tight leading-none ${getConfidenceColor(analysis?.confidence || 0)}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                    {analysis?.confidence || 0}%
+                  </p>
                 </div>
-                {analysis?.valuePercentage && analysis.valuePercentage > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <TrendingUp className="w-3.5 h-3.5 text-success flex-shrink-0" />
-                    <div className="text-right">
-                      <p className="text-muted-foreground text-[8px] uppercase tracking-widest font-semibold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                        {l.value}
-                      </p>
-                      <p className="text-success font-extrabold text-base tracking-tight leading-none" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                        +{analysis.valuePercentage.toFixed(0)}%
-                      </p>
+              </div>
+              {analysis?.valuePercentage && analysis.valuePercentage > 0 && (
+                <div className="flex-1 flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2.5 border border-border/20">
+                  <TrendingUp className="w-4 h-4 text-success flex-shrink-0" />
+                  <div>
+                    <p className="text-muted-foreground text-[9px] uppercase tracking-widest font-semibold whitespace-nowrap" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                      {l.value}
+                    </p>
+                    <p className="text-success font-extrabold text-lg tracking-tight leading-none" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                      +{analysis.valuePercentage.toFixed(0)}%
+                    </p>
                   </div>
                 </div>
               )}
-              </div>
             </div>
           </div>
         </div>
