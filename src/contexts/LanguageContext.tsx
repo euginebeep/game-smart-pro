@@ -497,6 +497,8 @@ const translations: Record<Language, any> = {
       finalResult: "Resultado Final",
       exclusivePremium: "Exclusivo Premium",
       gamesOfDay: "Jogos do Dia",
+      gamesOf: "JOGOS DE",
+      today: "HOJE",
     },
     terms: {
       title: "Termos de Uso",
@@ -1169,6 +1171,8 @@ const translations: Record<Language, any> = {
       finalResult: "Final Result",
       exclusivePremium: "Premium Exclusive",
       gamesOfDay: "Today's Games",
+      gamesOf: "GAMES OF",
+      today: "TODAY",
     },
     terms: {
       title: "Terms of Use",
@@ -1841,6 +1845,8 @@ const translations: Record<Language, any> = {
       finalResult: "Resultado Final",
       exclusivePremium: "Exclusivo Premium",
       gamesOfDay: "Partidos del Día",
+      gamesOf: "PARTIDOS DE",
+      today: "HOY",
     },
     terms: {
       title: "Términos de Uso",
@@ -2513,6 +2519,8 @@ const translations: Record<Language, any> = {
       finalResult: "Risultato Finale",
       exclusivePremium: "Esclusivo Premium",
       gamesOfDay: "Partite del Giorno",
+      gamesOf: "PARTITE DI",
+      today: "OGGI",
     },
     terms: {
       title: "Termini di Utilizzo",

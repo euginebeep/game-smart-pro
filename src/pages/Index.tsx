@@ -25,7 +25,7 @@ import { Game } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Search, BarChart3 } from 'lucide-react';
+import { Search, BarChart3, CheckCircle2 } from 'lucide-react';
 
 /**
  * Index Page - Main dashboard displaying games and analysis
@@ -383,14 +383,21 @@ const Index = () => {
               <div ref={gamesContentRef} className="space-y-6" id="eugine-report-content">
                 {/* Section Title */}
                 <div className="mb-6">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                    {t('matchCard.gamesOfDay')}
-                    {filteredGames.length !== games.length && (
-                      <span className="text-muted-foreground text-lg font-normal ml-2">
-                        ({filteredGames.length}/{games.length})
-                      </span>
-                    )}
-                  </h2>
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle2 className="w-6 h-6 text-muted-foreground" />
+                    <span className="w-3 h-3 rounded-full bg-destructive inline-block animate-pulse" />
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground uppercase tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                      {t('matchCard.gamesOf')} <span className="text-primary">{t('matchCard.today')}</span>
+                      {filteredGames.length !== games.length && (
+                        <span className="text-muted-foreground text-base font-normal ml-2">
+                          ({filteredGames.length}/{games.length})
+                        </span>
+                      )}
+                    </h2>
+                  </div>
+                  <p className="text-muted-foreground text-sm" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    {isToday ? t('main.showingToday') : t('main.showingNext')}
+                  </p>
                 </div>
 
                 {/* Match Cards - New Compact Design */}
