@@ -70,10 +70,10 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             {game.dayLabel && (
               <div className={`badge text-[10px] sm:text-xs ${
                 game.dayType === 'today' 
-                  ? 'bg-red-500/20 text-red-400 border-red-500/30' 
+                  ? 'bg-destructive/20 text-destructive border-destructive/30' 
                   : game.dayType === 'tomorrow'
-                    ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                    : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                    ? 'bg-primary/20 text-primary border-primary/30'
+                    : 'bg-muted/60 text-muted-foreground border-border'
               }`}>
                 <span className="font-semibold">{game.dayLabel}</span>
               </div>
@@ -88,16 +88,16 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             </div>
             {/* Value Badge - Show for premium users when value > 0 */}
             {hasPremiumAccess && analysis.valuePercentage && analysis.valuePercentage > 0 && (
-              <div className="badge text-[10px] sm:text-xs bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+              <div className="badge text-[10px] sm:text-xs bg-success/20 text-success border-success/30">
                 <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="font-semibold">Value +{analysis.valuePercentage.toFixed(1)}%</span>
               </div>
             )}
             {/* Tier Badge */}
             <div className={`badge text-[10px] sm:text-xs ${
-              userTier === 'premium' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-              userTier === 'advanced' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
-              'bg-blue-500/20 text-blue-400 border-blue-500/30'
+              userTier === 'premium' ? 'bg-warning/20 text-warning border-warning/30' :
+              userTier === 'advanced' ? 'bg-primary/20 text-primary border-primary/30' :
+              'bg-primary/20 text-primary border-primary/30'
             }`}>
               <span className="font-semibold uppercase">
                 {userTier === 'premium' ? t('gameCardTiers.premiumBadge') :
@@ -283,10 +283,10 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
         <div className="grid gap-3 sm:gap-4 lg:grid-cols-3 mb-4 sm:mb-6">
           {/* H2H */}
           {adv.h2h && (
-            <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-3 sm:p-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Shield className="w-4 h-4 text-purple-400" />
-                <h4 className="font-bold text-purple-400 text-xs uppercase">{t('gameCard.headToHead')}</h4>
+                <Shield className="w-4 h-4 text-primary" />
+                <h4 className="font-bold text-primary text-xs uppercase">{t('gameCard.headToHead')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 <p className="text-foreground/80">
@@ -306,10 +306,10 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
 
           {/* Form */}
           {(adv.homeForm || adv.awayForm) && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 sm:p-4">
+            <div className="bg-accent/10 border border-accent/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-4 h-4 text-blue-400" />
-                <h4 className="font-bold text-blue-400 text-xs uppercase">{t('gameCard.recentForm')}</h4>
+                <Activity className="w-4 h-4 text-accent" />
+                <h4 className="font-bold text-accent text-xs uppercase">{t('gameCard.recentForm')}</h4>
               </div>
               <div className="space-y-2 text-xs">
                 {adv.homeForm && (
@@ -318,9 +318,9 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
                     <div className="flex gap-1">
                       {adv.homeForm.split('').slice(0, 5).map((r, i) => (
                         <span key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold ${
-                          r === 'W' ? 'bg-green-500/30 text-green-400' :
-                          r === 'D' ? 'bg-yellow-500/30 text-yellow-400' :
-                          'bg-red-500/30 text-red-400'
+                          r === 'W' ? 'bg-success/30 text-success' :
+                          r === 'D' ? 'bg-warning/30 text-warning' :
+                          'bg-destructive/30 text-destructive'
                         }`}>{r}</span>
                       ))}
                     </div>
@@ -332,9 +332,9 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
                     <div className="flex gap-1">
                       {adv.awayForm.split('').slice(0, 5).map((r, i) => (
                         <span key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold ${
-                          r === 'W' ? 'bg-green-500/30 text-green-400' :
-                          r === 'D' ? 'bg-yellow-500/30 text-yellow-400' :
-                          'bg-red-500/30 text-red-400'
+                          r === 'W' ? 'bg-success/30 text-success' :
+                          r === 'D' ? 'bg-warning/30 text-warning' :
+                          'bg-destructive/30 text-destructive'
                         }`}>{r}</span>
                       ))}
                     </div>
@@ -346,10 +346,10 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
 
           {/* Standings */}
           {(adv.homePosition || adv.awayPosition) && (
-            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-3 sm:p-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Trophy className="w-4 h-4 text-cyan-400" />
-                <h4 className="font-bold text-cyan-400 text-xs uppercase">{t('gameCard.standings')}</h4>
+                <Trophy className="w-4 h-4 text-primary" />
+                <h4 className="font-bold text-primary text-xs uppercase">{t('gameCard.standings')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 <p className="text-foreground/80">
@@ -366,18 +366,18 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
 
       {/* Locked Advanced Section */}
       {!hasAdvancedAccess && (
-        <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 mb-4 relative overflow-hidden">
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-4 relative overflow-hidden">
           <div className="absolute inset-0 backdrop-blur-sm bg-background/60 flex items-center justify-center z-10">
             <div className="text-center">
-              <Lock className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+              <Lock className="w-6 h-6 text-primary mx-auto mb-2" />
               <p className="text-sm font-medium text-foreground">{t('gameCardTiers.advancedBadge')}</p>
               <p className="text-xs text-muted-foreground">{t('gameCardTiers.advancedLocked')}</p>
             </div>
           </div>
           <div className="opacity-30 grid grid-cols-3 gap-3">
-            <div className="h-20 bg-purple-500/10 rounded-lg" />
-            <div className="h-20 bg-blue-500/10 rounded-lg" />
-            <div className="h-20 bg-cyan-500/10 rounded-lg" />
+            <div className="h-20 bg-primary/10 rounded-lg" />
+            <div className="h-20 bg-accent/10 rounded-lg" />
+            <div className="h-20 bg-primary/10 rounded-lg" />
           </div>
         </div>
       )}
@@ -387,10 +387,10 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
         <div className="grid gap-3 sm:gap-4 lg:grid-cols-3 mb-4 sm:mb-6">
           {/* Injuries */}
           {(adv.homeInjuries !== undefined || adv.awayInjuries !== undefined) && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 sm:p-4">
+            <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Stethoscope className="w-4 h-4 text-red-400" />
-                <h4 className="font-bold text-red-400 text-xs uppercase">{t('gameCard.injuries')}</h4>
+                <Stethoscope className="w-4 h-4 text-destructive" />
+                <h4 className="font-bold text-destructive text-xs uppercase">{t('gameCard.injuries')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 <p className="text-foreground/80">
@@ -405,10 +405,10 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
 
           {/* Stats */}
           {(adv.homeStats || adv.awayStats) && (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 sm:p-4">
+            <div className="bg-success/10 border border-success/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-4 h-4 text-green-400" />
-                <h4 className="font-bold text-green-400 text-xs uppercase">{t('gameCard.statistics')}</h4>
+                <Activity className="w-4 h-4 text-success" />
+                <h4 className="font-bold text-success text-xs uppercase">{t('gameCard.statistics')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 {adv.homeStats && (
@@ -427,10 +427,10 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
 
           {/* EUGINE Suggestion */}
           {adv.apiPrediction && (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 sm:p-4">
+            <div className="bg-warning/10 border border-warning/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-amber-400" />
-                <h4 className="font-bold text-amber-400 text-xs uppercase">{t('gameCard.eugineSuggestion')}</h4>
+                <Target className="w-4 h-4 text-warning" />
+                <h4 className="font-bold text-warning text-xs uppercase">{t('gameCard.eugineSuggestion')}</h4>
               </div>
               <div className="space-y-1 text-xs">
                 {adv.apiPrediction.advice && (
@@ -450,26 +450,26 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
 
       {/* Locked Premium Section */}
       {hasAdvancedAccess && !hasPremiumAccess && (
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 mb-4 relative overflow-hidden">
+        <div className="bg-warning/5 border border-warning/20 rounded-xl p-4 mb-4 relative overflow-hidden">
           <div className="absolute inset-0 backdrop-blur-sm bg-background/60 flex items-center justify-center z-10">
             <div className="text-center">
-              <Lock className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+              <Lock className="w-6 h-6 text-warning mx-auto mb-2" />
               <p className="text-sm font-medium text-foreground">{t('gameCardTiers.premiumBadge')}</p>
               <p className="text-xs text-muted-foreground">{t('gameCardTiers.premiumLocked')}</p>
             </div>
           </div>
           <div className="opacity-30 grid grid-cols-3 gap-3">
-            <div className="h-20 bg-red-500/10 rounded-lg" />
-            <div className="h-20 bg-green-500/10 rounded-lg" />
-            <div className="h-20 bg-amber-500/10 rounded-lg" />
+            <div className="h-20 bg-destructive/10 rounded-lg" />
+            <div className="h-20 bg-success/10 rounded-lg" />
+            <div className="h-20 bg-warning/10 rounded-lg" />
           </div>
         </div>
       )}
 
       {/* Analysis Factors (Premium only) */}
       {hasPremiumAccess && analysis.factors && analysis.factors.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
-          <h4 className="font-bold text-amber-400 text-xs uppercase mb-3 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-warning/10 to-accent/10 border border-warning/20 rounded-xl p-4 mb-4">
+          <h4 className="font-bold text-warning text-xs uppercase mb-3 flex items-center gap-2">
             <Target className="w-4 h-4" />
             {t('gameCard.analysisFactors')}
           </h4>
@@ -477,8 +477,8 @@ export function GameCard({ game, delay, userTier = 'free' }: GameCardProps) {
             {analysis.factors.map((factor, idx) => (
               <div key={idx} className="flex items-start gap-2 text-xs">
                 <span className={`w-2 h-2 rounded-full mt-1.5 ${
-                  factor.impact === 'positive' ? 'bg-green-400' :
-                  factor.impact === 'negative' ? 'bg-red-400' : 'bg-gray-400'
+                  factor.impact === 'positive' ? 'bg-success' :
+                  factor.impact === 'negative' ? 'bg-destructive' : 'bg-muted-foreground'
                 }`} />
                 <div>
                   <span className="font-medium text-foreground/90">{factor.name}:</span>

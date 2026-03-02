@@ -21,9 +21,9 @@ interface HeaderProps {
 
 const tierConfig = {
   free: { label: 'Trial', className: 'bg-muted/60 text-muted-foreground border-border' },
-  basic: { label: 'Basic', className: 'bg-sky-500/15 text-sky-400 border-sky-500/30' },
-  advanced: { label: 'Advanced', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
-  premium: { label: 'Premium', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+  basic: { label: 'Basic', className: 'bg-primary/15 text-primary border-primary/30' },
+  advanced: { label: 'Advanced', className: 'bg-success/15 text-success border-success/30' },
+  premium: { label: 'Premium', className: 'bg-warning/15 text-warning border-warning/30' },
 };
 
 export function Header({ 
@@ -100,7 +100,7 @@ export function Header({
 
           {/* Trial searches remaining */}
           {isTrial && dailySearchesRemaining !== null && dailySearchesRemaining !== undefined && dailySearchesRemaining >= 0 && (
-            <span className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${dailySearchesRemaining === 0 ? 'bg-destructive/15 text-destructive border-destructive/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'}`}>
+            <span className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border ${dailySearchesRemaining === 0 ? 'bg-destructive/15 text-destructive border-destructive/30' : 'bg-warning/15 text-warning border-warning/30'}`}>
               <Search className="w-3 h-3" />
               {dailySearchesRemaining}/3
             </span>

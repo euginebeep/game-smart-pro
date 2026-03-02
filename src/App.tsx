@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,6 +31,27 @@ const PageFallback = () => (
   </div>
 );
 
+/**
+ * Smart Landing: shows LandingB when accessed from eugineai.com.br domain,
+ * otherwise shows default Landing (dark theme).
+ */
+function SmartLanding() {
+  const useLandingB = useMemo(() => {
+    const host = window.location.hostname.toLowerCase();
+    return host.includes('eugineai.com.br') || host.includes('eugineai.com');
+  }, []);
+
+  if (useLandingB) {
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <LandingB />
+      </Suspense>
+    );
+  }
+
+  return <Landing />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -43,11 +64,11 @@ const App = () => (
           </Suspense>
           <Suspense fallback={<PageFallback />}>
             <Routes>
-              {/* Public Landing Page */}
-              <Route path="/" element={<Landing />} />
+              {/* Public Landing Page — domain-aware */}
+              <Route path="/" element={<SmartLanding />} />
               <Route path="/landing" element={<Landing />} />
               <Route path="/landing-b" element={<LandingB />} />
-              <Route path="/home" element={<Landing />} />
+              <Route path="/home" element={<SmartLanding />} />
               
               {/* Auth Routes */}
               <Route path="/auth" element={<Auth />} />
