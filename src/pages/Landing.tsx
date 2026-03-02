@@ -680,8 +680,8 @@ export default function Landing() {
                     {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
                   </button>
                 </div>
-                <p className="text-muted-foreground/70 text-xs sm:text-sm mt-3 flex items-center justify-center lg:justify-start gap-1.5">
-                  <Check className="w-4 h-4 text-primary shrink-0" />
+                <p className="text-xs sm:text-sm mt-3 flex items-center justify-center lg:justify-start gap-1.5 animate-pulse" style={{ color: '#FF6D00', textShadow: '0 0 8px rgba(255,109,0,0.5)' }}>
+                  <Check className="w-4 h-4 shrink-0" style={{ color: '#FF6D00' }} />
                   {l.hero.ctaSubtext}
                 </p>
               </div>
@@ -1211,8 +1211,8 @@ export default function Landing() {
               >
                 {l.finalCta.cta}
               </button>
-              <p className="text-muted-foreground/50 text-xs mt-4 flex items-center justify-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+              <p className="text-xs mt-4 flex items-center justify-center gap-1.5 animate-pulse" style={{ color: '#FF6D00', textShadow: '0 0 8px rgba(255,109,0,0.5)' }}>
+                <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#FF6D00' }} />
                 {l.hero.ctaSubtext}
               </p>
             </div>
