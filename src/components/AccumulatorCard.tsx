@@ -101,13 +101,19 @@ export function AccumulatorCard({
         {/* ========================================================= */}
         <div className="px-5 pt-5 pb-3">
 
-          {/* Header: emoji + título + badge */}
-          <div className="flex items-center justify-between mb-4">
+          {/* Header: badge de risco proeminente + título compacto */}
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-3">
-              <span className="text-4xl">{emoji}</span>
-              <h3 className="font-extrabold text-foreground text-lg sm:text-xl tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>{cleanTitle}</h3>
+              <span className="text-3xl sm:text-4xl">{emoji}</span>
+              <span className={`text-sm sm:text-base font-extrabold uppercase tracking-wide ${style.accent}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {cleanTitle}
+              </span>
             </div>
-            <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${style.badge}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            {/* Badge de risco grande e destacado */}
+            <span
+              className={`text-sm sm:text-base font-extrabold px-4 py-1.5 rounded-full border ${style.badge} uppercase tracking-wider`}
+              style={{ fontFamily: "'Montserrat', sans-serif" }}
+            >
               {style.label}
             </span>
           </div>
