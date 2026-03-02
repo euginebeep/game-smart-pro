@@ -679,146 +679,166 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Hero Phone Mockup — Tap & Rotate Animation */}
-            <div className="flex-1 w-full max-w-lg lg:max-w-none flex items-center justify-center">
-              <div className="relative" style={{ perspective: '1200px' }}>
-                {/* Ambient glow */}
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-accent/10 rounded-full blur-[80px] opacity-50 scale-150" />
+            {/* Hero — iPhone Mockup with Screen Transition */}
+            <div className="flex-1 w-full max-w-lg lg:max-w-none flex items-center justify-center py-8">
+              <div className="relative">
+                {/* Soft ambient glow */}
+                <div className="absolute -inset-12 bg-primary/8 rounded-full blur-[100px]" />
                 
-                {/* Phone container with rotation animation */}
-                <div 
-                  className="relative"
-                  style={{
-                    animation: 'phoneRotate 8s ease-in-out infinite',
-                    transformStyle: 'preserve-3d',
-                  }}
-                >
-                  {/* Phone frame - portrait */}
-                  <div className="relative w-[260px] sm:w-[300px] lg:w-[320px] bg-gradient-to-b from-[hsl(var(--secondary))] to-[hsl(var(--background))] rounded-[2.5rem] p-2 border border-primary/30 shadow-[0_0_80px_hsla(199,89%,48%,0.12)]">
-                    {/* Notch */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-[hsl(var(--background))] rounded-b-2xl z-20" />
-                    {/* Screen content — two layers that crossfade */}
-                    <div className="rounded-[2rem] overflow-hidden bg-[hsl(var(--background))] relative">
-                      {/* Layer 1: Match list (visible first, fades out after tap) */}
-                      <div className="p-4 space-y-3 min-h-[380px] sm:min-h-[420px]" style={{ animation: 'screenPhase1 8s ease-in-out infinite' }}>
-                        <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">{language === 'pt' ? 'Jogos de Hoje' : language === 'es' ? 'Partidos de Hoy' : language === 'it' ? 'Partite di Oggi' : "Today's Matches"}</div>
-                        {/* Match cards */}
-                        {[
-                          { home: 'Barcelona', away: 'Real Madrid', league: 'La Liga', edge: '+8.2%', conf: '82%' },
-                          { home: 'Liverpool', away: 'Arsenal', league: 'Premier League', edge: '+12.4%', conf: '76%' },
-                          { home: 'PSG', away: 'Marseille', league: 'Ligue 1', edge: '+5.7%', conf: '71%' },
-                          { home: 'Inter', away: 'Juventus', league: 'Serie A', edge: '+9.1%', conf: '79%' },
-                        ].map((m, i) => (
-                          <div key={i} className="bg-secondary/60 rounded-lg p-2.5 border border-border/30" style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.1}s both` }}>
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-[9px] text-muted-foreground">{m.league}</span>
-                              <span className="text-[9px] font-bold text-green-400">{m.edge} edge</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-[11px] font-semibold text-foreground">{m.home} vs {m.away}</span>
-                              <div className="flex items-center gap-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                                <span className="text-[9px] text-primary font-bold">{m.conf}</span>
+                {/* iPhone Frame */}
+                <div className="relative w-[270px] sm:w-[300px]">
+                  {/* Outer shell — titanium look */}
+                  <div className="relative rounded-[3rem] bg-gradient-to-b from-[hsl(var(--muted)/0.6)] to-[hsl(var(--muted)/0.3)] p-[3px] shadow-[0_25px_80px_-12px_hsla(0,0%,0%,0.6)]">
+                    {/* Inner body */}
+                    <div className="rounded-[2.8rem] bg-[hsl(var(--background))] p-[3px] relative overflow-hidden">
+                      {/* Dynamic Island */}
+                      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black rounded-full px-4 py-1.5">
+                        <div className="w-2 h-2 rounded-full bg-[hsl(var(--muted))]" />
+                        <div className="w-[6px] h-[6px] rounded-full bg-[hsl(var(--muted)/0.5)]" />
+                      </div>
+                      
+                      {/* Screen */}
+                      <div className="rounded-[2.6rem] overflow-hidden relative" style={{ aspectRatio: '9/19.5' }}>
+                        {/* Phase 1: Match list */}
+                        <div 
+                          className="absolute inset-0 bg-[hsl(var(--background))] p-4 pt-12 flex flex-col"
+                          style={{ animation: 'screenPhase1 10s ease-in-out infinite' }}
+                        >
+                          {/* Status bar */}
+                          <div className="flex justify-between items-center mb-4 px-1">
+                            <span className="text-[9px] font-semibold text-foreground">9:41</span>
+                            <div className="flex items-center gap-1">
+                              <Activity className="w-2.5 h-2.5 text-foreground" />
+                              <div className="w-5 h-2.5 rounded-sm border border-foreground/40 relative">
+                                <div className="absolute inset-[1px] right-[2px] bg-green-400 rounded-[1px]" />
                               </div>
                             </div>
                           </div>
-                        ))}
-                        {/* Tap hint */}
-                        <div className="text-center mt-2" style={{ animation: 'pulse 2s ease-in-out infinite' }}>
-                          <span className="text-[9px] text-muted-foreground/60">{language === 'pt' ? 'Toque para ver análise' : language === 'es' ? 'Toca para ver análisis' : language === 'it' ? 'Tocca per analisi' : 'Tap to see analysis'}</span>
+                          
+                          {/* App header */}
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
+                              <Brain className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <span className="text-xs font-bold text-foreground">EUGINE</span>
+                            <div className="ml-auto flex items-center gap-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                              <span className="text-[8px] text-green-400 font-medium">LIVE</span>
+                            </div>
+                          </div>
+
+                          <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                            {language === 'pt' ? 'Jogos com vantagem' : language === 'es' ? 'Partidos con ventaja' : language === 'it' ? 'Partite con vantaggio' : 'Matches with edge'}
+                          </div>
+
+                          {/* Match cards */}
+                          <div className="space-y-2 flex-1">
+                            {[
+                              { home: 'Barcelona', away: 'R. Madrid', league: 'La Liga', edge: '+8.2%', type: 'Over 2.5' },
+                              { home: 'Liverpool', away: 'Arsenal', league: 'EPL', edge: '+12.4%', type: '1X' },
+                              { home: 'PSG', away: 'Marseille', league: 'Ligue 1', edge: '+5.7%', type: 'BTTS' },
+                              { home: 'Inter', away: 'Juventus', league: 'Serie A', edge: '+9.1%', type: 'Under 3.5' },
+                            ].map((m, i) => (
+                              <div 
+                                key={i} 
+                                className={`rounded-xl p-2.5 border transition-all ${i === 1 ? 'bg-primary/10 border-primary/30' : 'bg-secondary/40 border-border/20'}`}
+                                style={{ animation: `fadeInUp 0.3s ease-out ${i * 0.08}s both` }}
+                              >
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-[8px] text-muted-foreground font-medium">{m.league}</span>
+                                  <span className="text-[8px] font-bold text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded">{m.edge}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[10px] font-semibold text-foreground">{m.home} × {m.away}</span>
+                                  <span className="text-[8px] text-primary font-bold">{m.type}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Bottom tab bar */}
+                          <div className="flex justify-around items-center pt-3 mt-2 border-t border-border/20">
+                            <div className="flex flex-col items-center gap-0.5">
+                              <BarChart3 className="w-3.5 h-3.5 text-primary" />
+                              <span className="text-[7px] text-primary font-semibold">{language === 'pt' ? 'Jogos' : language === 'es' ? 'Partidos' : language === 'it' ? 'Partite' : 'Matches'}</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-0.5">
+                              <Target className="w-3.5 h-3.5 text-muted-foreground/50" />
+                              <span className="text-[7px] text-muted-foreground/50">{language === 'pt' ? 'Duplas' : language === 'es' ? 'Dobles' : language === 'it' ? 'Doppie' : 'Doubles'}</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-0.5">
+                              <Star className="w-3.5 h-3.5 text-muted-foreground/50" />
+                              <span className="text-[7px] text-muted-foreground/50">{language === 'pt' ? 'Favoritos' : language === 'es' ? 'Favoritos' : language === 'it' ? 'Preferiti' : 'Favorites'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Phase 2: Full analysis report */}
+                        <div 
+                          className="absolute inset-0"
+                          style={{ animation: 'screenPhase2 10s ease-in-out infinite' }}
+                        >
+                          <img 
+                            src={heroDashboardImg} 
+                            alt="EUGINE Analysis Report"
+                            className="w-full h-full object-cover object-top"
+                          />
                         </div>
                       </div>
-                      {/* Layer 2: Full report image (fades in after tap) */}
-                      <div className="absolute inset-0" style={{ animation: 'screenPhase2 8s ease-in-out infinite' }}>
-                        <img 
-                          src={heroDashboardImg} 
-                          alt="EUGINE Full Analysis Report"
-                          className="w-full h-full object-cover object-top"
-                        />
+
+                      {/* Home indicator bar */}
+                      <div className="flex justify-center py-2">
+                        <div className="w-[100px] h-[4px] rounded-full bg-foreground/15" />
                       </div>
                     </div>
-                    {/* Home indicator */}
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-foreground/20" />
                   </div>
 
-                  {/* Tap cursor hand */}
+                  {/* Side buttons */}
+                  <div className="absolute -right-[2px] top-[120px] w-[3px] h-[40px] rounded-r bg-[hsl(var(--muted)/0.4)]" />
+                  <div className="absolute -right-[2px] top-[175px] w-[3px] h-[40px] rounded-r bg-[hsl(var(--muted)/0.4)]" />
+                  <div className="absolute -left-[2px] top-[140px] w-[3px] h-[55px] rounded-l bg-[hsl(var(--muted)/0.4)]" />
+
+                  {/* Tap cursor — appears and clicks on match card */}
                   <div 
-                    className="absolute z-30 pointer-events-none"
-                    style={{
-                      bottom: '35%',
-                      right: '10%',
-                      animation: 'tapHand 8s ease-in-out infinite',
-                    }}
+                    className="absolute z-40 pointer-events-none"
+                    style={{ top: '38%', right: '15%', animation: 'iphoneTap 10s ease-in-out infinite' }}
                   >
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="drop-shadow-lg">
-                      <path d="M12 1a3 3 0 0 0-3 3v4.5a3 3 0 0 0-3 3V16a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-5.5a3 3 0 0 0-3-3 3 3 0 0 0-3 3V4a3 3 0 0 0-3-3z" fill="hsl(var(--foreground))" opacity="0.9"/>
-                      <circle cx="12" cy="8" r="1.5" fill="hsl(var(--primary))" className="animate-pulse" />
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="drop-shadow-lg" style={{ filter: 'drop-shadow(0 4px 8px hsla(0,0%,0%,0.3))' }}>
+                      <path d="M13.64 2.152a2 2 0 0 0-3.28 0l-.002.004a1.99 1.99 0 0 0-.34 1.108V9.31a2 2 0 0 0-2.451 1.373 2 2 0 0 0-1.472.862 2 2 0 0 0-.309 1.054v.052a2.032 2.032 0 0 0-.092.256l-.002.006-.002.005A9.046 9.046 0 0 0 5.25 15c0 4.97 4.03 9 9 9s9-4.03 9-9v-3a2 2 0 0 0-4 0v-.5a2 2 0 0 0-4 0V7.264a2 2 0 0 0-1.61-1.112z" fill="hsl(var(--foreground))" fillOpacity="0.85"/>
                     </svg>
                   </div>
 
-                  {/* Tap ripple effect */}
+                  {/* Tap ripple */}
                   <div 
-                    className="absolute z-20 pointer-events-none"
-                    style={{
-                      bottom: '40%',
-                      right: '25%',
-                      animation: 'tapRipple 8s ease-in-out infinite',
-                    }}
+                    className="absolute z-30 pointer-events-none"
+                    style={{ top: '42%', right: '30%', animation: 'iphoneRipple 10s ease-in-out infinite' }}
                   >
-                    <div className="w-10 h-10 rounded-full border-2 border-primary/60" 
-                      style={{ animation: 'rippleExpand 8s ease-in-out infinite' }} 
-                    />
+                    <div className="w-8 h-8 rounded-full border-2 border-primary/50" />
                   </div>
                 </div>
 
-                {/* Results overlay — appears during landscape phase */}
+                {/* Floating result badge — slides in during phase 2 */}
                 <div 
-                  className="absolute -right-4 sm:-right-12 top-1/2 -translate-y-1/2 z-30"
-                  style={{ animation: 'resultsSlide 8s ease-in-out infinite' }}
+                  className="absolute -right-2 sm:-right-10 top-[30%] z-30"
+                  style={{ animation: 'resultsSlide 10s ease-in-out infinite' }}
                 >
-                  <div className="bg-[hsl(var(--secondary))] border border-primary/30 rounded-2xl p-3 sm:p-4 shadow-[0_16px_48px_hsla(199,89%,48%,0.2)] min-w-[160px] sm:min-w-[200px]">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span className="text-xs font-bold text-green-400">{language === 'pt' ? 'Análise Completa' : language === 'es' ? 'Análisis Completo' : language === 'it' ? 'Analisi Completa' : 'Full Analysis'}</span>
+                  <div className="bg-[hsl(var(--secondary))] border border-primary/25 rounded-2xl p-3 shadow-[0_12px_40px_hsla(199,89%,48%,0.15)] backdrop-blur-sm min-w-[150px]">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                      <span className="text-[10px] font-bold text-green-400">
+                        {language === 'pt' ? 'Análise Completa' : language === 'es' ? 'Análisis Completo' : language === 'it' ? 'Analisi Completa' : 'Full Analysis'}
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-muted-foreground">Hit Rate</span>
-                        <span className="text-xs font-bold text-primary">65.2%</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full" style={{ width: '65%', animation: 'barGrow 8s ease-in-out infinite' }} />
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-muted-foreground">Edge</span>
-                        <span className="text-xs font-bold text-green-400">+12.4%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-muted-foreground">ROI</span>
-                        <span className="text-xs font-bold text-accent">+8.7%</span>
-                      </div>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between"><span className="text-[9px] text-muted-foreground">Hit Rate</span><span className="text-[10px] font-bold text-primary">65.2%</span></div>
+                      <div className="w-full h-1 bg-background rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full" style={{ width: '65%', animation: 'barGrow 10s ease-in-out infinite' }} /></div>
+                      <div className="flex justify-between"><span className="text-[9px] text-muted-foreground">Edge</span><span className="text-[10px] font-bold text-green-400">+12.4%</span></div>
                     </div>
-                    <div className="mt-3 pt-2 border-t border-border/50 flex items-center gap-1.5">
-                      <TrendingUp className="w-3 h-3 text-green-400" />
-                      <span className="text-[10px] font-semibold text-green-400">{language === 'pt' ? 'Vantagem detectada' : language === 'es' ? 'Ventaja detectada' : language === 'it' ? 'Vantaggio rilevato' : 'Edge detected'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating badges */}
-                <div className="absolute -left-4 sm:-left-10 top-1/4 z-20" style={{ animation: 'floatBadge 8s ease-in-out infinite' }}>
-                  <div className="bg-[hsl(var(--secondary))] border border-primary/30 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(199,89%,48%,0.15)]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                      <span className="text-[10px] font-bold text-primary">LIVE</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute -left-2 sm:-left-8 bottom-1/4 z-20" style={{ animation: 'floatBadge 8s ease-in-out infinite 0.5s' }}>
-                  <div className="bg-[hsl(var(--secondary))] border border-accent/30 rounded-xl px-3 py-2 shadow-[0_8px_24px_hsla(260,80%,60%,0.15)]">
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-3 h-3 text-primary" />
-                      <span className="text-[10px] font-bold text-foreground">30+ {language === 'pt' ? 'países' : language === 'es' ? 'países' : language === 'it' ? 'paesi' : 'countries'}</span>
+                    <div className="mt-2 pt-1.5 border-t border-border/30 flex items-center gap-1">
+                      <TrendingUp className="w-2.5 h-2.5 text-green-400" />
+                      <span className="text-[8px] font-semibold text-green-400">
+                        {language === 'pt' ? 'Vantagem detectada' : language === 'es' ? 'Ventaja detectada' : language === 'it' ? 'Vantaggio rilevato' : 'Edge detected'}
+                      </span>
                     </div>
                   </div>
                 </div>
