@@ -520,7 +520,7 @@ export default function LandingB() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Logo */}
             <div>
-              <img src={eugineLogo} alt="EUGINE" className="h-10 w-auto mb-3 brightness-0 invert" />
+              <img src={eugineLogo} alt="EUGINE" className="h-20 w-auto mb-3 brightness-0 invert" />
               <p className="text-xs" style={{ color: '#a0a8b0' }}>Análise de Apostas com IA</p>
             </div>
             {/* Product */}
