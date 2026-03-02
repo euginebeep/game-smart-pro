@@ -289,7 +289,7 @@ export default function Landing() {
       closingLine: 'Inteligência supera sorte. Dados superam opinião. Disciplina supera impulso.',
       pricing: {
         title: 'Escolha Seu Plano',
-        guarantee: '🔒 Garantia de 7 dias — não gostou, devolvemos seu dinheiro',
+        guarantee: '🔒 Teste grátis por 7 dias sem risco',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/dia', features: ['Acesso Premium Completo por 24h', 'Análises Avançadas Ilimitadas', 'Pagamento Único (PIX)', 'Sem Recorrência'], cta: 'Comprar Day Use' },
         basic: { name: 'BASIC', price: '$29,90', period: '/mês', features: ['5 Jogos por Dia', 'Análise Simples', '1 Dupla Diária'], cta: 'Começar grátis →' },
         advanced: { name: 'ADVANCED', badge: '⭐ MAIS POPULAR', price: '$49,90', period: '/mês', features: ['10 Jogos por Dia', 'Análise Completa', '3 Duplas Diárias', 'Acumuladores'], cta: 'Assinar Advanced' },
@@ -374,7 +374,7 @@ export default function Landing() {
       closingLine: 'Intelligence beats luck. Data beats opinion. Discipline beats impulse.',
       pricing: {
         title: 'Choose Your Plan',
-        guarantee: '🔒 7-day guarantee — not satisfied, we refund you',
+        guarantee: '🔒 Free trial for 7 days — zero risk',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7.77', period: '/day', features: ['Full Premium Access for 24h', 'Unlimited Advanced Analysis', 'One-Time Payment', 'No Recurring Charges'], cta: 'Buy Day Use' },
         basic: { name: 'BASIC', price: '$29.90', period: '/month', features: ['5 Games per Day', 'Simple Analysis', '1 Daily Double'], cta: 'Start free →' },
         advanced: { name: 'ADVANCED', badge: '⭐ MOST POPULAR', price: '$49.90', period: '/month', features: ['10 Games per Day', 'Complete Analysis', '3 Daily Doubles', 'Accumulators'], cta: 'Subscribe Advanced' },
@@ -455,7 +455,7 @@ export default function Landing() {
       closingLine: 'La inteligencia supera a la suerte. Los datos superan a la opinión.',
       pricing: {
         title: 'Elige Tu Plan',
-        guarantee: '🔒 Garantía de 7 días — no te gustó, te devolvemos tu dinero',
+        guarantee: '🔒 Prueba gratis por 7 días sin riesgo',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/día', features: ['Acceso Premium por 24h', 'Análisis Ilimitados', 'Pago Único', 'Sin Recurrencia'], cta: 'Comprar Day Use' },
         basic: { name: 'BASIC', price: '$29,90', period: '/mes', features: ['5 Juegos por Día', 'Análisis Simple', '1 Doble Diario'], cta: 'Empezar gratis →' },
         advanced: { name: 'ADVANCED', badge: '⭐ MÁS POPULAR', price: '$49,90', period: '/mes', features: ['10 Juegos por Día', 'Análisis Completo', '3 Dobles Diarios', 'Acumuladores'], cta: 'Suscribir Advanced' },
@@ -536,7 +536,7 @@ export default function Landing() {
       closingLine: "L'intelligenza batte la fortuna. I dati battono l'opinione.",
       pricing: {
         title: 'Scegli il Tuo Piano',
-        guarantee: '🔒 Garanzia 7 giorni — non soddisfatto, ti rimborsiamo',
+        guarantee: '🔒 Prova gratuita per 7 giorni senza rischio',
         dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$7,77', period: '/giorno', features: ['Accesso Premium per 24h', 'Analisi Illimitate', 'Pagamento Unico', 'Senza Ricorrenza'], cta: 'Acquista Day Use' },
         basic: { name: 'BASIC', price: '$29,90', period: '/mese', features: ['5 Partite al Giorno', 'Analisi Semplice', '1 Doppia'], cta: 'Inizia gratis →' },
         advanced: { name: 'ADVANCED', badge: '⭐ PIÙ POPOLARE', price: '$49,90', period: '/mese', features: ['10 Partite al Giorno', 'Analisi Completa', '3 Doppie', 'Accumulatori'], cta: 'Abbonati Advanced' },
@@ -644,7 +644,7 @@ export default function Landing() {
                   <button
                     onClick={handleLeadCapture}
                     disabled={leadLoading}
-                    className="btn-primary px-5 sm:px-8 py-4 rounded-xl text-sm sm:text-base font-bold whitespace-nowrap flex items-center gap-2"
+                    className="btn-primary px-5 sm:px-8 py-4 rounded-xl text-sm sm:text-base font-bold whitespace-nowrap flex items-center justify-center gap-2"
                   >
                     {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
                   </button>
