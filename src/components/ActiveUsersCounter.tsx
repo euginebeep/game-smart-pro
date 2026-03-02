@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Users } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -9,33 +9,55 @@ const labels: Record<string, string> = {
   it: 'Utenti Online Ora',
 };
 
-/**
- * Realistic "active users online" counter.
- * Simulates organic fluctuation with smooth number transitions.
- */
+const flags: Record<string, string> = {
+  pt: '🇧🇷',
+  en: '🇺🇸',
+  es: '🇪🇸',
+  it: '🇮🇹',
+};
+
+// Each country has a different base range so numbers never match
+const countryBases: Record<string, { min: number; max: number; offset: number }> = {
+  pt: { min: 45, max: 97, offset: 0 },
+  en: { min: 28, max: 74, offset: 7 },
+  es: { min: 18, max: 58, offset: 13 },
+  it: { min: 12, max: 42, offset: 19 },
+};
+
 export function ActiveUsersCounter() {
   const { language } = useLanguage();
-  const [count, setCount] = useState(() => {
-    const hour = new Date().getHours();
-    const base = hour >= 8 && hour <= 23 ? 40 + (hour % 12) * 5 : 15 + (hour % 6) * 3;
-    return base + Math.floor(Math.random() * 15);
-  });
+  const prevLang = useRef(language);
 
+  const getInitialCount = (lang: string) => {
+    const cfg = countryBases[lang] || countryBases.pt;
+    const hour = new Date().getHours();
+    const peakBonus = hour >= 10 && hour <= 22 ? 12 : 0;
+    return cfg.min + cfg.offset + peakBonus + Math.floor(Math.random() * 10);
+  };
+
+  const [count, setCount] = useState(() => getInitialCount(language));
   const [displayCount, setDisplayCount] = useState(count);
 
+  // When language changes, jump to a new country-specific range
   useEffect(() => {
+    if (prevLang.current !== language) {
+      prevLang.current = language;
+      const newCount = getInitialCount(language);
+      setCount(newCount);
+    }
+  }, [language]);
+
+  // Organic fluctuation within country range
+  useEffect(() => {
+    const cfg = countryBases[language] || countryBases.pt;
     const scheduleNext = () => {
       const delay = 3000 + Math.random() * 5000;
       return setTimeout(() => {
         setCount(prev => {
-          const hour = new Date().getHours();
-          const peakMultiplier = hour >= 10 && hour <= 22 ? 1.5 : 0.7;
-          const baseTarget = Math.round(35 * peakMultiplier);
           const delta = Math.floor(Math.random() * 9) - 3;
           let next = prev + delta;
-          if (next < baseTarget - 10) next += Math.floor(Math.random() * 4) + 1;
-          if (next > baseTarget + 40) next -= Math.floor(Math.random() * 4) + 1;
-          return Math.max(8, Math.min(97, next));
+          next = Math.max(cfg.min, Math.min(cfg.max, next));
+          return next;
         });
       }, delay);
     };
@@ -50,8 +72,9 @@ export function ActiveUsersCounter() {
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, []);
+  }, [language]);
 
+  // Smooth number animation
   useEffect(() => {
     if (displayCount === count) return;
     const diff = count - displayCount;
@@ -63,7 +86,7 @@ export function ActiveUsersCounter() {
     return () => clearTimeout(timer);
   }, [count, displayCount]);
 
-  const flag = language === 'es' ? '🇪🇸' : language === 'it' ? '🇮🇹' : language === 'en' ? '🇺🇸' : '🇧🇷';
+  const flag = flags[language] || flags.pt;
 
   return (
     <div
@@ -73,13 +96,12 @@ export function ActiveUsersCounter() {
         border: '1px solid rgba(255,255,255,0.2)',
       }}
     >
-      <span className="text-sm">{flag}</span>
       <Users className="w-3.5 h-3.5 animate-pulse" style={{ color: '#39FF14', filter: 'drop-shadow(0 0 4px #39FF14)' }} />
       <span
         className="text-xs font-medium text-white tabular-nums"
         style={{ fontFamily: "'Montserrat', sans-serif" }}
       >
-        {displayCount} {labels[language] || labels.pt}
+        {displayCount} {labels[language] || labels.pt} {flag}
       </span>
     </div>
   );
