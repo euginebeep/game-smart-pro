@@ -223,14 +223,14 @@ export default function Landing() {
         liveNow: 'analisando jogos agora',
       },
       problem: {
-        title: 'Você conhece essa história?',
+        title: 'Isso acontece com 87% dos apostadores',
         items: [
-          'Aposta por impulso e perde no final do jogo',
-          'Segue "guru" de grupo que acerta 1 e erra 5',
-          'Não sabe diferenciar aposta boa de aposta ruim',
-          'Ganha às vezes, mas no total está negativo',
+          'Você analisa o jogo por 2 minutos, mas a casa de apostas usou 47 variáveis estatísticas para definir a odd',
+          'Segue palpites de grupos sem saber que 92% dos tipsters não têm histórico auditável',
+          'Aposta R$50 no "feeling" e não percebe que a probabilidade implícita já está contra você',
+          'Acerta 3, erra 4 — e no fim do mês o saldo é sempre negativo',
         ],
-        conclusion: 'O problema não é apostar. É apostar SEM DADOS.',
+        conclusion: 'O problema não é apostar. É apostar sem vantagem matemática comprovada.',
       },
       mechanism: {
         title: 'Como o EUGINE transforma suas apostas',
@@ -324,9 +324,14 @@ export default function Landing() {
         liveNow: 'analyzing matches now',
       },
       problem: {
-        title: 'Sound familiar?',
-        items: ['Bet on impulse and lose at the last minute', 'Follow tipsters who hit 1 and miss 5', "Can't tell a good bet from a bad one", 'Win sometimes, but overall in the red'],
-        conclusion: "The problem isn't betting. It's betting WITHOUT DATA.",
+        title: 'This happens to 87% of bettors',
+        items: [
+          'You analyze a match for 2 minutes, but the bookmaker used 47 statistical variables to set the odds',
+          'You follow tipsters without knowing that 92% have no auditable track record',
+          'You bet $50 on a "gut feeling" without realizing the implied probability is already against you',
+          'You hit 3, miss 4 — and at the end of the month, your balance is always negative',
+        ],
+        conclusion: "The problem isn't betting. It's betting without a proven mathematical edge.",
       },
       mechanism: {
         title: 'How EUGINE transforms your bets',
@@ -405,9 +410,14 @@ export default function Landing() {
         liveNow: 'analizando partidos ahora',
       },
       problem: {
-        title: '¿Te suena familiar?',
-        items: ['Apuestas por impulso y pierdes al final', 'Sigues a "gurús" que aciertan 1 y fallan 5', 'No sabes diferenciar una apuesta buena de una mala', 'Ganas a veces, pero en total estás en negativo'],
-        conclusion: 'El problema no es apostar. Es apostar SIN DATOS.',
+        title: 'Esto le pasa al 87% de los apostadores',
+        items: [
+          'Analizas el partido 2 minutos, pero la casa usó 47 variables estadísticas para fijar la cuota',
+          'Sigues tipsters sin saber que el 92% no tiene historial auditable',
+          'Apuestas $50 por "intuición" sin notar que la probabilidad implícita ya está en tu contra',
+          'Aciertas 3, fallas 4 — y al final del mes el saldo siempre es negativo',
+        ],
+        conclusion: 'El problema no es apostar. Es apostar sin ventaja matemática comprobada.',
       },
       mechanism: {
         title: 'Cómo EUGINE transforma tus apuestas',
@@ -486,9 +496,14 @@ export default function Landing() {
         liveNow: 'analizzando partite ora',
       },
       problem: {
-        title: 'Ti suona familiare?',
-        items: ['Scommetti per impulso e perdi alla fine', 'Segui tipster che azzeccano 1 e sbagliano 5', 'Non sai distinguere una scommessa buona da una cattiva', 'Vinci a volte, ma in totale sei in negativo'],
-        conclusion: 'Il problema non è scommettere. È scommettere SENZA DATI.',
+        title: 'Questo succede all\'87% degli scommettitori',
+        items: [
+          'Analizzi la partita per 2 minuti, ma il bookmaker ha usato 47 variabili statistiche per definire la quota',
+          'Segui tipster senza sapere che il 92% non ha uno storico verificabile',
+          'Scommetti €50 per "istinto" senza notare che la probabilità implicita è già contro di te',
+          'Azzecchi 3, sbagli 4 — e a fine mese il saldo è sempre negativo',
+        ],
+        conclusion: 'Il problema non è scommettere. È scommettere senza un vantaggio matematico comprovato.',
       },
       mechanism: {
         title: 'Come EUGINE trasforma le tue scommesse',
