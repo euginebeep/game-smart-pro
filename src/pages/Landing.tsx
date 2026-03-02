@@ -247,10 +247,10 @@ export default function Landing() {
       socialProof: {
         title: 'O que dizem nossos usuários',
         testimonials: [
-          { name: 'Carlos M.', role: 'Apostador há 3 anos', text: 'Antes eu achava que entendia de futebol. O EUGINE me mostrou que entender ≠ ter edge. Meu ROI mudou completamente.', stars: 5 },
-          { name: 'Rafael S.', role: 'Trader esportivo', text: 'Finalmente uma ferramenta que mostra a matemática por trás. Não é palpite, é análise de verdade com probabilidade calculada.', stars: 5 },
-          { name: 'Ana L.', role: 'Usuária Premium', text: 'Comecei no básico, hoje sou premium. A diferença é que agora eu sei POR QUE estou apostando, não fico no achismo.', stars: 5 },
-          { name: 'Marcos T.', role: 'Apostador recreativo', text: 'O melhor é a transparência. Eles publicam todos os resultados, erros e acertos. Isso me deu confiança pra usar.', stars: 4 },
+          { name: 'Carlos M.', role: 'Apostador há 3 anos', text: 'Antes eu achava que entendia de futebol. O EUGINE me mostrou que entender ≠ ter edge. Meu ROI mudou completamente nos últimos 2 meses.', stars: 5 },
+          { name: 'Rafael S.', role: 'Trader esportivo', text: 'Finalmente uma ferramenta que mostra a matemática por trás. Não é palpite, é análise de verdade com probabilidade calculada. Uso todo dia.', stars: 5 },
+          { name: 'Fernando L.', role: 'Usuário Premium', text: 'Comecei no básico, hoje sou premium. A diferença é que agora eu sei POR QUE estou apostando, não fico no achismo.', stars: 5 },
+          { name: 'Thiago R.', role: 'Apostador recreativo', text: 'O melhor é a transparência total. Eles publicam todos os resultados, erros e acertos. Isso me deu confiança pra confiar no sistema.', stars: 4 },
         ],
       },
       stats: {
@@ -343,10 +343,10 @@ export default function Landing() {
       socialProof: {
         title: 'What our users say',
         testimonials: [
-          { name: 'Carlos M.', role: 'Bettor for 3 years', text: "I thought I understood football. EUGINE showed me that understanding ≠ having edge. My ROI changed completely.", stars: 5 },
-          { name: 'Rafael S.', role: 'Sports trader', text: "Finally a tool that shows the math behind it. It's not tips, it's real analysis with calculated probability.", stars: 5 },
-          { name: 'Ana L.', role: 'Premium user', text: "Started basic, now premium. The difference is I now know WHY I'm betting, not just guessing.", stars: 5 },
-          { name: 'Marcos T.', role: 'Recreational bettor', text: "The best part is transparency. They publish all results, hits and misses. That gave me confidence.", stars: 4 },
+          { name: 'James W.', role: 'Bettor for 4 years', text: "I used to rely on gut feeling. EUGINE changed everything — now I only place bets when the numbers back it up. Game changer.", stars: 5 },
+          { name: 'Mike R.', role: 'Sports trader', text: "This is the first tool I've seen that actually shows the math. No hype, no tips — just cold, hard probability analysis.", stars: 5 },
+          { name: 'David K.', role: 'Premium subscriber', text: "Went from losing monthly to actually being profitable. The edge detection is incredibly accurate and transparent.", stars: 5 },
+          { name: 'Chris B.', role: 'Weekend bettor', text: "Love that they publish every single result — wins AND losses. That level of honesty is rare in this space.", stars: 4 },
         ],
       },
       stats: { title: 'Real Results. No Filter.', subtitle: 'We publish ALL results — hits and misses. Total transparency.', hitRate: 'Hit Rate', wins: 'Wins', total: 'Total Analyzed', leagues: 'Leagues Monitored' },
@@ -424,10 +424,10 @@ export default function Landing() {
       socialProof: {
         title: 'Lo que dicen nuestros usuarios',
         testimonials: [
-          { name: 'Carlos M.', role: 'Apostador hace 3 años', text: 'Antes creía que entendía fútbol. EUGINE me mostró que entender ≠ tener edge. Mi ROI cambió completamente.', stars: 5 },
-          { name: 'Rafael S.', role: 'Trader deportivo', text: 'Finalmente una herramienta que muestra la matemática. No son pálpitos, es análisis real con probabilidad calculada.', stars: 5 },
-          { name: 'Ana L.', role: 'Usuaria Premium', text: 'Empecé en básico, ahora soy premium. La diferencia es que ahora sé POR QUÉ estoy apostando.', stars: 5 },
-          { name: 'Marcos T.', role: 'Apostador recreativo', text: 'Lo mejor es la transparencia. Publican todos los resultados, aciertos y errores. Eso me dio confianza.', stars: 4 },
+          { name: 'Alejandro G.', role: 'Apostador hace 5 años', text: 'Llevaba años perdiendo dinero por apostar con el corazón. EUGINE me enseñó a apostar con la cabeza. Mi bankroll por fin crece.', stars: 5 },
+          { name: 'Diego M.', role: 'Trader deportivo', text: 'Es la única herramienta que he visto que realmente calcula probabilidades. No son predicciones, es matemática pura aplicada al fútbol.', stars: 5 },
+          { name: 'Pablo R.', role: 'Suscriptor Premium', text: 'Empecé con el plan básico para probar. En dos semanas ya era premium. La diferencia en mis resultados es brutal.', stars: 5 },
+          { name: 'Javier L.', role: 'Apostador de fin de semana', text: 'Me encanta que publican absolutamente todo, incluso cuando fallan. Esa honestidad no se ve en ningún otro sitio.', stars: 4 },
         ],
       },
       stats: { title: 'Resultados Reales. Sin Filtro.', subtitle: 'Publicamos TODOS los resultados — aciertos y errores. Transparencia total.', hitRate: 'Tasa de Acierto', wins: 'Aciertos', total: 'Total Analizado', leagues: 'Ligas Monitoreadas' },
@@ -505,10 +505,10 @@ export default function Landing() {
       socialProof: {
         title: 'Cosa dicono i nostri utenti',
         testimonials: [
-          { name: 'Carlos M.', role: 'Scommettitore da 3 anni', text: "Pensavo di capire il calcio. EUGINE mi ha mostrato che capire ≠ avere edge. Il mio ROI è cambiato completamente.", stars: 5 },
-          { name: 'Rafael S.', role: 'Trader sportivo', text: "Finalmente uno strumento che mostra la matematica. Non sono pronostici, è analisi reale con probabilità calcolata.", stars: 5 },
-          { name: 'Ana L.', role: 'Utente Premium', text: "Ho iniziato con il basic, ora sono premium. La differenza è che ora so PERCHÉ sto scommettendo.", stars: 5 },
-          { name: 'Marcos T.', role: 'Scommettitore ricreativo', text: "Il meglio è la trasparenza. Pubblicano tutti i risultati, successi e errori. Questo mi ha dato fiducia.", stars: 4 },
+          { name: 'Luca B.', role: 'Scommettitore da 4 anni', text: "Prima scommettevo a istinto e perdevo sempre. Con EUGINE ho capito cosa significa avere un vantaggio reale. I numeri parlano chiaro.", stars: 5 },
+          { name: 'Marco R.', role: 'Trader sportivo', text: "È l'unico strumento che ho trovato che calcola davvero le probabilità. Niente pronostici a caso, solo matematica applicata.", stars: 5 },
+          { name: 'Alessandro P.', role: 'Abbonato Premium', text: "Ho iniziato con il piano base per curiosità. Dopo una settimana sono passato al premium. I risultati sono incomparabili.", stars: 5 },
+          { name: 'Giovanni F.', role: 'Scommettitore del weekend', text: "La cosa che mi ha convinto è la trasparenza totale. Pubblicano ogni risultato, anche gli errori. Questo è raro e prezioso.", stars: 4 },
         ],
       },
       stats: { title: 'Risultati Reali. Senza Filtri.', subtitle: 'Pubblichiamo TUTTI i risultati — successi e errori. Trasparenza totale.', hitRate: 'Tasso Successo', wins: 'Successi', total: 'Totale Analizzato', leagues: 'Campionati Monitorati' },
