@@ -66,9 +66,9 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
   // Currency config per language
   const currencyConfig: Record<string, { symbol: string; dayuse: string; basic: string; advanced: string; premium: string; premiumOriginal: string }> = {
     pt: { symbol: 'R$', dayuse: '14,90', basic: '29,90', advanced: '49,90', premium: '79,90', premiumOriginal: '199,00' },
-    en: { symbol: '$', dayuse: '4.99', basic: '9.90', advanced: '14.90', premium: '24.90', premiumOriginal: '49.00' },
-    es: { symbol: '€', dayuse: '4,99', basic: '9,90', advanced: '14,90', premium: '24,90', premiumOriginal: '49,00' },
-    it: { symbol: '€', dayuse: '4,99', basic: '9,90', advanced: '14,90', premium: '24,90', premiumOriginal: '49,00' },
+    en: { symbol: '$', dayuse: '14.90', basic: '29.90', advanced: '49.90', premium: '79.90', premiumOriginal: '199.00' },
+    es: { symbol: '€', dayuse: '14,90', basic: '29,90', advanced: '49,90', premium: '79,90', premiumOriginal: '199,00' },
+    it: { symbol: '€', dayuse: '14,90', basic: '29,90', advanced: '49,90', premium: '79,90', premiumOriginal: '199,00' },
   };
 
   const cc = currencyConfig[language] || currencyConfig.pt;
