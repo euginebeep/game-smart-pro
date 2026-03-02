@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, FileImage, FileCode, Loader2, MessageCircle } from 'lucide-react';
+import { Download, Image, FileText, Loader2, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -892,7 +892,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
             className="h-12 rounded-xl font-bold text-sm border-2 border-accent/60 text-accent bg-accent/5 hover:bg-accent/15 hover:border-accent transition-all"
             variant="outline"
           >
-            {exportingImage ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <FileImage className="w-5 h-5 mr-2" />}
+            {exportingImage ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Image className="w-5 h-5 mr-2" />}
             {t('export.image')}
           </Button>
           <Button
@@ -901,7 +901,7 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
             className="h-12 rounded-xl font-bold text-sm border-2 border-muted-foreground/30 text-muted-foreground bg-muted/5 hover:bg-muted/15 hover:border-muted-foreground/50 transition-all"
             variant="outline"
           >
-            {exportingHtml ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <FileCode className="w-5 h-5 mr-2" />}
+            {exportingHtml ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <FileText className="w-5 h-5 mr-2" />}
             {t('export.html')}
           </Button>
           <Button
