@@ -30,7 +30,7 @@ import {
   Award,
   ChevronDown,
   Play,
-  AlertTriangle,
+  
   Sparkles,
   Eye,
   Timer,
@@ -48,6 +48,7 @@ import stepCardsImg from '@/assets/step-cards.png';
 import stepAnalysisMainImg from '@/assets/step-analysis-main.png';
 import stepAnalysisFactorsImg from '@/assets/step-analysis-factors.png';
 import heroDashboardImg from '@/assets/hero-dashboard.png';
+import warningMegaphoneImg from '@/assets/warning-megaphone.png';
 
 // ─── Animated Counter ───
 function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '' }: { end: number; duration?: number; suffix?: string; prefix?: string }) {
@@ -625,8 +626,8 @@ export default function Landing() {
 
       {/* ═══════ A — ATTENTION: Hero Section ═══════ */}
       <section className="relative px-5 pt-8 pb-16 lg:pt-16 lg:pb-28">
-        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none will-change-auto" />
+        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none will-change-auto" />
 
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
@@ -796,6 +797,8 @@ export default function Landing() {
                             src={heroDashboardImg} 
                             alt="EUGINE Analysis Report"
                             className="w-full h-full object-cover object-top"
+                            loading="eager"
+                            fetchPriority="high"
                           />
                         </div>
                       </div>
@@ -889,7 +892,7 @@ export default function Landing() {
             {l.problem.items.map((item: string, i: number) => (
               <ScrollFadeIn key={i} delay={i * 100}>
                 <div className="flex items-start gap-4 p-4 sm:p-5 rounded-xl bg-destructive/5 border border-destructive/20">
-                  <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
+                  <img src={warningMegaphoneImg} alt="" className="w-8 h-8 mt-0.5 shrink-0" loading="lazy" />
                   <p className="text-foreground text-sm sm:text-base font-medium">{item}</p>
                 </div>
               </ScrollFadeIn>
