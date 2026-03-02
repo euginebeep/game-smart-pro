@@ -265,7 +265,7 @@ export default function Landing() {
         title: 'Por que confiar no EUGINE?',
         items: [
           { icon: 'brain', title: 'IA Proprietária', desc: 'Modelo treinado com +100.000 partidas históricas e 7 fatores de análise.' },
-          { icon: 'shield', title: 'Empresa registrada nos EUA', desc: 'GS ITALY INVESTMENTS LLC — empresa real, com CNPJ americano.' },
+          { icon: 'shield', title: 'Empresa registrada nos EUA', desc: 'GS ITALY INVESTMENTS LLC — empresa especializada em análise de dados com mais de 6 softwares para diversos segmentos.' },
           { icon: 'chart', title: 'Resultados auditáveis', desc: 'Todos os resultados são públicos e verificáveis. Sem edição.' },
           { icon: 'lock', title: 'Dados criptografados', desc: 'Sua conta e dados protegidos com criptografia de nível bancário.' },
         ],
@@ -354,7 +354,7 @@ export default function Landing() {
         title: 'Why trust EUGINE?',
         items: [
           { icon: 'brain', title: 'Proprietary AI', desc: 'Model trained with 100,000+ historical matches and 7 analysis factors.' },
-          { icon: 'shield', title: 'US-registered company', desc: 'GS ITALY INVESTMENTS LLC — real company, legally registered.' },
+          { icon: 'shield', title: 'US-registered company', desc: 'GS ITALY INVESTMENTS LLC — a data analytics company with 6+ software products across multiple industries.' },
           { icon: 'chart', title: 'Auditable results', desc: 'All results are public and verifiable. No editing.' },
           { icon: 'lock', title: 'Encrypted data', desc: 'Your account and data protected with bank-level encryption.' },
         ],
@@ -435,7 +435,7 @@ export default function Landing() {
         title: '¿Por qué confiar en EUGINE?',
         items: [
           { icon: 'brain', title: 'IA Propietaria', desc: 'Modelo entrenado con +100.000 partidos históricos y 7 factores de análisis.' },
-          { icon: 'shield', title: 'Empresa registrada en EE.UU.', desc: 'GS ITALY INVESTMENTS LLC — empresa real, legalmente registrada.' },
+          { icon: 'shield', title: 'Empresa registrada en EE.UU.', desc: 'GS ITALY INVESTMENTS LLC — empresa especializada en análisis de datos con más de 6 softwares para diversos segmentos.' },
           { icon: 'chart', title: 'Resultados auditables', desc: 'Todos los resultados son públicos y verificables. Sin edición.' },
           { icon: 'lock', title: 'Datos encriptados', desc: 'Tu cuenta y datos protegidos con encriptación bancaria.' },
         ],
@@ -516,7 +516,7 @@ export default function Landing() {
         title: 'Perché fidarsi di EUGINE?',
         items: [
           { icon: 'brain', title: 'IA Proprietaria', desc: 'Modello addestrato con +100.000 partite storiche e 7 fattori di analisi.' },
-          { icon: 'shield', title: 'Azienda registrata negli USA', desc: 'GS ITALY INVESTMENTS LLC — azienda reale, legalmente registrata.' },
+          { icon: 'shield', title: 'Azienda registrata negli USA', desc: 'GS ITALY INVESTMENTS LLC — azienda specializzata in analisi dati con oltre 6 software per diversi settori.' },
           { icon: 'chart', title: 'Risultati verificabili', desc: 'Tutti i risultati sono pubblici e verificabili. Senza modifiche.' },
           { icon: 'lock', title: 'Dati crittografati', desc: 'Il tuo account e dati protetti con crittografia bancaria.' },
         ],
