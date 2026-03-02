@@ -697,13 +697,45 @@ export default function Landing() {
                   <div className="relative w-[260px] sm:w-[300px] lg:w-[320px] bg-gradient-to-b from-[hsl(var(--secondary))] to-[hsl(var(--background))] rounded-[2.5rem] p-2 border border-primary/30 shadow-[0_0_80px_hsla(199,89%,48%,0.12)]">
                     {/* Notch */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-[hsl(var(--background))] rounded-b-2xl z-20" />
-                    {/* Screen content */}
-                    <div className="rounded-[2rem] overflow-hidden bg-[hsl(var(--background))]">
-                      <img 
-                        src={heroDashboardImg} 
-                        alt="EUGINE Dashboard"
-                        className="w-full h-auto"
-                      />
+                    {/* Screen content — two layers that crossfade */}
+                    <div className="rounded-[2rem] overflow-hidden bg-[hsl(var(--background))] relative">
+                      {/* Layer 1: Match list (visible first, fades out after tap) */}
+                      <div className="p-4 space-y-3 min-h-[380px] sm:min-h-[420px]" style={{ animation: 'screenPhase1 8s ease-in-out infinite' }}>
+                        <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">{language === 'pt' ? 'Jogos de Hoje' : language === 'es' ? 'Partidos de Hoy' : language === 'it' ? 'Partite di Oggi' : "Today's Matches"}</div>
+                        {/* Match cards */}
+                        {[
+                          { home: 'Barcelona', away: 'Real Madrid', league: 'La Liga', edge: '+8.2%', conf: '82%' },
+                          { home: 'Liverpool', away: 'Arsenal', league: 'Premier League', edge: '+12.4%', conf: '76%' },
+                          { home: 'PSG', away: 'Marseille', league: 'Ligue 1', edge: '+5.7%', conf: '71%' },
+                          { home: 'Inter', away: 'Juventus', league: 'Serie A', edge: '+9.1%', conf: '79%' },
+                        ].map((m, i) => (
+                          <div key={i} className="bg-secondary/60 rounded-lg p-2.5 border border-border/30" style={{ animation: `fadeInUp 0.4s ease-out ${i * 0.1}s both` }}>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-[9px] text-muted-foreground">{m.league}</span>
+                              <span className="text-[9px] font-bold text-green-400">{m.edge} edge</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[11px] font-semibold text-foreground">{m.home} vs {m.away}</span>
+                              <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                                <span className="text-[9px] text-primary font-bold">{m.conf}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Tap hint */}
+                        <div className="text-center mt-2" style={{ animation: 'pulse 2s ease-in-out infinite' }}>
+                          <span className="text-[9px] text-muted-foreground/60">{language === 'pt' ? 'Toque para ver análise' : language === 'es' ? 'Toca para ver análisis' : language === 'it' ? 'Tocca per analisi' : 'Tap to see analysis'}</span>
+                        </div>
+                      </div>
+                      {/* Layer 2: Full report image (fades in after tap) */}
+                      <div className="absolute inset-0" style={{ animation: 'screenPhase2 8s ease-in-out infinite' }}>
+                        <img 
+                          src={heroDashboardImg} 
+                          alt="EUGINE Full Analysis Report"
+                          className="w-full h-full object-cover object-top"
+                        />
+                      </div>
                     </div>
                     {/* Home indicator */}
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-foreground/20" />

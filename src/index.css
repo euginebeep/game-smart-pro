@@ -459,3 +459,17 @@
   0%, 100% { transform: translateY(0); opacity: 0.9; }
   50% { transform: translateY(-8px); opacity: 1; }
 }
+
+/* Screen crossfade: Phase 1 (match list) visible first, fades out */
+@keyframes screenPhase1 {
+  0%, 30% { opacity: 1; }
+  38%, 75% { opacity: 0; }
+  85%, 100% { opacity: 1; }
+}
+
+/* Screen crossfade: Phase 2 (report image) fades in after tap */
+@keyframes screenPhase2 {
+  0%, 32% { opacity: 0; }
+  40%, 73% { opacity: 1; }
+  83%, 100% { opacity: 0; }
+}
