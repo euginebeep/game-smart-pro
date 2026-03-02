@@ -156,7 +156,7 @@ export default function Landing() {
           const totalWins = data.reduce((sum: number, s: any) => sum + (s.wins || 0), 0);
           const hitRate = totalBets > 0 ? Math.round((totalWins / totalBets) * 100) : 0;
           setStats({ hitRate, wins: totalWins, total: totalBets });
-          if (totalBets > 10) setStatsLoaded(true);
+          if (totalBets > 0) setStatsLoaded(true);
         }
       } catch {}
     }
@@ -211,11 +211,12 @@ export default function Landing() {
       nav: { howItWorks: 'Como Funciona', plans: 'Planos', login: 'Login', getStarted: 'Comece Agora' },
       hero: {
         badge: 'Usado em mais de 30 países',
-        title: 'Pare de perder dinheiro em apostas.',
-        titleHighlight: 'Comece a apostar com vantagem matemática.',
-        subtitle: 'O EUGINE escaneia 50+ jogos por dia e mostra EXATAMENTE onde a probabilidade real é maior que a odd. Você só aposta quando tem edge.',
+        title: 'VOCÊ NÃO PRECISA DE SORTE.',
+        titleHighlight: 'PRECISA DE VANTAGEM.',
+        subtitle: 'Transforme suas apostas em decisões estratégicas com dados reais e probabilidade a seu favor.',
+        urgencyText: 'Vagas para o teste grátis se encerrando — apenas para os primeiros 100 usuários hoje.',
         emailPlaceholder: 'Seu melhor e-mail',
-        ctaButton: 'Quero minha vantagem →',
+        ctaButton: 'TESTE GRÁTIS AGORA',
         ctaSubtext: 'Grátis por 3 dias · Sem cartão · Cancele quando quiser',
         emailError: 'Digite um e-mail válido',
         trust1: '30+ ligas',
@@ -317,11 +318,12 @@ export default function Landing() {
       nav: { howItWorks: 'How It Works', plans: 'Plans', login: 'Login', getStarted: 'Get Started' },
       hero: {
         badge: 'Used in 30+ countries',
-        title: 'Stop losing money on bets.',
-        titleHighlight: 'Start betting with mathematical edge.',
-        subtitle: "EUGINE scans 50+ matches daily and shows EXACTLY where the real probability beats the bookmaker's odds. You only bet when you have edge.",
+        title: "YOU DON'T NEED LUCK.",
+        titleHighlight: 'YOU NEED AN EDGE.',
+        subtitle: 'Turn your bets into strategic decisions with real data and probability on your side.',
+        urgencyText: 'Free trial spots closing — only available for the first 100 users today.',
         emailPlaceholder: 'Your best email',
-        ctaButton: 'Get my edge →',
+        ctaButton: 'START FREE TRIAL',
         ctaSubtext: 'Free for 3 days · No card · Cancel anytime',
         emailError: 'Enter a valid email',
         trust1: '30+ leagues', trust2: '50+ matches/day', trust3: 'Real-time odds',
@@ -406,11 +408,12 @@ export default function Landing() {
       nav: { howItWorks: 'Cómo Funciona', plans: 'Planes', login: 'Iniciar Sesión', getStarted: 'Comenzar' },
       hero: {
         badge: 'Usado en más de 30 países',
-        title: 'Deja de perder dinero en apuestas.',
-        titleHighlight: 'Apuesta solo con ventaja matemática.',
-        subtitle: 'EUGINE escanea 50+ partidos al día y muestra EXACTAMENTE dónde la probabilidad real supera la cuota. Solo apuestas cuando tienes edge.',
+        title: 'NO NECESITAS SUERTE.',
+        titleHighlight: 'NECESITAS VENTAJA.',
+        subtitle: 'Transforma tus apuestas en decisiones estratégicas con datos reales y probabilidad a tu favor.',
+        urgencyText: 'Plazas para la prueba gratis cerrándose — solo para los primeros 100 usuarios hoy.',
         emailPlaceholder: 'Tu mejor correo',
-        ctaButton: 'Quiero mi ventaja →',
+        ctaButton: 'PRUEBA GRATIS AHORA',
         ctaSubtext: 'Gratis 3 días · Sin tarjeta · Cancela cuando quieras',
         emailError: 'Ingresa un correo válido',
         trust1: '30+ ligas', trust2: '50+ partidos/día', trust3: 'Cuotas en tiempo real',
@@ -495,11 +498,12 @@ export default function Landing() {
       nav: { howItWorks: 'Come Funziona', plans: 'Piani', login: 'Accedi', getStarted: 'Inizia Ora' },
       hero: {
         badge: 'Usato in oltre 30 paesi',
-        title: 'Smetti di perdere soldi nelle scommesse.',
-        titleHighlight: 'Scommetti solo con vantaggio matematico.',
-        subtitle: 'EUGINE analizza 50+ partite al giorno e mostra ESATTAMENTE dove la probabilità reale supera la quota. Scommetti solo con edge.',
+        title: 'NON HAI BISOGNO DI FORTUNA.',
+        titleHighlight: 'HAI BISOGNO DI VANTAGGIO.',
+        subtitle: 'Trasforma le tue scommesse in decisioni strategiche con dati reali e probabilità a tuo favore.',
+        urgencyText: 'Posti per la prova gratuita in esaurimento — solo per i primi 100 utenti oggi.',
         emailPlaceholder: 'La tua email migliore',
-        ctaButton: 'Voglio il mio vantaggio →',
+        ctaButton: 'PROVA GRATIS ORA',
         ctaSubtext: 'Gratis 3 giorni · Senza carta · Cancella quando vuoi',
         emailError: 'Inserisci una email valida',
         trust1: '30+ campionati', trust2: '50+ partite/giorno', trust3: 'Quote in tempo reale',
@@ -642,9 +646,9 @@ export default function Landing() {
                 <span className="text-primary text-xs sm:text-sm font-semibold">{l.hero.badge}</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-6 leading-[1.1]">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-6 leading-[1.1] uppercase">
                 <span className="text-foreground block">{l.hero.title}</span>
-                <span className="block mt-2 gradient-text">{l.hero.titleHighlight}</span>
+                <span className="block mt-2" style={{ color: '#FFD700', textShadow: '0 0 30px rgba(255,215,0,0.3)' }}>{l.hero.titleHighlight}</span>
               </h1>
 
               <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
@@ -672,10 +676,11 @@ export default function Landing() {
                     onKeyDown={(e) => e.key === 'Enter' && handleLeadCapture()}
                     className="w-full sm:flex-1 px-4 py-4 rounded-xl bg-secondary/80 border border-border text-foreground placeholder-muted-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all min-w-0"
                   />
-                  <button
+                   <button
                     onClick={handleLeadCapture}
                     disabled={leadLoading}
-                    className="btn-primary w-full sm:w-auto px-6 py-4 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-black flex items-center justify-center gap-2 transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,215,0,0.4)]"
+                    style={{ background: '#FFD700', color: '#0A1A2F' }}
                   >
                     {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
                   </button>
@@ -683,6 +688,10 @@ export default function Landing() {
                 <p className="text-xs sm:text-sm mt-3 flex items-center justify-center lg:justify-start gap-1.5 animate-pulse font-bold" style={{ color: '#39FF14', textShadow: '0 0 10px rgba(57,255,20,0.6), 0 0 20px rgba(57,255,20,0.3)' }}>
                   <Check className="w-4 h-4 shrink-0" style={{ color: '#39FF14' }} />
                   {l.hero.ctaSubtext}
+                </p>
+                {/* Urgency text */}
+                <p className="text-[11px] sm:text-xs mt-2 text-center lg:text-left animate-pulse" style={{ color: '#FFD700' }}>
+                  ⚡ {l.hero.urgencyText}
                 </p>
               </div>
 
@@ -991,8 +1000,13 @@ export default function Landing() {
                   </p>
                   {/* Author */}
                   <div className="flex items-center gap-3 pt-4 border-t border-border/30">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-primary font-bold text-sm">{t.name.charAt(0)}</span>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center overflow-hidden">
+                      <img 
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(t.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9`} 
+                        alt={t.name} 
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                     </div>
                     <div>
                       <p className="text-foreground font-semibold text-sm">{t.name}</p>
@@ -1016,9 +1030,16 @@ export default function Landing() {
             {l.authority.items.map((item: any, i: number) => (
               <ScrollFadeIn key={i} delay={i * 100}>
                 <div className="text-center p-6 rounded-2xl bg-secondary/30 border border-border/50 hover:border-primary/30 transition-all">
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-primary">
-                    {authorityIcons[item.icon]}
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    {item.icon === 'brain' && <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Brain className="w-7 h-7" /></div>}
+                    {item.icon === 'shield' && <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center"><Shield className="w-7 h-7 text-emerald-400" /></div>}
+                    {item.icon === 'chart' && <div className="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center"><Award className="w-7 h-7 text-amber-400" /></div>}
+                    {item.icon === 'lock' && <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center"><Lock className="w-7 h-7 text-blue-400" /></div>}
                   </div>
+                  {/* Badge label */}
+                  {item.icon === 'shield' && <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 mb-2">✓ US REGISTERED</span>}
+                  {item.icon === 'lock' && <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 mb-2">🔒 SSL SECURE</span>}
+                  {item.icon === 'chart' && <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 mb-2">📊 AUDITED</span>}
                   <h3 className="text-foreground font-bold text-base mb-2">{item.title}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
                 </div>
@@ -1029,7 +1050,7 @@ export default function Landing() {
       </section>
 
       {/* ═══════ STATS — Real Results ═══════ */}
-      {statsLoaded && stats.total > 10 && (
+      {statsLoaded && (
         <section className="py-16 sm:py-20">
           <div className="max-w-5xl mx-auto px-5">
             <ScrollFadeIn>
@@ -1207,7 +1228,8 @@ export default function Landing() {
               <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">{l.finalCta.subtitle}</p>
               <button 
                 onClick={() => navigate('/auth')}
-                className="btn-primary px-10 py-4 text-base sm:text-lg font-bold rounded-xl inline-flex items-center gap-2"
+                className="px-10 py-4 text-base sm:text-lg font-black rounded-xl inline-flex items-center gap-2 transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,215,0,0.4)]"
+                style={{ background: '#FFD700', color: '#0A1A2F' }}
               >
                 {l.finalCta.cta}
               </button>
@@ -1242,6 +1264,18 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* ═══════ FLOATING WHATSAPP BUTTON ═══════ */}
+      <a
+        href="https://wa.me/message/eugineai"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+        style={{ background: '#25D366' }}
+        aria-label="WhatsApp Support"
+      >
+        <MessageCircle className="w-7 h-7 text-white" />
+      </a>
     </div>
   );
 }
