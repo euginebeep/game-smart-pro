@@ -63,13 +63,23 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
     }
   };
 
+  // Currency config per language
+  const currencyConfig: Record<string, { symbol: string; dayuse: string; basic: string; advanced: string; premium: string; premiumOriginal: string }> = {
+    pt: { symbol: 'R$', dayuse: '14,90', basic: '29,90', advanced: '49,90', premium: '79,90', premiumOriginal: '199,00' },
+    en: { symbol: '$', dayuse: '4.99', basic: '9.90', advanced: '14.90', premium: '24.90', premiumOriginal: '49.00' },
+    es: { symbol: '€', dayuse: '4,99', basic: '9,90', advanced: '14,90', premium: '24,90', premiumOriginal: '49,00' },
+    it: { symbol: '€', dayuse: '4,99', basic: '9,90', advanced: '14,90', premium: '24,90', premiumOriginal: '49,00' },
+  };
+
+  const cc = currencyConfig[language] || currencyConfig.pt;
+
   // Plan configurations matching Landing page exactly
   const plans = [
     {
       id: 'dayuse',
       name: t('pricing.plans.dayuse.name'),
       badge: t('pricing.dayUseBadge') || 'Premium 24h',
-      price: '$7,77',
+      price: `${cc.symbol} ${cc.dayuse}`,
       period: t('pricing.perDay') || '/dia',
       features: [
         t('pricing.plans.dayuse.features.0'),
@@ -88,7 +98,7 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
     {
       id: 'basic',
       name: t('pricing.plans.basic.name'),
-      price: '$29,90',
+      price: `${cc.symbol} ${cc.basic}`,
       period: t('pricing.perMonth'),
       features: [
         t('pricing.plans.basic.features.0'),
@@ -109,7 +119,7 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
       id: 'advanced',
       name: t('pricing.plans.advanced.name'),
       badge: t('pricing.popular'),
-      price: '$49,90',
+      price: `${cc.symbol} ${cc.advanced}`,
       period: t('pricing.perMonth'),
       features: [
         t('pricing.plans.advanced.features.0'),
@@ -131,8 +141,8 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
       id: 'premium',
       name: t('pricing.plans.premium.name'),
       badge: t('pricing.bestValue') || 'Melhor Valor',
-      originalPrice: '$199,00',
-      price: '$79,90',
+      originalPrice: `${cc.symbol} ${cc.premiumOriginal}`,
+      price: `${cc.symbol} ${cc.premium}`,
       period: t('pricing.perMonth'),
       features: [
         t('pricing.plans.premium.features.0'),
