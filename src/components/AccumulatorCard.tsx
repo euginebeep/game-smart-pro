@@ -111,18 +111,22 @@ export function AccumulatorCard({
         <div className="px-5 pt-5 pb-4">
 
           {/* Header: emoji + título + badge — SEMPRE em uma linha */}
-          <div className="flex items-center gap-2.5 mb-3 flex-nowrap overflow-hidden">
-            <span className="text-3xl sm:text-4xl leading-none flex-shrink-0">{emoji}</span>
-            <h3 className="font-extrabold text-foreground text-base sm:text-lg tracking-tight leading-tight truncate flex-1 min-w-0" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-              {titleMain || cleanTitle}
-              {titleSub && <span className="text-foreground ml-1">— {titleSub}</span>}
-            </h3>
-            <span
-              className={`text-sm sm:text-base font-extrabold px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border-2 ${style.badge} tracking-wide leading-none whitespace-nowrap flex-shrink-0`}
-              style={{ fontFamily: "'Montserrat', sans-serif" }}
-            >
-              {style.label}
-            </span>
+          <div className="mb-3">
+            <div className="flex items-center gap-2.5 flex-nowrap overflow-hidden">
+              <span className="text-3xl sm:text-4xl leading-none flex-shrink-0">{emoji}</span>
+              <h3 className="font-extrabold text-foreground text-base sm:text-lg tracking-tight leading-tight truncate flex-1 min-w-0" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {titleMain || cleanTitle}
+                {titleSub && <span className="text-foreground ml-1">— {titleSub}</span>}
+              </h3>
+            </div>
+            <div className="mt-2 pl-[calc(2rem+0.625rem)]">
+              <span
+                className={`inline-block text-sm sm:text-base font-extrabold px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border-2 ${style.badge} tracking-wide leading-none whitespace-nowrap`}
+                style={{ fontFamily: "'Montserrat', sans-serif" }}
+              >
+                {style.label}
+              </span>
+            </div>
           </div>
 
           {/* ===== HERO NUMBER: Lucro potencial — inline ===== */}
