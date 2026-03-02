@@ -7,25 +7,25 @@
 
 @layer base {
   :root {
-    /* EUGINE v4.0 - Dark Blue Theme with Cyan Accents */
-    --background: 230 60% 10%;
+    /* EUGINE v5.0 - Dark Navy Theme (matching Landing Page) */
+    --background: 222 47% 11%;
     --foreground: 0 0% 100%;
 
-    --card: 230 45% 12%;
+    --card: 222 47% 14%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 230 45% 12%;
+    --popover: 222 47% 14%;
     --popover-foreground: 0 0% 100%;
 
     /* Primary - Sky Blue (professional) */
     --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 230 40% 18%;
+    --secondary: 222 30% 20%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 230 30% 22%;
-    --muted-foreground: 220 15% 65%;
+    --muted: 222 25% 25%;
+    --muted-foreground: 215 20% 65%;
 
     /* Accent - Amber (warm highlight) */
     --accent: 38 92% 50%;
@@ -35,20 +35,20 @@
     --destructive-foreground: 0 0% 100%;
 
     --warning: 35 100% 50%;
-    --warning-foreground: 230 60% 10%;
+    --warning-foreground: 222 47% 11%;
 
     --success: 142 76% 45%;
-    --success-foreground: 230 60% 10%;
+    --success-foreground: 222 47% 11%;
 
-    --border: 230 30% 20%;
-    --input: 230 40% 15%;
+    --border: 222 25% 22%;
+    --input: 222 35% 17%;
     --ring: 199 89% 48%;
 
     --radius: 0.75rem;
 
     /* Custom Gradients */
-    --gradient-main: linear-gradient(180deg, hsl(230 60% 10%) 0%, hsl(230 70% 5%) 100%);
-    --gradient-card: linear-gradient(180deg, hsla(230, 45%, 14%, 0.9) 0%, hsla(230, 50%, 10%, 0.9) 100%);
+    --gradient-main: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(217 33% 17%) 50%, hsl(222 47% 11%) 100%);
+    --gradient-card: linear-gradient(180deg, hsla(222, 47%, 14%, 0.9) 0%, hsla(222, 47%, 11%, 0.9) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(160 70% 40%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(160 70% 45%) 100%);
     --gradient-glow: linear-gradient(135deg, hsla(199, 89%, 48%, 0.3) 0%, hsla(160, 70%, 40%, 0.1) 100%);
