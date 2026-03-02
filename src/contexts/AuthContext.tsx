@@ -337,7 +337,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: { tier, language: language || 'pt' },
     });
     if (error) throw error;
-    if (data?.url) window.open(data.url, '_blank');
+    if (data?.url) window.location.href = data.url;
   };
 
   const createDayUseCheckout = async (language?: string) => {
@@ -345,13 +345,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: { tier: 'dayuse', language: language || 'pt' },
     });
     if (error) throw error;
-    if (data?.url) window.open(data.url, '_blank');
+    if (data?.url) window.location.href = data.url;
   };
 
   const openCustomerPortal = async () => {
     const { data, error } = await supabase.functions.invoke('customer-portal');
     if (error) throw error;
-    if (data?.url) window.open(data.url, '_blank');
+    if (data?.url) window.location.href = data.url;
   };
 
   return (
