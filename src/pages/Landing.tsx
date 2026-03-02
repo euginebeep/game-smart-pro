@@ -227,7 +227,7 @@ export default function Landing() {
         items: [
           'Você analisa o jogo por 2 minutos, mas a casa de apostas usou 47 variáveis estatísticas para definir a odd',
           'Segue palpites de grupos sem saber que 92% dos tipsters não têm histórico auditável',
-          'Aposta R$50 no "feeling" e não percebe que a probabilidade implícita já está contra você',
+          'Aposta $50 no "feeling" e não percebe que a probabilidade implícita já está contra você',
           'Acerta 3, erra 4 — e no fim do mês o saldo é sempre negativo',
         ],
         conclusion: 'O problema não é apostar. É apostar sem vantagem matemática comprovada.',
