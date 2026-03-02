@@ -140,7 +140,7 @@ export default function LandingB() {
       pricing: { title: 'Escolha Seu Plano', guarantee: 'Teste grátis por 7 dias sem risco', basic: { name: 'BASIC', price: 'R$ 29,90', period: '/mês', features: ['5 Jogos por Dia', 'Análise Simples', '1 Dupla Diária', 'Suporte por Email'], cta: 'Começar grátis →' }, advanced: { name: 'ADVANCED', badge: 'MAIS POPULAR', price: 'R$ 49,90', period: '/mês', features: ['10 Jogos por Dia', 'Análise Completa', '3 Duplas Diárias', 'Acumuladores', 'Suporte Prioritário'], cta: 'Assinar Advanced' }, premium: { name: 'PREMIUM', badge: 'MELHOR VALOR', price: 'R$ 79,90', period: '/mês', features: ['Jogos Ilimitados', 'Análise Premium Completa', 'Todas as Duplas e Zebras', 'Acumuladores Premium', 'Exportação de Relatórios', 'Suporte Prioritário 24/7'], cta: 'Assinar Premium' } },
       faq: { title: 'Perguntas Frequentes', items: [{ q: 'O EUGINE garante lucro?', a: 'Não. Nenhuma ferramenta pode garantir lucro. O EUGINE identifica oportunidades com vantagem matemática, mas o resultado depende da sua disciplina e gestão de banca.' }, { q: 'Como funciona o período grátis?', a: 'Você tem 7 dias de acesso completo, sem cartão de crédito. Pode cancelar a qualquer momento.' }, { q: 'Preciso entender de estatística?', a: 'Não! O EUGINE faz toda a análise e te entrega o resultado de forma visual e simples.' }, { q: 'Quantos jogos são analisados por dia?', a: 'Analisamos 50+ jogos diariamente de mais de 30 ligas ao redor do mundo.' }, { q: 'Posso usar no celular?', a: 'Sim! Funciona como um app no navegador. Sem download necessário.' }] },
       finalCta: { title: 'Sua Vantagem Começa Agora', subtitle: 'Junte-se a milhares de apostadores que pararam de adivinhar e começaram a calcular.', cta: 'Começar Grátis Agora →', ctaSubtext: 'Grátis por 7 dias · Sem cartão · Cancele quando quiser' },
-      footer: { product: 'Produto', legal: 'Legal', contact: 'Contato', howItWorks: 'Como Funciona', plans: 'Planos', app: 'App', terms: 'Termos de Uso', privacy: 'Política de Privacidade', responsible: 'Jogo Responsável', email: 'Email', about: 'Sobre Nós', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Todos os direitos reservados.`, disclaimer: 'O EUGINE é uma ferramenta de análise estatística. Resultados passados não garantem resultados futuros. Apostas esportivas envolvem risco de perda. Aposte com responsabilidade e apenas valores que você pode perder.' },
+      footer: { product: 'Produto', legal: 'Legal', howItWorks: 'Como Funciona', plans: 'Planos', app: 'App', terms: 'Termos de Uso', privacy: 'Política de Privacidade', responsible: 'Jogo Responsável', about: 'Sobre Nós', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Todos os direitos reservados.`, disclaimer: 'O EUGINE é uma ferramenta de análise estatística. Resultados passados não garantem resultados futuros. Apostas esportivas envolvem risco de perda. Aposte com responsabilidade e apenas valores que você pode perder.' },
     },
     en: {
       nav: { howItWorks: 'How It Works', plans: 'Plans', faq: 'FAQ', login: 'Login', getStarted: 'Get Started' },
@@ -153,7 +153,7 @@ export default function LandingB() {
       pricing: { title: 'Choose Your Plan', guarantee: 'Free trial for 7 days, no risk', basic: { name: 'BASIC', price: '$9.90', period: '/month', features: ['5 Matches/Day', 'Simple Analysis', '1 Daily Double', 'Email Support'], cta: 'Start free →' }, advanced: { name: 'ADVANCED', badge: 'MOST POPULAR', price: '$14.90', period: '/month', features: ['10 Matches/Day', 'Full Analysis', '3 Daily Doubles', 'Accumulators', 'Priority Support'], cta: 'Subscribe Advanced' }, premium: { name: 'PREMIUM', badge: 'BEST VALUE', price: '$24.90', period: '/month', features: ['Unlimited Matches', 'Premium Full Analysis', 'All Doubles & Zebras', 'Premium Accumulators', 'Report Export', 'Priority Support 24/7'], cta: 'Subscribe Premium' } },
       faq: { title: 'Frequently Asked Questions', items: [{ q: 'Does EUGINE guarantee profit?', a: 'No. EUGINE identifies mathematical edge opportunities.' }, { q: 'How does the free period work?', a: '7 days full access, no credit card.' }, { q: 'Do I need statistics knowledge?', a: 'No! EUGINE does all the analysis.' }, { q: 'How many matches?', a: '50+ daily from 30+ leagues.' }, { q: 'Mobile?', a: 'Yes! Works as an app via browser.' }] },
       finalCta: { title: 'Your Edge Starts Now', subtitle: 'Join thousands who stopped guessing and started calculating.', cta: 'Start Free Now →', ctaSubtext: 'Free for 7 days · No card · Cancel anytime' },
-      footer: { product: 'Product', legal: 'Legal', contact: 'Contact', howItWorks: 'How It Works', plans: 'Plans', app: 'App', terms: 'Terms', privacy: 'Privacy', responsible: 'Responsible Gambling', email: 'Email', about: 'About', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. All rights reserved.`, disclaimer: 'EUGINE is a statistical analysis tool. Past results do not guarantee future results. Sports betting involves risk.' },
+      footer: { product: 'Product', legal: 'Legal', howItWorks: 'How It Works', plans: 'Plans', app: 'App', terms: 'Terms', privacy: 'Privacy', responsible: 'Responsible Gambling', about: 'About', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. All rights reserved.`, disclaimer: 'EUGINE is a statistical analysis tool. Past results do not guarantee future results. Sports betting involves risk.' },
     },
     es: {
       nav: { howItWorks: 'Cómo Funciona', plans: 'Planes', faq: 'FAQ', login: 'Login', getStarted: 'Empezar' },
@@ -166,7 +166,7 @@ export default function LandingB() {
       pricing: { title: 'Elige Tu Plan', guarantee: 'Prueba gratis 7 días', basic: { name: 'BASIC', price: '€29,90', period: '/mes', features: ['5 Partidos/Día', 'Análisis Simple', '1 Doble', 'Soporte Email'], cta: 'Empezar gratis →' }, advanced: { name: 'ADVANCED', badge: 'MÁS POPULAR', price: '€49,90', period: '/mes', features: ['10 Partidos/Día', 'Análisis Completo', '3 Dobles', 'Acumuladores', 'Soporte Prioritario'], cta: 'Suscribir Advanced' }, premium: { name: 'PREMIUM', badge: 'MEJOR VALOR', price: '€79,90', period: '/mes', features: ['Ilimitados', 'Análisis Premium', 'Todas las Dobles', 'Acumuladores Premium', 'Exportación', 'Soporte 24/7'], cta: 'Suscribir Premium' } },
       faq: { title: 'Preguntas Frecuentes', items: [{ q: '¿Garantiza ganancias?', a: 'No. Identifica ventaja matemática.' }, { q: '¿Cómo funciona la prueba?', a: '7 días gratis, sin tarjeta.' }, { q: '¿Necesito estadística?', a: 'No!' }, { q: '¿Cuántos partidos?', a: '50+ diarios.' }, { q: '¿En celular?', a: 'Sí, desde el navegador.' }] },
       finalCta: { title: 'Tu Ventaja Empieza Ahora', subtitle: 'Únete a miles que dejaron de adivinar.', cta: 'Empezar Gratis →', ctaSubtext: 'Gratis 7 días · Sin tarjeta · Cancela cuando quieras' },
-      footer: { product: 'Producto', legal: 'Legal', contact: 'Contacto', howItWorks: 'Cómo Funciona', plans: 'Planes', app: 'App', terms: 'Términos', privacy: 'Privacidad', responsible: 'Juego Responsable', email: 'Email', about: 'Sobre', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC.`, disclaimer: 'EUGINE es una herramienta de análisis estadístico.' },
+      footer: { product: 'Producto', legal: 'Legal', howItWorks: 'Cómo Funciona', plans: 'Planes', app: 'App', terms: 'Términos', privacy: 'Privacidad', responsible: 'Juego Responsable', about: 'Sobre', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC.`, disclaimer: 'EUGINE es una herramienta de análisis estadístico.' },
     },
     it: {
       nav: { howItWorks: 'Come Funziona', plans: 'Piani', faq: 'FAQ', login: 'Login', getStarted: 'Inizia' },
@@ -179,7 +179,7 @@ export default function LandingB() {
       pricing: { title: 'Scegli il Tuo Piano', guarantee: 'Prova gratis 7 giorni', basic: { name: 'BASIC', price: '€29,90', period: '/mese', features: ['5 Partite/Giorno', 'Analisi Semplice', '1 Doppia', 'Supporto Email'], cta: 'Inizia gratis →' }, advanced: { name: 'ADVANCED', badge: 'PIÙ POPOLARE', price: '€49,90', period: '/mese', features: ['10 Partite/Giorno', 'Analisi Completa', '3 Doppie', 'Accumulatori', 'Supporto Prioritario'], cta: 'Abbonati Advanced' }, premium: { name: 'PREMIUM', badge: 'MIGLIOR VALORE', price: '€79,90', period: '/mese', features: ['Illimitate', 'Analisi Premium', 'Tutte le Doppie', 'Accumulatori Premium', 'Export Report', 'Supporto 24/7'], cta: 'Abbonati Premium' } },
       faq: { title: 'Domande Frequenti', items: [{ q: 'Garantisce profitto?', a: 'No. Identifica vantaggio matematico.' }, { q: 'Come funziona la prova?', a: '7 giorni gratis, senza carta.' }, { q: 'Devo sapere di statistica?', a: 'No!' }, { q: 'Quante partite?', a: '50+ al giorno.' }, { q: 'Sul cellulare?', a: 'Sì, dal browser.' }] },
       finalCta: { title: 'Il Tuo Vantaggio Inizia Ora', subtitle: 'Unisciti a migliaia che hanno smesso di indovinare.', cta: 'Inizia Gratis →', ctaSubtext: 'Gratis 7 giorni · Senza carta · Cancella quando vuoi' },
-      footer: { product: 'Prodotto', legal: 'Legale', contact: 'Contatto', howItWorks: 'Come Funziona', plans: 'Piani', app: 'App', terms: 'Termini', privacy: 'Privacy', responsible: 'Gioco Responsabile', email: 'Email', about: 'Chi Siamo', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC.`, disclaimer: 'EUGINE è uno strumento di analisi statistica.' },
+      footer: { product: 'Prodotto', legal: 'Legale', howItWorks: 'Come Funziona', plans: 'Piani', app: 'App', terms: 'Termini', privacy: 'Privacy', responsible: 'Gioco Responsabile', about: 'Chi Siamo', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC.`, disclaimer: 'EUGINE è uno strumento di analisi statistica.' },
     },
   };
 
@@ -422,46 +422,64 @@ export default function LandingB() {
             <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3" style={{ fontFamily: "'Montserrat', sans-serif", color: C.navy }}>{l.pricing.title}</h2>
             <p className="text-center text-sm mb-12" style={{ color: C.textSecondary }}>{l.pricing.guarantee}</p>
           </ScrollFadeIn>
-          <div className="grid sm:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid sm:grid-cols-3 gap-6 sm:gap-8 items-start">
             {/* Basic */}
             <ScrollFadeIn delay={0}>
-              <div className="rounded-lg p-8 flex flex-col h-full" style={{ background: C.white, border: `1px solid ${C.border}` }}>
-                <div className="pb-6 mb-6" style={{ borderBottom: `1px solid ${C.border}` }}>
-                  <h3 className="font-bold text-xl mb-4" style={{ fontFamily: "'Montserrat', sans-serif", color: C.navy }}>{l.pricing.basic.name}</h3>
-                  <div><span className="text-4xl font-bold" style={{ color: C.navy }}>{l.pricing.basic.price}</span><span className="text-sm" style={{ color: C.textSecondary }}>{l.pricing.basic.period}</span></div>
+              <div className="rounded-2xl p-8 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{ background: C.white, border: `2px solid ${C.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                <div className="pb-6 mb-6" style={{ borderBottom: `2px solid ${C.border}` }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${C.navy}10` }}>
+                    <Zap className="w-6 h-6" style={{ color: C.navy }} />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2" style={{ fontFamily: "'Montserrat', sans-serif", color: C.navy }}>{l.pricing.basic.name}</h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold" style={{ color: C.navy }}>{l.pricing.basic.price}</span>
+                    <span className="text-sm font-medium" style={{ color: C.textSecondary }}>{l.pricing.basic.period}</span>
+                  </div>
                 </div>
-                <button onClick={() => navigate('/auth')} className="w-full py-3 rounded-md font-bold mb-6 transition-all hover:opacity-90 text-white" style={{ background: C.navy }}>{l.pricing.basic.cta}</button>
-                <ul className="space-y-3 flex-grow">
-                  {l.pricing.basic.features.map((f: string, i: number) => <li key={i} className="flex items-center gap-3 text-sm" style={{ color: C.textSecondary }}><Check className="w-4 h-4 shrink-0" style={{ color: C.green }} /><span>{f}</span></li>)}
+                <ul className="space-y-4 flex-grow mb-8">
+                  {l.pricing.basic.features.map((f: string, i: number) => <li key={i} className="flex items-center gap-3 text-sm font-medium" style={{ color: C.navy }}><div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: `${C.green}15` }}><Check className="w-3.5 h-3.5" style={{ color: C.green }} /></div><span>{f}</span></li>)}
                 </ul>
+                <button onClick={() => navigate('/auth')} className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90 text-white text-sm" style={{ background: C.navy }}>{l.pricing.basic.cta}</button>
               </div>
             </ScrollFadeIn>
             {/* Advanced — HIGHLIGHTED */}
             <ScrollFadeIn delay={100}>
-              <div className="relative rounded-lg p-8 flex flex-col h-full sm:-mt-4 sm:mb-[-16px]" style={{ background: C.white, border: `2px solid ${C.gold}`, boxShadow: '0 8px 32px rgba(255,215,0,0.15)', transform: 'scale(1.02)' }}>
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2"><span className="text-xs font-bold px-4 py-1.5 rounded-full" style={{ background: C.gold, color: C.navy }}>{l.pricing.advanced.badge}</span></div>
-                <div className="pb-6 mb-6 pt-2" style={{ borderBottom: `1px solid ${C.border}` }}>
-                  <h3 className="font-bold text-xl mb-4" style={{ fontFamily: "'Montserrat', sans-serif", color: C.navy }}>{l.pricing.advanced.name}</h3>
-                  <div><span className="text-4xl font-bold" style={{ color: C.navy }}>{l.pricing.advanced.price}</span><span className="text-sm" style={{ color: C.textSecondary }}>{l.pricing.advanced.period}</span></div>
+              <div className="relative rounded-2xl p-8 flex flex-col h-full sm:-mt-6 sm:pb-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1" style={{ background: `linear-gradient(180deg, ${C.white} 0%, #FFFDF5 100%)`, border: `2px solid ${C.gold}`, boxShadow: '0 8px 40px rgba(255,215,0,0.2), 0 4px 20px rgba(0,0,0,0.08)' }}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2"><span className="text-xs font-bold px-5 py-2 rounded-full shadow-lg" style={{ background: `linear-gradient(135deg, ${C.gold}, #FFC700)`, color: C.navy }}>{l.pricing.advanced.badge}</span></div>
+                <div className="pb-6 mb-6 pt-3" style={{ borderBottom: `2px solid ${C.gold}40` }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: `${C.gold}20` }}>
+                    <Star className="w-6 h-6" style={{ color: C.gold }} />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2" style={{ fontFamily: "'Montserrat', sans-serif", color: C.navy }}>{l.pricing.advanced.name}</h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold" style={{ color: C.navy }}>{l.pricing.advanced.price}</span>
+                    <span className="text-sm font-medium" style={{ color: C.textSecondary }}>{l.pricing.advanced.period}</span>
+                  </div>
                 </div>
-                <button onClick={() => navigate('/auth')} className="w-full py-3 rounded-md font-bold mb-6 transition-all hover:opacity-90" style={{ background: C.gold, color: C.navy }}>{l.pricing.advanced.cta}</button>
-                <ul className="space-y-3 flex-grow">
-                  {l.pricing.advanced.features.map((f: string, i: number) => <li key={i} className="flex items-center gap-3 text-sm" style={{ color: C.textSecondary }}><Check className="w-4 h-4 shrink-0" style={{ color: C.gold }} /><span>{f}</span></li>)}
+                <ul className="space-y-4 flex-grow mb-8">
+                  {l.pricing.advanced.features.map((f: string, i: number) => <li key={i} className="flex items-center gap-3 text-sm font-medium" style={{ color: C.navy }}><div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: `${C.gold}25` }}><Check className="w-3.5 h-3.5" style={{ color: C.gold }} /></div><span>{f}</span></li>)}
                 </ul>
+                <button onClick={() => navigate('/auth')} className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90 text-sm shadow-lg" style={{ background: `linear-gradient(135deg, ${C.gold}, #FFC700)`, color: C.navy, boxShadow: '0 4px 16px rgba(255,215,0,0.3)' }}>{l.pricing.advanced.cta}</button>
               </div>
             </ScrollFadeIn>
             {/* Premium */}
             <ScrollFadeIn delay={200}>
-              <div className="relative rounded-lg p-8 flex flex-col h-full" style={{ background: C.white, border: `1px solid ${C.border}` }}>
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2"><span className="text-xs font-bold px-4 py-1.5 rounded-full" style={{ background: C.gold, color: C.navy }}>{l.pricing.premium.badge}</span></div>
-                <div className="pb-6 mb-6 pt-2" style={{ borderBottom: `1px solid ${C.border}` }}>
-                  <h3 className="font-bold text-xl mb-4" style={{ fontFamily: "'Montserrat', sans-serif", color: C.navy }}>{l.pricing.premium.name}</h3>
-                  <div><span className="text-4xl font-bold" style={{ color: C.navy }}>{l.pricing.premium.price}</span><span className="text-sm" style={{ color: C.textSecondary }}>{l.pricing.premium.period}</span></div>
+              <div className="relative rounded-2xl p-8 flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1" style={{ background: C.navy, border: `2px solid ${C.navyMid}`, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2"><span className="text-xs font-bold px-5 py-2 rounded-full" style={{ background: C.white, color: C.navy, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>{l.pricing.premium.badge}</span></div>
+                <div className="pb-6 mb-6 pt-3" style={{ borderBottom: '2px solid rgba(255,255,255,0.15)' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                    <Award className="w-6 h-6" style={{ color: C.gold }} />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2 text-white" style={{ fontFamily: "'Montserrat', sans-serif" }}>{l.pricing.premium.name}</h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-white">{l.pricing.premium.price}</span>
+                    <span className="text-sm font-medium" style={{ color: '#a0a8b0' }}>{l.pricing.premium.period}</span>
+                  </div>
                 </div>
-                <button onClick={() => navigate('/auth')} className="w-full py-3 rounded-md font-bold mb-6 transition-all hover:opacity-90 text-white" style={{ background: C.navy }}>{l.pricing.premium.cta}</button>
-                <ul className="space-y-3 flex-grow">
-                  {l.pricing.premium.features.map((f: string, i: number) => <li key={i} className="flex items-center gap-3 text-sm" style={{ color: C.textSecondary }}><Check className="w-4 h-4 shrink-0" style={{ color: C.green }} /><span>{f}</span></li>)}
+                <ul className="space-y-4 flex-grow mb-8">
+                  {l.pricing.premium.features.map((f: string, i: number) => <li key={i} className="flex items-center gap-3 text-sm font-medium text-white"><div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: `${C.gold}30` }}><Check className="w-3.5 h-3.5" style={{ color: C.gold }} /></div><span>{f}</span></li>)}
                 </ul>
+                <button onClick={() => navigate('/auth')} className="w-full py-3.5 rounded-xl font-bold transition-all hover:opacity-90 text-sm" style={{ background: C.gold, color: C.navy }}>{l.pricing.premium.cta}</button>
               </div>
             </ScrollFadeIn>
           </div>
@@ -524,12 +542,10 @@ export default function LandingB() {
                 <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{l.footer.responsible}</a>
               </div>
             </div>
-            {/* Contact */}
+            {/* About */}
             <div>
-              <h4 className="text-white font-semibold text-sm mb-3">{l.footer.contact}</h4>
-              <div className="space-y-2">
-                <a href="mailto:support@eugineai.com" className="block text-xs hover:text-white transition-colors" style={{ color: '#a0a8b0' }}>{l.footer.email}</a>
-              </div>
+              <h4 className="text-white font-semibold text-sm mb-3">{l.footer.about}</h4>
+              <p className="text-xs" style={{ color: '#a0a8b0' }}>GS ITALY INVESTMENTS LLC</p>
             </div>
           </div>
           <div className="pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}>
