@@ -1,20 +1,19 @@
 /**
  * Landing Page - EUGINE
- * Optimized per Manus prompt: Hero, Demo Video, Social Proof, Trust Badges, Results, Pricing, FAQ, Footer
+ * Matching Manus reference exactly: Hero with comparison bar, Live matches, Problem section, 3 Steps, Testimonials, Trust, Stats quote, Pricing (3 plans), FAQ, Final CTA, Footer
  */
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, Check, CheckCircle, Brain, Target, TrendingUp, BarChart3, 
-  Shield, Globe, Activity, Clock, Star, Lock, Award, ChevronDown, Sparkles, Zap
+  Shield, Globe, Activity, Clock, Star, Lock, Award, ChevronDown, Sparkles, Zap,
+  AlertTriangle, Users, MessageCircle
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import USFlag3D from '@/components/USFlag3D';
-import eugineDemo from '@/assets/eugine-demo.mp4';
-import heroDashboardImg from '@/assets/hero-dashboard.png';
 
 // ─── Animated Counter ───
 function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '' }: { end: number; duration?: number; suffix?: string; prefix?: string }) {
@@ -127,25 +126,60 @@ export default function Landing() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // ─── Labels ───
+  const displayHitRate = statsLoaded ? stats.hitRate : 65;
+  const displayEdge = 12.4;
+
+  // ─── Labels (only PT shown for brevity, others follow same structure) ───
   const labels: Record<string, any> = {
     pt: {
-      nav: { howItWorks: 'Como Funciona', plans: 'Planos', login: 'Login', getStarted: 'Comece Agora' },
+      nav: { howItWorks: 'Como Funciona', plans: 'Planos', faq: 'FAQ', login: 'Login', getStarted: 'Comece Agora' },
       hero: {
-        badge: 'Usado em mais de 30 países',
+        badge: '✓ Usado em mais de 30 países',
         title: 'VOCÊ NÃO PRECISA DE SORTE.',
         titleHighlight: 'PRECISA DE VANTAGEM.',
         subtitle: 'Transforme suas apostas em decisões estratégicas com dados reais e probabilidade a seu favor.',
-        urgencyText: 'Vagas para o teste grátis se encerrando — apenas para os primeiros 100 usuários hoje.',
         ctaButton: 'TESTE GRÁTIS AGORA',
-        ctaSubtext: 'Grátis por 3 dias · Sem cartão · Cancele quando quiser',
+        ctaSubtext: '✓ Grátis por 7 dias · Sem cartão · Cancele quando quiser',
+        urgency: '⚠️ Vagas para o teste grátis se encerrando',
+        stats: ['30+ ligas monitoradas', '50+ jogos analisados por dia', 'Odds em tempo real'],
+        aiLabel: 'EUGINE AI',
+        proLabel: 'Apostador profissional',
+        aiAdvantage: 'Vantagem da IA',
       },
-      demo: {
-        title: 'Veja como funciona',
-        subtitle: 'Interface real do sistema analisando jogos, identificando edges e gerando relatórios em tempo real.',
+      liveMatches: {
+        title: 'Jogos com Vantagem Agora',
+        matches: [
+          { league: 'La Liga', edge: '+8.2%', home: 'Barcelona', away: 'R. Madrid', bet: 'Over 2.5' },
+          { league: 'EPL', edge: '+12.4%', home: 'Liverpool', away: 'Arsenal', bet: '1X' },
+          { league: 'Ligue 1', edge: '+5.7%', home: 'PSG', away: 'Marseille', bet: 'BTTS' },
+          { league: 'Serie A', edge: '+9.1%', home: 'Inter', away: 'Juventus', bet: 'Under 3.5' },
+        ],
+        hitRate: 'Taxa de Acerto',
+        avgEdge: 'Edge Médio Detectado',
+        usersOnline: 'Usuários Online Agora',
+      },
+      problem: {
+        title: 'Isso Acontece com 87% dos Apostadores',
+        subtitle: 'Você provavelmente já passou por isso:',
+        items: [
+          'Você analisa o jogo por 2 minutos, mas a casa de apostas usou 47 variáveis estatísticas para definir a odd',
+          'Segue palpites de grupos sem saber que 92% dos tipsters não têm histórico auditável',
+          'Aposta $50 no \'feeling\' e não percebe que a probabilidade implícita já está contra você',
+          'Acerta 3, erra 4 — e no fim do mês o saldo é sempre negativo',
+        ],
+        conclusion: 'O problema não é apostar. É apostar sem vantagem matemática comprovada.',
+        explanation: 'A maioria aposta por impulso. Por emoção. Por palpite de grupo. O EUGINE calcula. Quando a probabilidade real é MAIOR que a odd oferecida, existe valor. Onde existe valor, existe vantagem no longo prazo.',
+      },
+      steps: {
+        title: 'Veja Como Funciona em 3 Passos',
+        items: [
+          { title: 'Escaneamos 50+ jogos por dia', desc: 'Analisamos todas as principais ligas do mundo, comparando odds de múltiplas casas com nosso modelo de probabilidade proprietário. Cada card mostra o jogo, as odds e o nível de confiança. Verde = vantagem detectada.' },
+          { title: 'Encontramos onde a casa ERRA', desc: 'Quando nossa probabilidade calculada é MAIOR que a odd oferecida, existe valor. Aí você recebe o alerta com a % exata de vantagem. A análise compara a probabilidade da casa com a do EUGINE.' },
+          { title: 'Você aposta SÓ com vantagem', desc: 'Cada sugestão mostra QUANTO de edge você tem. No longo prazo, vantagem consistente = resultado consistente. Veja os 7 fatores analisados: forma, H2H, odds, gols, posse, cantos e cartões. 100% transparente.' },
+        ],
       },
       socialProof: {
-        title: 'O que dizem nossos usuários',
+        title: 'O que Dizem Nossos Usuários',
         testimonials: [
           { name: 'Carlos M.', role: 'Apostador há 3 anos', text: 'Antes eu achava que entendia de futebol. O EUGINE me mostrou que entender ≠ ter edge. Meu ROI mudou completamente nos últimos 2 meses.', stars: 5 },
           { name: 'Rafael S.', role: 'Trader esportivo', text: 'Finalmente uma ferramenta que mostra a matemática por trás. Não é palpite, é análise de verdade com probabilidade calculada. Uso todo dia.', stars: 5 },
@@ -154,100 +188,130 @@ export default function Landing() {
         ],
       },
       authority: {
-        title: 'Por que confiar no EUGINE?',
+        title: 'Por que Confiar no EUGINE?',
         items: [
           { icon: 'brain', title: 'IA Proprietária', desc: 'Modelo treinado com +100.000 partidas históricas e 7 fatores de análise.' },
-          { icon: 'shield', title: 'Empresa registrada nos EUA', desc: 'GS ITALY INVESTMENTS LLC — empresa especializada em análise de dados com mais de 6 softwares para diversos segmentos.' },
-          { icon: 'chart', title: 'Resultados auditáveis', desc: 'Todos os resultados são públicos e verificáveis. Sem edição.' },
-          { icon: 'lock', title: 'Dados criptografados', desc: 'Sua conta e dados protegidos com criptografia de nível bancário.' },
+          { icon: 'shield', title: 'Empresa Registrada nos EUA', desc: 'GS ITALY INVESTMENTS LLC — empresa especializada em análise de dados.' },
+          { icon: 'chart', title: 'Resultados Auditáveis', desc: 'Todos os resultados são públicos e verificáveis. Sem edição.' },
+          { icon: 'lock', title: 'Dados Criptografados', desc: 'Sua conta protegida com criptografia de nível bancário.' },
         ],
-      },
-      stats: {
-        title: 'Resultados Reais. Sem Filtro.',
-        subtitle: 'Publicamos TODOS os nossos resultados — acertos e erros. Transparência total.',
-        hitRate: 'Taxa de Acerto', wins: 'Acertos', total: 'Total Analisado', leagues: 'Ligas Monitoradas',
+        quote: '"Você não precisa ganhar todas. Só precisa ter vantagem."',
+        quoteAuthor: '— Princípio do Value Betting',
       },
       pricing: {
         title: 'Escolha Seu Plano',
         guarantee: 'Teste grátis por 7 dias sem risco',
-        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: 'R$ 14,90', period: '/dia', features: ['Acesso Premium Completo por 24h', 'Análises Avançadas Ilimitadas', 'Pagamento Único (PIX)', 'Sem Recorrência'], cta: 'Comprar Day Use' },
-        basic: { name: 'BASIC', price: 'R$ 29,90', period: '/mês', features: ['5 Jogos por Dia', 'Análise Simples', '1 Dupla Diária'], cta: 'Começar grátis →' },
-        advanced: { name: 'ADVANCED', badge: '⭐ MAIS POPULAR', price: 'R$ 49,90', period: '/mês', features: ['10 Jogos por Dia', 'Análise Completa', '3 Duplas Diárias', 'Acumuladores'], cta: 'Assinar Advanced' },
-        premium: { name: 'PREMIUM', badge: '👑 Melhor Valor', price: 'R$ 79,90', period: '/mês', features: ['Jogos Ilimitados', 'Análise Premium Completa', 'Todas as Duplas e Zebras', 'Acumuladores Premium', 'Exportação de Relatórios', 'Suporte Prioritário'], cta: 'Assinar Premium' },
-        comingSoon: 'Em breve',
+        basic: { name: 'BASIC', price: 'R$ 29,90', period: '/mês', features: ['5 Jogos por Dia', 'Análise Simples', '1 Dupla Diária', 'Suporte por Email'], cta: 'Começar grátis →' },
+        advanced: { name: 'ADVANCED', badge: 'MAIS POPULAR', price: 'R$ 49,90', period: '/mês', features: ['10 Jogos por Dia', 'Análise Completa', '3 Duplas Diárias', 'Acumuladores', 'Suporte Prioritário'], cta: 'Assinar Advanced' },
+        premium: { name: 'PREMIUM', badge: 'MELHOR VALOR', price: 'R$ 79,90', period: '/mês', features: ['Jogos Ilimitados', 'Análise Premium Completa', 'Todas as Duplas e Zebras', 'Acumuladores Premium', 'Exportação de Relatórios', 'Suporte Prioritário 24/7'], cta: 'Assinar Premium' },
       },
       faq: {
         title: 'Perguntas Frequentes',
         items: [
-          { q: 'O EUGINE garante lucro?', a: 'Não. Nenhuma ferramenta séria garante lucro. O EUGINE identifica onde você tem vantagem matemática. No longo prazo, apostar com edge positivo tende a gerar resultado positivo, mas cada aposta individual tem risco.' },
-          { q: 'Como funciona o período grátis?', a: 'Você tem 3 dias de acesso completo, sem cartão de crédito. Pode cancelar a qualquer momento, sem compromisso.' },
+          { q: 'O EUGINE garante lucro?', a: 'Não. Nenhuma ferramenta pode garantir lucro. O EUGINE identifica oportunidades com vantagem matemática, mas o resultado depende da sua disciplina e gestão de banca.' },
+          { q: 'Como funciona o período grátis?', a: 'Você tem 7 dias de acesso completo, sem cartão de crédito. Pode cancelar a qualquer momento, sem compromisso.' },
           { q: 'Preciso entender de estatística?', a: 'Não! O EUGINE faz toda a análise e te entrega o resultado de forma visual e simples. Basta seguir as indicações de vantagem.' },
           { q: 'Quantos jogos são analisados por dia?', a: 'Analisamos 50+ jogos diariamente de mais de 30 ligas ao redor do mundo. Apenas os jogos com vantagem detectada chegam até você.' },
           { q: 'Posso usar no celular?', a: 'Sim! O EUGINE funciona como um app no seu celular. Basta acessar pelo navegador e adicionar à tela inicial. Sem download necessário.' },
         ],
       },
       finalCta: {
-        title: 'Sua vantagem começa agora.',
+        title: 'Sua Vantagem Começa Agora',
         subtitle: 'Junte-se a milhares de apostadores que pararam de adivinhar e começaram a calcular.',
-        cta: 'Começar grátis agora →',
+        cta: 'Começar Grátis Agora →',
+        ctaSubtext: 'Grátis por 7 dias · Sem cartão · Cancele quando quiser',
       },
       footer: {
         about: 'Sobre Nós', terms: 'Termos de Uso', privacy: 'Política de Privacidade', responsible: 'Jogo Responsável', contact: 'Contato',
         copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Todos os direitos reservados.`,
-        disclaimer: 'O EUGINE é uma ferramenta de análise estatística. Resultados passados não garantem resultados futuros. Apostas esportivas envolvem risco de perda. Aposte com responsabilidade e apenas valores que você pode perder. O EUGINE não é uma casa de apostas e não processa transações financeiras de apostas. Se precisar de ajuda com apostas problemáticas, procure apoio em jogadoresanonimos.com.br',
+        disclaimer: 'O EUGINE é uma ferramenta de análise estatística. Resultados passados não garantem resultados futuros. Apostas esportivas envolvem risco de perda. Aposte com responsabilidade e apenas valores que você pode perder.',
       },
     },
     en: {
-      nav: { howItWorks: 'How It Works', plans: 'Plans', login: 'Login', getStarted: 'Get Started' },
+      nav: { howItWorks: 'How It Works', plans: 'Plans', faq: 'FAQ', login: 'Login', getStarted: 'Get Started' },
       hero: {
-        badge: 'Used in 30+ countries',
+        badge: '✓ Used in 30+ countries',
         title: "YOU DON'T NEED LUCK.",
         titleHighlight: 'YOU NEED AN EDGE.',
         subtitle: 'Turn your bets into strategic decisions with real data and probability on your side.',
-        urgencyText: 'Free trial spots closing — only available for the first 100 users today.',
         ctaButton: 'START FREE TRIAL',
-        ctaSubtext: 'Free for 3 days · No card · Cancel anytime',
+        ctaSubtext: '✓ Free for 7 days · No card · Cancel anytime',
+        urgency: '⚠️ Free trial spots closing',
+        stats: ['30+ leagues monitored', '50+ matches analyzed daily', 'Real-time odds'],
+        aiLabel: 'EUGINE AI',
+        proLabel: 'Professional bettor',
+        aiAdvantage: 'AI Advantage',
       },
-      demo: { title: 'See how it works', subtitle: 'Real system interface analyzing matches, identifying edges and generating reports in real time.' },
+      liveMatches: {
+        title: 'Matches with Edge Now',
+        matches: [
+          { league: 'La Liga', edge: '+8.2%', home: 'Barcelona', away: 'R. Madrid', bet: 'Over 2.5' },
+          { league: 'EPL', edge: '+12.4%', home: 'Liverpool', away: 'Arsenal', bet: '1X' },
+          { league: 'Ligue 1', edge: '+5.7%', home: 'PSG', away: 'Marseille', bet: 'BTTS' },
+          { league: 'Serie A', edge: '+9.1%', home: 'Inter', away: 'Juventus', bet: 'Under 3.5' },
+        ],
+        hitRate: 'Hit Rate',
+        avgEdge: 'Average Edge Detected',
+        usersOnline: 'Users Online Now',
+      },
+      problem: {
+        title: 'This Happens to 87% of Bettors',
+        subtitle: "You've probably been through this:",
+        items: [
+          'You analyze the match for 2 minutes, but the bookmaker used 47 statistical variables to set the odds',
+          "You follow tips from groups without knowing that 92% of tipsters don't have an auditable track record",
+          "You bet $50 on 'feeling' without realizing the implied probability is already against you",
+          'You hit 3, miss 4 — and at the end of the month the balance is always negative',
+        ],
+        conclusion: "The problem isn't betting. It's betting without a proven mathematical edge.",
+        explanation: 'Most bet on impulse. On emotion. On group tips. EUGINE calculates. When the real probability is HIGHER than the offered odds, there is value. Where there is value, there is long-term edge.',
+      },
+      steps: {
+        title: 'See How It Works in 3 Steps',
+        items: [
+          { title: 'We scan 50+ matches daily', desc: "We analyze all major leagues, comparing odds from multiple bookmakers with our proprietary probability model. Each card shows the match, odds and confidence level. Green = edge detected." },
+          { title: 'We find where the house is WRONG', desc: 'When our calculated probability is HIGHER than the offered odds, there is value. Then you receive the alert with the exact % of advantage.' },
+          { title: 'You only bet WITH an edge', desc: 'Each suggestion shows HOW MUCH edge you have. In the long run, consistent edge = consistent results. See the 7 factors analyzed: form, H2H, odds, goals, possession, corners and cards. 100% transparent.' },
+        ],
+      },
       socialProof: {
-        title: 'What our users say',
+        title: 'What Our Users Say',
         testimonials: [
-          { name: 'James K.', role: 'Bettor for 3 years', text: "I used to think I understood football. EUGINE showed me that understanding ≠ having an edge. My ROI changed completely in the last 2 months.", stars: 5 },
-          { name: 'Michael T.', role: 'Sports trader', text: "Finally a tool that shows the math behind it. It's not guessing, it's real analysis with calculated probability. I use it daily.", stars: 5 },
-          { name: 'David R.', role: 'Premium User', text: "Started on basic, now I'm premium. The difference is I now know WHY I'm betting, no more guesswork.", stars: 5 },
-          { name: 'Robert M.', role: 'Recreational bettor', text: 'The best part is the total transparency. They publish all results, errors and wins. That gave me confidence to trust the system.', stars: 4 },
+          { name: 'James K.', role: 'Bettor for 3 years', text: "I used to think I understood football. EUGINE showed me that understanding ≠ having an edge. My ROI changed completely.", stars: 5 },
+          { name: 'Michael T.', role: 'Sports trader', text: "Finally a tool that shows the math behind it. Not guessing, real analysis with calculated probability.", stars: 5 },
+          { name: 'David R.', role: 'Premium User', text: "Started on basic, now I'm premium. The difference is I now know WHY I'm betting.", stars: 5 },
+          { name: 'Robert M.', role: 'Recreational bettor', text: 'The best part is the total transparency. They publish all results, errors and wins.', stars: 4 },
         ],
       },
       authority: {
-        title: 'Why trust EUGINE?',
+        title: 'Why Trust EUGINE?',
         items: [
           { icon: 'brain', title: 'Proprietary AI', desc: 'Model trained with 100,000+ historical matches and 7 analysis factors.' },
-          { icon: 'shield', title: 'US Registered Company', desc: 'GS ITALY INVESTMENTS LLC — a company specializing in data analysis with 6+ software products.' },
-          { icon: 'chart', title: 'Auditable Results', desc: 'All results are public and verifiable. No editing.' },
-          { icon: 'lock', title: 'Encrypted Data', desc: 'Your account and data protected with bank-level encryption.' },
+          { icon: 'shield', title: 'US Registered Company', desc: 'GS ITALY INVESTMENTS LLC — specializing in data analysis.' },
+          { icon: 'chart', title: 'Auditable Results', desc: 'All results are public and verifiable.' },
+          { icon: 'lock', title: 'Encrypted Data', desc: 'Your account protected with bank-level encryption.' },
         ],
+        quote: '"You don\'t need to win them all. You just need an edge."',
+        quoteAuthor: '— Value Betting Principle',
       },
-      stats: { title: 'Real Results. No Filter.', subtitle: 'We publish ALL our results — wins and losses. Total transparency.', hitRate: 'Hit Rate', wins: 'Wins', total: 'Total Analyzed', leagues: 'Leagues Monitored' },
       pricing: {
         title: 'Choose Your Plan',
         guarantee: 'Free trial for 7 days, no risk',
-        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '$4.90', period: '/day', features: ['Full Premium Access 24h', 'Unlimited Advanced Analysis', 'One-time Payment', 'No Recurrence'], cta: 'Buy Day Use' },
-        basic: { name: 'BASIC', price: '$9.90', period: '/month', features: ['5 Matches/Day', 'Simple Analysis', '1 Daily Double'], cta: 'Start free →' },
-        advanced: { name: 'ADVANCED', badge: '⭐ MOST POPULAR', price: '$14.90', period: '/month', features: ['10 Matches/Day', 'Full Analysis', '3 Daily Doubles', 'Accumulators'], cta: 'Subscribe Advanced' },
-        premium: { name: 'PREMIUM', badge: '👑 Best Value', price: '$24.90', period: '/month', features: ['Unlimited Matches', 'Premium Full Analysis', 'All Doubles & Zebras', 'Premium Accumulators', 'Report Export', 'Priority Support'], cta: 'Subscribe Premium' },
-        comingSoon: 'Coming Soon',
+        basic: { name: 'BASIC', price: '$9.90', period: '/month', features: ['5 Matches/Day', 'Simple Analysis', '1 Daily Double', 'Email Support'], cta: 'Start free →' },
+        advanced: { name: 'ADVANCED', badge: 'MOST POPULAR', price: '$14.90', period: '/month', features: ['10 Matches/Day', 'Full Analysis', '3 Daily Doubles', 'Accumulators', 'Priority Support'], cta: 'Subscribe Advanced' },
+        premium: { name: 'PREMIUM', badge: 'BEST VALUE', price: '$24.90', period: '/month', features: ['Unlimited Matches', 'Premium Full Analysis', 'All Doubles & Zebras', 'Premium Accumulators', 'Report Export', 'Priority Support 24/7'], cta: 'Subscribe Premium' },
       },
       faq: {
         title: 'Frequently Asked Questions',
         items: [
-          { q: 'Does EUGINE guarantee profit?', a: "No. No serious tool guarantees profit. EUGINE identifies where you have a mathematical edge." },
-          { q: 'How does the free period work?', a: '3 days of full access, no credit card. Cancel anytime.' },
+          { q: 'Does EUGINE guarantee profit?', a: "No. No serious tool guarantees profit. EUGINE identifies mathematical edge opportunities." },
+          { q: 'How does the free period work?', a: '7 days of full access, no credit card. Cancel anytime.' },
           { q: 'Do I need to understand statistics?', a: 'No! EUGINE does all the analysis and delivers results visually.' },
-          { q: 'How many matches are analyzed?', a: '50+ matches daily from 30+ leagues. Only matches with detected edge reach you.' },
-          { q: 'Can I use it on mobile?', a: "Yes! It works as an app. Access via browser and add to home screen." },
+          { q: 'How many matches are analyzed?', a: '50+ matches daily from 30+ leagues worldwide.' },
+          { q: 'Can I use it on mobile?', a: "Yes! Works as an app via browser." },
         ],
       },
-      finalCta: { title: 'Your edge starts now.', subtitle: 'Join thousands of bettors who stopped guessing and started calculating.', cta: 'Start free now →' },
+      finalCta: { title: 'Your Edge Starts Now', subtitle: 'Join thousands of bettors who stopped guessing and started calculating.', cta: 'Start Free Now →', ctaSubtext: 'Free for 7 days · No card · Cancel anytime' },
       footer: {
         about: 'About', terms: 'Terms', privacy: 'Privacy', responsible: 'Responsible Gambling', contact: 'Contact',
         copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. All rights reserved.`,
@@ -255,228 +319,273 @@ export default function Landing() {
       },
     },
     es: {
-      nav: { howItWorks: 'Cómo Funciona', plans: 'Planes', login: 'Login', getStarted: 'Empezar' },
+      nav: { howItWorks: 'Cómo Funciona', plans: 'Planes', faq: 'FAQ', login: 'Login', getStarted: 'Empezar' },
       hero: {
-        badge: 'Usado en más de 30 países',
+        badge: '✓ Usado en más de 30 países',
         title: 'NO NECESITAS SUERTE.',
         titleHighlight: 'NECESITAS VENTAJA.',
         subtitle: 'Transforma tus apuestas en decisiones estratégicas con datos reales y probabilidad a tu favor.',
-        urgencyText: 'Plazas para la prueba gratuita cerrándose — solo para los primeros 100 usuarios hoy.',
         ctaButton: 'PRUEBA GRATIS AHORA',
-        ctaSubtext: 'Gratis por 3 días · Sin tarjeta · Cancela cuando quieras',
+        ctaSubtext: '✓ Gratis por 7 días · Sin tarjeta · Cancela cuando quieras',
+        urgency: '⚠️ Plazas para la prueba gratuita cerrándose',
+        stats: ['30+ ligas monitoreadas', '50+ partidos analizados por día', 'Odds en tiempo real'],
+        aiLabel: 'EUGINE AI', proLabel: 'Apostador profesional', aiAdvantage: 'Ventaja de la IA',
       },
-      demo: { title: 'Mira cómo funciona', subtitle: 'Interfaz real del sistema analizando partidos, identificando edges y generando informes en tiempo real.' },
-      socialProof: {
-        title: 'Lo que dicen nuestros usuarios',
-        testimonials: [
-          { name: 'Alejandro G.', role: 'Apostador hace 3 años', text: 'Antes creía que entendía de fútbol. EUGINE me mostró que entender ≠ tener edge. Mi ROI cambió completamente.', stars: 5 },
-          { name: 'Diego M.', role: 'Trader deportivo', text: 'Por fin una herramienta que muestra las matemáticas detrás. No es intuición, es análisis real.', stars: 5 },
-          { name: 'Pablo R.', role: 'Usuario Premium', text: 'Empecé con el básico, hoy soy premium. La diferencia es que ahora sé POR QUÉ estoy apostando.', stars: 5 },
-          { name: 'Sergio L.', role: 'Apostador recreativo', text: 'Lo mejor es la transparencia total. Publican todos los resultados, errores y aciertos.', stars: 4 },
-        ],
-      },
-      authority: {
-        title: '¿Por qué confiar en EUGINE?',
-        items: [
-          { icon: 'brain', title: 'IA Propietaria', desc: 'Modelo entrenado con +100.000 partidos históricos y 7 factores de análisis.' },
-          { icon: 'shield', title: 'Empresa registrada en EE.UU.', desc: 'GS ITALY INVESTMENTS LLC — empresa especializada en análisis de datos.' },
-          { icon: 'chart', title: 'Resultados auditables', desc: 'Todos los resultados son públicos y verificables.' },
-          { icon: 'lock', title: 'Datos encriptados', desc: 'Tu cuenta y datos protegidos con encriptación bancaria.' },
-        ],
-      },
-      stats: { title: 'Resultados Reales. Sin Filtro.', subtitle: 'Publicamos TODOS nuestros resultados — aciertos y errores.', hitRate: 'Tasa de Acierto', wins: 'Aciertos', total: 'Total Analizado', leagues: 'Ligas Monitoreadas' },
-      pricing: {
-        title: 'Elige Tu Plan',
-        guarantee: 'Prueba gratis por 7 días sin riesgo',
-        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '€14,90', period: '/día', features: ['Acceso Premium 24h', 'Análisis Ilimitados', 'Pago Único', 'Sin Recurrencia'], cta: 'Comprar Day Use' },
-        basic: { name: 'BASIC', price: '€29,90', period: '/mes', features: ['5 Partidos al Día', 'Análisis Simple', '1 Doble Diaria'], cta: 'Empezar gratis →' },
-        advanced: { name: 'ADVANCED', badge: '⭐ MÁS POPULAR', price: '€49,90', period: '/mes', features: ['10 Partidos al Día', 'Análisis Completo', '3 Dobles Diarias', 'Acumuladores'], cta: 'Suscribir Advanced' },
-        premium: { name: 'PREMIUM', badge: '👑 Mejor Valor', price: '€79,90', period: '/mes', features: ['Partidos Ilimitados', 'Análisis Premium', 'Todas las Dobles y Zebras', 'Acumuladores Premium', 'Exportación', 'Soporte Prioritario'], cta: 'Suscribir Premium' },
-        comingSoon: 'Próximamente',
-      },
-      faq: {
-        title: 'Preguntas Frecuentes',
-        items: [
-          { q: '¿EUGINE garantiza ganancias?', a: 'No. Ninguna herramienta seria garantiza ganancias. EUGINE identifica ventaja matemática.' },
-          { q: '¿Cómo funciona el periodo gratis?', a: '3 días de acceso completo, sin tarjeta. Cancela cuando quieras.' },
-          { q: '¿Necesito saber de estadística?', a: '¡No! EUGINE hace todo el análisis y te entrega los resultados de forma visual.' },
-          { q: '¿Cuántos partidos se analizan?', a: '50+ partidos diarios de 30+ ligas.' },
-          { q: '¿Puedo usarlo en el celular?', a: 'Sí! Funciona como una app desde el navegador.' },
-        ],
-      },
-      finalCta: { title: 'Tu ventaja empieza ahora.', subtitle: 'Únete a miles de apostadores que dejaron de adivinar.', cta: 'Empezar gratis ahora →' },
-      footer: {
-        about: 'Sobre Nosotros', terms: 'Términos', privacy: 'Privacidad', responsible: 'Juego Responsable', contact: 'Contacto',
-        copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Todos los derechos reservados.`,
-        disclaimer: 'EUGINE es una herramienta de análisis estadístico. Resultados pasados no garantizan resultados futuros.',
-      },
+      liveMatches: { title: 'Partidos con Ventaja Ahora', matches: [{ league: 'La Liga', edge: '+8.2%', home: 'Barcelona', away: 'R. Madrid', bet: 'Over 2.5' }, { league: 'EPL', edge: '+12.4%', home: 'Liverpool', away: 'Arsenal', bet: '1X' }, { league: 'Ligue 1', edge: '+5.7%', home: 'PSG', away: 'Marseille', bet: 'BTTS' }, { league: 'Serie A', edge: '+9.1%', home: 'Inter', away: 'Juventus', bet: 'Under 3.5' }], hitRate: 'Tasa de Acierto', avgEdge: 'Edge Medio Detectado', usersOnline: 'Usuarios Online Ahora' },
+      problem: { title: 'Esto le Pasa al 87% de los Apostadores', subtitle: 'Probablemente ya te pasó:', items: ['Analizas el partido por 2 minutos, pero la casa usó 47 variables estadísticas', 'Sigues tips de grupos sin saber que el 92% no tiene historial auditable', 'Apuestas $50 por "feeling" sin ver que la probabilidad implícita está en contra', 'Aciertas 3, fallas 4 — y al final del mes el saldo es siempre negativo'], conclusion: 'El problema no es apostar. Es apostar sin ventaja matemática comprobada.', explanation: 'La mayoría apuesta por impulso. EUGINE calcula. Cuando la probabilidad real es MAYOR que la odd, existe valor.' },
+      steps: { title: 'Mira Cómo Funciona en 3 Pasos', items: [{ title: 'Escaneamos 50+ partidos por día', desc: 'Analizamos todas las principales ligas, comparando odds con nuestro modelo propietario.' }, { title: 'Encontramos donde la casa ERRA', desc: 'Cuando nuestra probabilidad es MAYOR que la odd ofrecida, existe valor.' }, { title: 'Apuestas SOLO con ventaja', desc: 'Cada sugerencia muestra CUÁNTO edge tienes. 7 factores analizados. 100% transparente.' }] },
+      socialProof: { title: 'Lo que Dicen Nuestros Usuarios', testimonials: [{ name: 'Alejandro G.', role: 'Apostador hace 3 años', text: 'EUGINE me mostró que entender ≠ tener edge. Mi ROI cambió completamente.', stars: 5 }, { name: 'Diego M.', role: 'Trader deportivo', text: 'Por fin una herramienta con matemáticas reales. No intuición.', stars: 5 }, { name: 'Pablo R.', role: 'Usuario Premium', text: 'Ahora sé POR QUÉ estoy apostando.', stars: 5 }, { name: 'Sergio L.', role: 'Apostador recreativo', text: 'La transparencia total me convenció.', stars: 4 }] },
+      authority: { title: '¿Por qué Confiar en EUGINE?', items: [{ icon: 'brain', title: 'IA Propietaria', desc: 'Modelo entrenado con +100.000 partidos.' }, { icon: 'shield', title: 'Empresa en EE.UU.', desc: 'GS ITALY INVESTMENTS LLC.' }, { icon: 'chart', title: 'Resultados Auditables', desc: 'Todos públicos y verificables.' }, { icon: 'lock', title: 'Datos Encriptados', desc: 'Encriptación bancaria.' }], quote: '"No necesitas ganar todas. Solo necesitas ventaja."', quoteAuthor: '— Principio del Value Betting' },
+      pricing: { title: 'Elige Tu Plan', guarantee: 'Prueba gratis por 7 días', basic: { name: 'BASIC', price: '€29,90', period: '/mes', features: ['5 Partidos/Día', 'Análisis Simple', '1 Doble Diaria', 'Soporte Email'], cta: 'Empezar gratis →' }, advanced: { name: 'ADVANCED', badge: 'MÁS POPULAR', price: '€49,90', period: '/mes', features: ['10 Partidos/Día', 'Análisis Completo', '3 Dobles', 'Acumuladores', 'Soporte Prioritario'], cta: 'Suscribir Advanced' }, premium: { name: 'PREMIUM', badge: 'MEJOR VALOR', price: '€79,90', period: '/mes', features: ['Partidos Ilimitados', 'Análisis Premium', 'Todas las Dobles', 'Acumuladores Premium', 'Exportación', 'Soporte 24/7'], cta: 'Suscribir Premium' } },
+      faq: { title: 'Preguntas Frecuentes', items: [{ q: '¿EUGINE garantiza ganancias?', a: 'No. Identifica ventaja matemática.' }, { q: '¿Cómo funciona la prueba?', a: '7 días gratis, sin tarjeta.' }, { q: '¿Necesito saber estadística?', a: 'No! EUGINE hace todo.' }, { q: '¿Cuántos partidos?', a: '50+ diarios de 30+ ligas.' }, { q: '¿En el celular?', a: 'Sí, como app desde el navegador.' }] },
+      finalCta: { title: 'Tu Ventaja Empieza Ahora', subtitle: 'Únete a miles que dejaron de adivinar.', cta: 'Empezar Gratis →', ctaSubtext: 'Gratis 7 días · Sin tarjeta · Cancela cuando quieras' },
+      footer: { about: 'Sobre', terms: 'Términos', privacy: 'Privacidad', responsible: 'Juego Responsable', contact: 'Contacto', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC.`, disclaimer: 'EUGINE es una herramienta de análisis estadístico.' },
     },
     it: {
-      nav: { howItWorks: 'Come Funziona', plans: 'Piani', login: 'Login', getStarted: 'Inizia' },
+      nav: { howItWorks: 'Come Funziona', plans: 'Piani', faq: 'FAQ', login: 'Login', getStarted: 'Inizia' },
       hero: {
-        badge: 'Usato in oltre 30 paesi',
+        badge: '✓ Usato in oltre 30 paesi',
         title: 'NON HAI BISOGNO DI FORTUNA.',
         titleHighlight: 'HAI BISOGNO DI VANTAGGIO.',
         subtitle: 'Trasforma le tue scommesse in decisioni strategiche con dati reali e probabilità a tuo favore.',
-        urgencyText: 'Posti per la prova gratuita in esaurimento — solo per i primi 100 utenti oggi.',
         ctaButton: 'PROVA GRATIS ORA',
-        ctaSubtext: 'Gratis 3 giorni · Senza carta · Cancella quando vuoi',
+        ctaSubtext: '✓ Gratis 7 giorni · Senza carta · Cancella quando vuoi',
+        urgency: '⚠️ Posti per la prova in esaurimento',
+        stats: ['30+ campionati monitorati', '50+ partite analizzate al giorno', 'Quote in tempo reale'],
+        aiLabel: 'EUGINE AI', proLabel: 'Scommettitore professionista', aiAdvantage: 'Vantaggio IA',
       },
-      demo: { title: 'Guarda come funziona', subtitle: 'Interfaccia reale del sistema che analizza partite, identifica edges e genera report in tempo reale.' },
-      socialProof: {
-        title: 'Cosa dicono i nostri utenti',
-        testimonials: [
-          { name: 'Luca Bianchi', role: 'Scommettitore da 4 anni', text: "Prima scommettevo a istinto e perdevo sempre. Con EUGINE ho capito cosa significa avere un vantaggio reale.", stars: 5 },
-          { name: 'Marco Rossi', role: 'Trader sportivo', text: "È l'unico strumento che calcola davvero le probabilità. Niente pronostici a caso, solo matematica.", stars: 5 },
-          { name: 'Alessandro Ferro', role: 'Abbonato Premium', text: "Ho iniziato con il piano base. Dopo una settimana sono passato al premium. Risultati incomparabili.", stars: 5 },
-          { name: 'Giovanni Conti', role: 'Scommettitore del weekend', text: "La trasparenza totale mi ha convinto. Pubblicano ogni risultato, anche gli errori.", stars: 4 },
-        ],
-      },
-      authority: {
-        title: 'Perché fidarsi di EUGINE?',
-        items: [
-          { icon: 'brain', title: 'IA Proprietaria', desc: 'Modello addestrato con +100.000 partite storiche e 7 fattori di analisi.' },
-          { icon: 'shield', title: 'Azienda registrata negli USA', desc: 'GS ITALY INVESTMENTS LLC — azienda specializzata in analisi dati.' },
-          { icon: 'chart', title: 'Risultati verificabili', desc: 'Tutti i risultati sono pubblici e verificabili.' },
-          { icon: 'lock', title: 'Dati crittografati', desc: 'Il tuo account e dati protetti con crittografia bancaria.' },
-        ],
-      },
-      stats: { title: 'Risultati Reali. Senza Filtri.', subtitle: 'Pubblichiamo TUTTI i risultati — successi e errori.', hitRate: 'Tasso Successo', wins: 'Successi', total: 'Totale Analizzato', leagues: 'Campionati Monitorati' },
-      pricing: {
-        title: 'Scegli il Tuo Piano',
-        guarantee: 'Prova gratuita per 7 giorni senza rischio',
-        dayUse: { name: 'DAY USE', badge: 'Premium 24h', price: '€14,90', period: '/giorno', features: ['Accesso Premium 24h', 'Analisi Illimitate', 'Pagamento Unico', 'Senza Ricorrenza'], cta: 'Acquista Day Use' },
-        basic: { name: 'BASIC', price: '€29,90', period: '/mese', features: ['5 Partite al Giorno', 'Analisi Semplice', '1 Doppia'], cta: 'Inizia gratis →' },
-        advanced: { name: 'ADVANCED', badge: '⭐ PIÙ POPOLARE', price: '€49,90', period: '/mese', features: ['10 Partite al Giorno', 'Analisi Completa', '3 Doppie', 'Accumulatori'], cta: 'Abbonati Advanced' },
-        premium: { name: 'PREMIUM', badge: '👑 Miglior Valore', price: '€79,90', period: '/mese', features: ['Partite Illimitate', 'Analisi Premium', 'Tutte le Doppie e Zebra', 'Accumulatori Premium', 'Export Report', 'Supporto Prioritario'], cta: 'Abbonati Premium' },
-        comingSoon: 'Prossimamente',
-      },
-      faq: {
-        title: 'Domande Frequenti',
-        items: [
-          { q: 'EUGINE garantisce profitto?', a: "No. Nessuno strumento serio garantisce profitto. EUGINE identifica dove hai vantaggio matematico." },
-          { q: 'Come funziona il periodo gratuito?', a: '3 giorni di accesso completo, senza carta. Cancella quando vuoi.' },
-          { q: 'Devo sapere di statistica?', a: 'No! EUGINE fa tutta l\'analisi e ti consegna i risultati in modo visuale.' },
-          { q: 'Quante partite vengono analizzate?', a: '50+ partite al giorno da 30+ campionati.' },
-          { q: 'Posso usarlo sul cellulare?', a: "Sì! Funziona come un'app dal browser." },
-        ],
-      },
-      finalCta: { title: 'Il tuo vantaggio inizia ora.', subtitle: "Unisciti a migliaia di scommettitori che hanno smesso di indovinare.", cta: 'Inizia gratis ora →' },
-      footer: {
-        about: 'Chi Siamo', terms: 'Termini', privacy: 'Privacy', responsible: 'Gioco Responsabile', contact: 'Contatto',
-        copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC. Tutti i diritti riservati.`,
-        disclaimer: "EUGINE è uno strumento di analisi statistica. I risultati passati non garantiscono risultati futuri.",
-      },
+      liveMatches: { title: 'Partite con Vantaggio Ora', matches: [{ league: 'La Liga', edge: '+8.2%', home: 'Barcelona', away: 'R. Madrid', bet: 'Over 2.5' }, { league: 'EPL', edge: '+12.4%', home: 'Liverpool', away: 'Arsenal', bet: '1X' }, { league: 'Ligue 1', edge: '+5.7%', home: 'PSG', away: 'Marseille', bet: 'BTTS' }, { league: 'Serie A', edge: '+9.1%', home: 'Inter', away: 'Juventus', bet: 'Under 3.5' }], hitRate: 'Tasso Successo', avgEdge: 'Edge Medio', usersOnline: 'Utenti Online Ora' },
+      problem: { title: "Questo Succede all'87% degli Scommettitori", subtitle: 'Probabilmente è successo anche a te:', items: ['Analizzi la partita per 2 minuti, ma il bookmaker ha usato 47 variabili', "Segui pronostici di gruppi senza sapere che il 92% non ha storico verificabile", "Scommetti €50 per 'feeling' senza vedere che la probabilità implicita è contro di te", 'Indovini 3, sbagli 4 — e a fine mese il saldo è sempre negativo'], conclusion: 'Il problema non è scommettere. È scommettere senza vantaggio matematico.', explanation: 'La maggior parte scommette per impulso. EUGINE calcola. Quando la probabilità reale è MAGGIORE della quota, c\'è valore.' },
+      steps: { title: 'Come Funziona in 3 Passi', items: [{ title: 'Analizziamo 50+ partite al giorno', desc: 'Confrontiamo quote di più bookmaker con il nostro modello proprietario.' }, { title: 'Troviamo dove il bookmaker SBAGLIA', desc: 'Quando la nostra probabilità è MAGGIORE della quota, c\'è valore.' }, { title: 'Scommetti SOLO con vantaggio', desc: 'Ogni suggerimento mostra QUANTO edge hai. 7 fattori. 100% trasparente.' }] },
+      socialProof: { title: 'Cosa Dicono i Nostri Utenti', testimonials: [{ name: 'Luca B.', role: 'Scommettitore da 4 anni', text: 'Con EUGINE ho capito cosa significa avere un vantaggio reale.', stars: 5 }, { name: 'Marco R.', role: 'Trader sportivo', text: "L'unico strumento che calcola davvero le probabilità.", stars: 5 }, { name: 'Alessandro F.', role: 'Abbonato Premium', text: 'Risultati incomparabili da quando uso il premium.', stars: 5 }, { name: 'Giovanni C.', role: 'Scommettitore del weekend', text: 'La trasparenza totale mi ha convinto.', stars: 4 }] },
+      authority: { title: 'Perché Fidarsi di EUGINE?', items: [{ icon: 'brain', title: 'IA Proprietaria', desc: '+100.000 partite storiche.' }, { icon: 'shield', title: 'Azienda USA', desc: 'GS ITALY INVESTMENTS LLC.' }, { icon: 'chart', title: 'Risultati Verificabili', desc: 'Tutti pubblici.' }, { icon: 'lock', title: 'Dati Crittografati', desc: 'Crittografia bancaria.' }], quote: '"Non devi vincere tutte. Devi solo avere vantaggio."', quoteAuthor: '— Principio del Value Betting' },
+      pricing: { title: 'Scegli il Tuo Piano', guarantee: 'Prova gratis 7 giorni', basic: { name: 'BASIC', price: '€29,90', period: '/mese', features: ['5 Partite/Giorno', 'Analisi Semplice', '1 Doppia', 'Supporto Email'], cta: 'Inizia gratis →' }, advanced: { name: 'ADVANCED', badge: 'PIÙ POPOLARE', price: '€49,90', period: '/mese', features: ['10 Partite/Giorno', 'Analisi Completa', '3 Doppie', 'Accumulatori', 'Supporto Prioritario'], cta: 'Abbonati Advanced' }, premium: { name: 'PREMIUM', badge: 'MIGLIOR VALORE', price: '€79,90', period: '/mese', features: ['Partite Illimitate', 'Analisi Premium', 'Tutte le Doppie', 'Accumulatori Premium', 'Export Report', 'Supporto 24/7'], cta: 'Abbonati Premium' } },
+      faq: { title: 'Domande Frequenti', items: [{ q: 'EUGINE garantisce profitto?', a: 'No. Identifica vantaggio matematico.' }, { q: 'Come funziona la prova?', a: '7 giorni gratis, senza carta.' }, { q: 'Devo sapere di statistica?', a: 'No! EUGINE fa tutto.' }, { q: 'Quante partite?', a: '50+ al giorno da 30+ campionati.' }, { q: 'Sul cellulare?', a: "Sì, come app dal browser." }] },
+      finalCta: { title: 'Il Tuo Vantaggio Inizia Ora', subtitle: 'Unisciti a migliaia che hanno smesso di indovinare.', cta: 'Inizia Gratis →', ctaSubtext: 'Gratis 7 giorni · Senza carta · Cancella quando vuoi' },
+      footer: { about: 'Chi Siamo', terms: 'Termini', privacy: 'Privacy', responsible: 'Gioco Responsabile', contact: 'Contatto', copyright: `© ${new Date().getFullYear()} GS ITALY INVESTMENTS LLC.`, disclaimer: "EUGINE è uno strumento di analisi statistica." },
     },
   };
 
   const l = labels[language] || labels.pt;
 
+  const getAuthorityIcon = (icon: string) => {
+    switch (icon) {
+      case 'brain': return <Brain className="w-8 h-8 text-primary" />;
+      case 'shield': return <Shield className="w-8 h-8 text-emerald-400" />;
+      case 'chart': return <Award className="w-8 h-8 text-amber-400" />;
+      case 'lock': return <Lock className="w-8 h-8 text-blue-400" />;
+      default: return null;
+    }
+  };
+
   return (
     <div 
       className="min-h-screen text-foreground overflow-x-hidden relative"
-      style={{ background: 'linear-gradient(180deg, hsl(230 50% 8%) 0%, hsl(222 47% 11%) 50%, hsl(230 50% 8%) 100%)' }}
+      style={{ background: 'linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(217 33% 17%) 50%, hsl(222 47% 11%) 100%)' }}
     >
-      {/* Background */}
-      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 20%, hsla(199, 89%, 48%, 0.06) 0%, transparent 60%)' }} />
 
       {/* ═══════ 1. NAVIGATION ═══════ */}
       <nav className="relative z-50 max-w-7xl mx-auto flex items-center justify-between px-5 py-5">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center animate-glow"
-            style={{ background: 'linear-gradient(135deg, hsl(185 100% 50%) 0%, hsl(260 80% 60%) 100%)' }}>
-            <Brain className="w-5 h-5 text-background" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'hsl(222 47% 20%)' }}>
+            <span className="text-primary font-bold text-sm">E</span>
           </div>
-          <span className="font-display text-xl font-bold tracking-wide text-foreground">EUGINE</span>
+          <span className="font-bold text-lg tracking-wide text-foreground">EUGINE</span>
         </div>
         <div className="hidden md:flex items-center gap-8">
-          <button onClick={() => scrollToSection('demo')} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-semibold">{l.nav.howItWorks}</button>
-          <button onClick={() => scrollToSection('pricing')} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-semibold">{l.nav.plans}</button>
-          <button onClick={() => navigate('/auth')} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-semibold">{l.nav.login}</button>
+          <button onClick={() => scrollToSection('how-it-works')} className="text-muted-foreground hover:text-foreground transition-colors text-sm">{l.nav.howItWorks}</button>
+          <button onClick={() => scrollToSection('pricing')} className="text-muted-foreground hover:text-foreground transition-colors text-sm">{l.nav.plans}</button>
+          <button onClick={() => scrollToSection('faq')} className="text-muted-foreground hover:text-foreground transition-colors text-sm">{l.nav.faq}</button>
+          <button onClick={() => navigate('/auth')} className="text-muted-foreground hover:text-foreground transition-colors text-sm">{l.nav.login}</button>
           <LanguageSelector />
-          <button onClick={() => navigate('/auth')} className="btn-primary text-sm py-3 px-6">{l.nav.getStarted}</button>
+          <button onClick={() => navigate('/auth')} className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all hover:opacity-90" style={{ background: '#FFD700', color: '#0A1A2F' }}>{l.nav.getStarted}</button>
         </div>
         <div className="md:hidden flex items-center gap-3">
           <LanguageSelector />
-          <button onClick={() => navigate('/auth')} className="btn-primary text-xs py-2 px-4">{l.nav.getStarted}</button>
+          <button onClick={() => navigate('/auth')} className="px-4 py-2 rounded-lg text-xs font-bold" style={{ background: '#FFD700', color: '#0A1A2F' }}>{l.nav.getStarted}</button>
         </div>
       </nav>
 
-      {/* ═══════ 2. HERO SECTION ═══════ */}
-      <section className="relative px-5 pt-12 pb-20 lg:pt-20 lg:pb-32">
-        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <span className="text-primary text-xs sm:text-sm font-semibold">{l.hero.badge}</span>
+      {/* ═══════ 2. HERO — Two columns like Manus ═══════ */}
+      <section className="relative px-5 pt-12 pb-16 lg:pt-20 lg:pb-28">
+        <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Text */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border/50 mb-8">
+              <span className="text-muted-foreground text-xs sm:text-sm font-medium">{l.hero.badge}</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-6 leading-[1.1] uppercase">
+              <span className="text-foreground block">{l.hero.title}</span>
+              <span className="block mt-2" style={{ color: '#FFD700' }}>{l.hero.titleHighlight}</span>
+            </h1>
+            <p className="text-muted-foreground text-base sm:text-lg max-w-xl mb-8 leading-relaxed">
+              {l.hero.subtitle}
+            </p>
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-12 py-5 rounded-lg text-lg sm:text-xl font-black inline-flex items-center gap-3 transition-all hover:opacity-90"
+              style={{ background: '#FFD700', color: '#0A1A2F' }}
+            >
+              {l.hero.ctaButton}
+            </button>
+            <p className="text-muted-foreground text-sm mt-4">{l.hero.ctaSubtext}</p>
+            <p className="text-sm mt-2 font-medium" style={{ color: '#FFD700' }}>{l.hero.urgency}</p>
+
+            {/* Quick stats */}
+            <div className="flex flex-col gap-2 mt-8">
+              {l.hero.stats.map((s: string, i: number) => (
+                <div key={i} className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <Zap className="w-4 h-4 text-primary shrink-0" />
+                  <span>{s}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight mb-6 leading-[1.1] uppercase">
-            <span className="text-foreground block">{l.hero.title}</span>
-            <span className="block mt-2" style={{ color: '#FFD700', textShadow: '0 0 30px rgba(255,215,0,0.3)' }}>{l.hero.titleHighlight}</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            {l.hero.subtitle}
-          </p>
-
-          {/* CTA Button — Large & Prominent */}
-          <button
-            onClick={() => navigate('/auth')}
-            className="px-14 py-6 rounded-2xl text-xl sm:text-2xl font-black inline-flex items-center gap-3 transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(255,215,0,0.5)] shadow-[0_0_25px_rgba(255,215,0,0.3)]"
-            style={{ background: '#FFD700', color: '#0A1A2F' }}
-          >
-            {l.hero.ctaButton}
-            <ArrowRight className="w-7 h-7" />
-          </button>
-
-          {/* Subtext */}
-          <p className="text-sm mt-4 flex items-center justify-center gap-1.5 animate-pulse font-bold" style={{ color: '#39FF14', textShadow: '0 0 10px rgba(57,255,20,0.6)' }}>
-            <Check className="w-4 h-4 shrink-0" style={{ color: '#39FF14' }} />
-            {l.hero.ctaSubtext}
-          </p>
-
-          {/* Urgency */}
-          <p className="text-xs sm:text-sm mt-3 animate-pulse" style={{ color: '#FFD700' }}>
-            ⚡ {l.hero.urgencyText}
-          </p>
-        </div>
-      </section>
-
-      {/* ═══════ 3. DEMO VIDEO — "Veja como funciona" ═══════ */}
-      <section id="demo" className="py-16 sm:py-24 relative">
-        <div className="max-w-4xl mx-auto px-5">
-          <ScrollFadeIn>
-            <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-3">{l.demo.title}</h2>
-            <p className="text-muted-foreground text-sm sm:text-base text-center mb-10 max-w-2xl mx-auto">{l.demo.subtitle}</p>
-          </ScrollFadeIn>
-          <ScrollFadeIn delay={200}>
-            <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl" style={{ boxShadow: '0 25px 80px -12px hsla(199, 89%, 48%, 0.2)' }}>
-              <video autoPlay muted loop playsInline className="w-full h-auto" poster={heroDashboardImg}>
-                <source src={eugineDemo} type="video/mp4" />
-              </video>
-              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 to-transparent" />
+          {/* Right: Comparison Card */}
+          <div className="lg:pl-8">
+            <div className="rounded-2xl p-6 sm:p-8 border border-border/50" style={{ background: 'hsl(222 47% 14%)' }}>
+              {/* AI vs Pro comparison */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-foreground font-bold text-sm">{l.hero.aiLabel}</span>
+                  <span className="text-primary font-black text-lg">{displayHitRate}%</span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-secondary/50 overflow-hidden mb-1">
+                  <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${displayHitRate}%`, background: 'linear-gradient(90deg, hsl(199 89% 48%), hsl(160 70% 40%))' }} />
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-muted-foreground text-sm">{l.hero.proLabel}</span>
+                </div>
+                <div className="w-full h-2.5 rounded-full bg-secondary/50 overflow-hidden">
+                  <div className="h-full rounded-full bg-muted-foreground/30" style={{ width: '42%' }} />
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-muted-foreground text-xs">~42%</span>
+                  <span className="text-primary font-bold text-sm">+{displayHitRate - 42}% {l.hero.aiAdvantage}</span>
+                </div>
+              </div>
             </div>
-          </ScrollFadeIn>
+          </div>
         </div>
       </section>
 
-      {/* ═══════ 4. SOCIAL PROOF — Testimonials ═══════ */}
-      <section className="py-16 sm:py-24">
+      {/* ═══════ 3. LIVE MATCHES — "Jogos com Vantagem Agora" ═══════ */}
+      <section className="py-16 sm:py-20">
         <div className="max-w-6xl mx-auto px-5">
           <ScrollFadeIn>
-            <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-12">{l.socialProof.title}</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-center mb-10">{l.liveMatches.title}</h2>
+          </ScrollFadeIn>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            {l.liveMatches.matches.map((m: any, i: number) => (
+              <ScrollFadeIn key={i} delay={i * 80}>
+                <div className="rounded-xl p-5 border border-border/50 hover:border-primary/30 transition-all" style={{ background: 'hsl(222 47% 14%)' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-muted-foreground font-medium">{m.league}</span>
+                    <span className="text-xs font-bold text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10">{m.edge}</span>
+                  </div>
+                  <p className="text-foreground font-semibold text-sm mb-1">{m.home} × {m.away}</p>
+                  <p className="text-primary text-xs font-bold">{m.bet}</p>
+                </div>
+              </ScrollFadeIn>
+            ))}
+          </div>
+
+          {/* Inline stats */}
+          <div className="grid grid-cols-3 gap-4 sm:gap-8">
+            <ScrollFadeIn delay={0}>
+              <div className="text-center">
+                <p className="text-3xl sm:text-4xl font-black text-primary"><AnimatedCounter end={statsLoaded ? stats.hitRate : 65} suffix="%" /></p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.liveMatches.hitRate}</p>
+              </div>
+            </ScrollFadeIn>
+            <ScrollFadeIn delay={100}>
+              <div className="text-center">
+                <p className="text-3xl sm:text-4xl font-black text-emerald-400">+<AnimatedCounter end={displayEdge * 10} suffix="%" prefix="" /></p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.liveMatches.avgEdge}</p>
+              </div>
+            </ScrollFadeIn>
+            <ScrollFadeIn delay={200}>
+              <div className="text-center">
+                <p className="text-3xl sm:text-4xl font-black text-foreground"><AnimatedCounter end={97} /></p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{l.liveMatches.usersOnline}</p>
+              </div>
+            </ScrollFadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════ 4. PROBLEM / AGITATION ═══════ */}
+      <section className="py-16 sm:py-20">
+        <div className="max-w-3xl mx-auto px-5">
+          <ScrollFadeIn>
+            <h2 className="text-2xl sm:text-3xl font-black text-center mb-3">{l.problem.title}</h2>
+            <p className="text-muted-foreground text-center mb-10">{l.problem.subtitle}</p>
+          </ScrollFadeIn>
+          <div className="space-y-4 mb-10">
+            {l.problem.items.map((item: string, i: number) => (
+              <ScrollFadeIn key={i} delay={i * 80}>
+                <div className="flex items-start gap-4 p-5 rounded-xl border border-border/50" style={{ background: 'hsl(222 47% 14%)' }}>
+                  <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                  <p className="text-muted-foreground text-sm leading-relaxed">{item}</p>
+                </div>
+              </ScrollFadeIn>
+            ))}
+          </div>
+          <ScrollFadeIn delay={400}>
+            <p className="text-foreground font-bold text-center text-base sm:text-lg mb-4">{l.problem.conclusion}</p>
+            <p className="text-muted-foreground text-center text-sm leading-relaxed">{l.problem.explanation}</p>
+          </ScrollFadeIn>
+        </div>
+      </section>
+
+      {/* ═══════ 5. 3 STEPS — "Como Funciona" ═══════ */}
+      <section id="how-it-works" className="py-16 sm:py-20">
+        <div className="max-w-4xl mx-auto px-5">
+          <ScrollFadeIn>
+            <h2 className="text-2xl sm:text-3xl font-black text-center mb-12">{l.steps.title}</h2>
+          </ScrollFadeIn>
+          <div className="space-y-8">
+            {l.steps.items.map((step: any, i: number) => (
+              <ScrollFadeIn key={i} delay={i * 150}>
+                <div className="flex gap-5 sm:gap-8">
+                  <div className="shrink-0">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg" style={{ background: 'linear-gradient(135deg, hsl(199 89% 48%), hsl(160 70% 40%))', color: '#fff' }}>
+                      {i + 1}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-foreground font-bold text-lg mb-2">{step.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{step.desc}</p>
+                  </div>
+                </div>
+              </ScrollFadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════ 6. TESTIMONIALS ═══════ */}
+      <section className="py-16 sm:py-20">
+        <div className="max-w-6xl mx-auto px-5">
+          <ScrollFadeIn>
+            <h2 className="text-2xl sm:text-3xl font-black text-center mb-12">{l.socialProof.title}</h2>
           </ScrollFadeIn>
           <div className="grid sm:grid-cols-2 gap-6">
             {l.socialProof.testimonials.map((t: any, i: number) => (
               <ScrollFadeIn key={i} delay={i * 100}>
-                <div className="glass-card p-6 sm:p-8 h-full flex flex-col">
+                <div className="p-6 sm:p-8 h-full flex flex-col rounded-xl border border-border/50" style={{ background: 'hsl(222 47% 14%)' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-foreground font-bold text-sm" style={{ background: 'hsl(222 47% 20%)' }}>
+                      {t.name[0]}
+                    </div>
+                    <div>
+                      <p className="text-foreground font-semibold text-sm">{t.name}</p>
+                      <p className="text-muted-foreground text-xs">{t.role}</p>
+                    </div>
+                  </div>
                   <div className="flex gap-1 mb-4">
                     {Array.from({ length: t.stars }).map((_, si) => (
                       <Star key={si} className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -485,20 +594,9 @@ export default function Landing() {
                       <Star key={si} className="w-4 h-4 text-muted-foreground/30" />
                     ))}
                   </div>
-                  <p className="text-foreground text-sm sm:text-base leading-relaxed mb-6 flex-grow italic">
+                  <p className="text-muted-foreground text-sm leading-relaxed flex-grow">
                     &ldquo;{t.text}&rdquo;
                   </p>
-                  <div className="flex items-center gap-3 pt-4 border-t border-border/30">
-                    <div className="w-10 h-10 rounded-full overflow-hidden">
-                      <img 
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(t.name)}&backgroundColor=b6e3f4,c0aede,d1d4f9`} 
-                        alt={t.name} className="w-full h-full object-cover" loading="lazy" />
-                    </div>
-                    <div>
-                      <p className="text-foreground font-semibold text-sm">{t.name}</p>
-                      <p className="text-muted-foreground text-xs">{t.role}</p>
-                    </div>
-                  </div>
                 </div>
               </ScrollFadeIn>
             ))}
@@ -506,173 +604,94 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════ 5. TRUST BADGES ═══════ */}
+      {/* ═══════ 7. TRUST / AUTHORITY ═══════ */}
       <section className="py-16 sm:py-20">
         <div className="max-w-5xl mx-auto px-5">
           <ScrollFadeIn>
             <h2 className="text-2xl sm:text-3xl font-black text-center mb-12">{l.authority.title}</h2>
           </ScrollFadeIn>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {l.authority.items.map((item: any, i: number) => (
               <ScrollFadeIn key={i} delay={i * 100}>
-                <div className="text-center p-6 rounded-2xl bg-secondary/30 border border-border/50 hover:border-primary/30 transition-all">
-                  <div className="mx-auto mb-5">
-                    {item.icon === 'brain' && (
-                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-primary/50 bg-primary/10 flex items-center justify-center shadow-[0_0_20px_hsla(199,89%,48%,0.2)]">
-                        <Brain className="w-9 h-9 text-primary" />
-                      </div>
-                    )}
-                    {item.icon === 'shield' && (
-                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-emerald-400/50 bg-emerald-500/10 flex items-center justify-center shadow-[0_0_20px_hsla(145,80%,40%,0.2)] relative">
-                        <Shield className="w-9 h-9 text-emerald-400" />
-                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center border-2 border-background"><Check className="w-4 h-4 text-white" /></div>
-                      </div>
-                    )}
-                    {item.icon === 'chart' && (
-                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-amber-400/50 bg-amber-500/10 flex items-center justify-center shadow-[0_0_20px_hsla(38,92%,50%,0.2)] relative">
-                        <Award className="w-9 h-9 text-amber-400" />
-                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center border-2 border-background"><Check className="w-4 h-4 text-white" /></div>
-                      </div>
-                    )}
-                    {item.icon === 'lock' && (
-                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-blue-400/50 bg-blue-500/10 flex items-center justify-center shadow-[0_0_20px_hsla(220,80%,50%,0.2)] relative">
-                        <Lock className="w-9 h-9 text-blue-400" />
-                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center border-2 border-background"><Shield className="w-4 h-4 text-white" /></div>
-                      </div>
-                    )}
+                <div className="text-center p-6 rounded-xl border border-border/50" style={{ background: 'hsl(222 47% 14%)' }}>
+                  <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center bg-secondary/50">
+                    {getAuthorityIcon(item.icon)}
                   </div>
-                  {item.icon === 'shield' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 mb-3 border border-emerald-500/30 tracking-wider">✓ VERIFIED · US REGISTERED</span>}
-                  {item.icon === 'lock' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 mb-3 border border-blue-500/30 tracking-wider">🔒 BANK-LEVEL ENCRYPTION</span>}
-                  {item.icon === 'chart' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 mb-3 border border-amber-500/30 tracking-wider">📊 AUDITED RESULTS</span>}
-                  {item.icon === 'brain' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-primary/20 text-primary mb-3 border border-primary/30 tracking-wider">🧠 PROPRIETARY AI</span>}
-                  <h3 className="text-foreground font-bold text-base mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                  <h3 className="text-foreground font-bold text-sm mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>
                 </div>
               </ScrollFadeIn>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ═══════ 6. RESULTS — Real Stats ═══════ */}
-      <section className="py-16 sm:py-20">
-        <div className="max-w-5xl mx-auto px-5">
-          <ScrollFadeIn>
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-3">{l.stats.title}</h2>
-            <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">{l.stats.subtitle}</p>
+          {/* Value Betting Quote */}
+          <ScrollFadeIn delay={400}>
+            <div className="text-center mt-8">
+              <p className="text-foreground text-lg sm:text-xl font-bold italic mb-2">{l.authority.quote}</p>
+              <p className="text-muted-foreground text-sm">{l.authority.quoteAuthor}</p>
+            </div>
           </ScrollFadeIn>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-            <ScrollFadeIn delay={0}>
-              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                <Target className="w-8 h-8 text-primary mx-auto mb-3" />
-                <p className="text-3xl sm:text-5xl font-black text-primary"><AnimatedCounter end={statsLoaded ? stats.hitRate : 59} suffix="%" /></p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.hitRate}</p>
-              </div>
-            </ScrollFadeIn>
-            <ScrollFadeIn delay={100}>
-              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
-                <p className="text-3xl sm:text-5xl font-black text-emerald-400"><AnimatedCounter end={statsLoaded ? stats.wins : 32} /></p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.wins}</p>
-              </div>
-            </ScrollFadeIn>
-            <ScrollFadeIn delay={200}>
-              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                <BarChart3 className="w-8 h-8 text-foreground mx-auto mb-3" />
-                <p className="text-3xl sm:text-5xl font-black text-foreground"><AnimatedCounter end={statsLoaded ? stats.total : 54} /></p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.total}</p>
-              </div>
-            </ScrollFadeIn>
-            <ScrollFadeIn delay={300}>
-              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                <TrendingUp className="w-8 h-8 text-amber-400 mx-auto mb-3" />
-                <p className="text-3xl sm:text-5xl font-black text-amber-400"><AnimatedCounter end={30} suffix="+" /></p>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.leagues}</p>
-              </div>
-            </ScrollFadeIn>
-          </div>
         </div>
       </section>
 
-      {/* ═══════ 7. PRICING ═══════ */}
+      {/* ═══════ 8. PRICING — 3 plans ═══════ */}
       <section id="pricing" className="relative px-5 py-20">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <ScrollFadeIn>
-            <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-4">{l.pricing.title}</h2>
-            <p className="text-center text-primary/80 text-sm font-semibold mb-12 flex items-center justify-center gap-2">
-              <Shield className="w-4 h-4" /> {l.pricing.guarantee}
-            </p>
+            <h2 className="text-2xl sm:text-3xl font-black text-center mb-3">{l.pricing.title}</h2>
+            <p className="text-center text-muted-foreground text-sm mb-12">{l.pricing.guarantee}</p>
           </ScrollFadeIn>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {/* Day Use */}
-            <ScrollFadeIn delay={0}>
-              <div className="relative glass-card p-8 flex flex-col border-2 border-success/50 opacity-70 h-full">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2"><span className="bg-success text-success-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">{l.pricing.dayUse.badge}</span></div>
-                <div className="text-center mb-6 pt-4">
-                  <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.dayUse.name}</h3>
-                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.dayUse.price}</span>
-                  <span className="text-muted-foreground text-base font-semibold block">{l.pricing.dayUse.period}</span>
-                </div>
-                <ul className="space-y-4 flex-grow mb-8">
-                  {l.pricing.dayUse.features.map((f: string, i: number) => (<li key={i} className="flex items-start gap-3 text-muted-foreground"><Zap className="w-5 h-5 text-success mt-0.5 shrink-0" /><span>{f}</span></li>))}
-                </ul>
-                <button disabled className="w-full h-14 mt-auto rounded-lg font-bold opacity-50 cursor-not-allowed bg-muted text-muted-foreground">{l.pricing.comingSoon}</button>
-              </div>
-            </ScrollFadeIn>
-
+          <div className="grid sm:grid-cols-3 gap-6 sm:gap-8">
             {/* Basic */}
-            <ScrollFadeIn delay={100}>
-              <div className="glass-card p-8 flex flex-col border-2 border-transparent hover:-translate-y-2.5 hover:border-primary hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.2)] transition-all duration-300 h-full">
+            <ScrollFadeIn delay={0}>
+              <div className="rounded-xl p-8 flex flex-col border border-border/50 h-full" style={{ background: 'hsl(222 47% 14%)' }}>
                 <div className="text-center mb-6">
                   <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.basic.name}</h3>
-                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.basic.price}</span>
-                  <span className="text-muted-foreground text-base font-semibold block">{l.pricing.basic.period}</span>
+                  <div><span className="text-foreground text-3xl sm:text-4xl font-black">{l.pricing.basic.price}</span><span className="text-muted-foreground text-sm">{l.pricing.basic.period}</span></div>
                 </div>
-                <ul className="space-y-4 flex-grow mb-8">
-                  {l.pricing.basic.features.map((f: string, i: number) => (<li key={i} className="flex items-start gap-3 text-muted-foreground"><CheckCircle className="w-5 h-5 text-primary mt-0.5 shrink-0" /><span>{f}</span></li>))}
+                <button onClick={() => navigate('/auth')} className="w-full py-3 rounded-lg font-bold mb-6 transition-all hover:opacity-90" style={{ background: '#FFD700', color: '#0A1A2F' }}>{l.pricing.basic.cta}</button>
+                <ul className="space-y-3 flex-grow">
+                  {l.pricing.basic.features.map((f: string, i: number) => (<li key={i} className="flex items-center gap-3 text-muted-foreground text-sm"><Check className="w-4 h-4 text-primary shrink-0" /><span>{f}</span></li>))}
                 </ul>
-                <button onClick={() => navigate('/auth')} className="w-full h-14 mt-auto rounded-lg font-bold bg-emerald-500 text-foreground hover:bg-emerald-600 transition-all hover:shadow-lg">{l.pricing.basic.cta}</button>
               </div>
             </ScrollFadeIn>
 
             {/* Advanced — HIGHLIGHTED */}
-            <ScrollFadeIn delay={200}>
-              <div className="relative glass-card p-8 flex flex-col price-card-highlighted hover:-translate-y-2.5 hover:shadow-[0_20px_40px_hsla(185,100%,50%,0.3)] transition-all duration-300 sm:scale-105 origin-top h-full">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10"><span className="bg-primary text-primary-foreground text-xs font-bold px-5 py-1.5 rounded-full inline-block animate-pulse">{l.pricing.advanced.badge}</span></div>
-                <div className="text-center mb-6 pt-4">
+            <ScrollFadeIn delay={100}>
+              <div className="relative rounded-xl p-8 flex flex-col border-2 border-primary h-full sm:-mt-4 sm:mb-[-16px]" style={{ background: 'hsl(222 47% 14%)', boxShadow: '0 0 40px hsla(199, 89%, 48%, 0.15)' }}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2"><span className="bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">{l.pricing.advanced.badge}</span></div>
+                <div className="text-center mb-6 pt-2">
                   <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.advanced.name}</h3>
-                  <span className="text-primary text-4xl sm:text-5xl font-black">{l.pricing.advanced.price}</span>
-                  <span className="text-muted-foreground text-base font-semibold block">{l.pricing.advanced.period}</span>
+                  <div><span className="text-foreground text-3xl sm:text-4xl font-black">{l.pricing.advanced.price}</span><span className="text-muted-foreground text-sm">{l.pricing.advanced.period}</span></div>
                 </div>
-                <ul className="space-y-4 flex-grow mb-8">
-                  {l.pricing.advanced.features.map((f: string, i: number) => (<li key={i} className="flex items-start gap-3 text-foreground"><CheckCircle className="w-5 h-5 text-primary mt-0.5 shrink-0" /><span>{f}</span></li>))}
+                <button onClick={() => navigate('/auth')} className="w-full py-3 rounded-lg font-bold mb-6 transition-all hover:opacity-90" style={{ background: '#FFD700', color: '#0A1A2F' }}>{l.pricing.advanced.cta}</button>
+                <ul className="space-y-3 flex-grow">
+                  {l.pricing.advanced.features.map((f: string, i: number) => (<li key={i} className="flex items-center gap-3 text-foreground text-sm"><Check className="w-4 h-4 text-primary shrink-0" /><span>{f}</span></li>))}
                 </ul>
-                <button onClick={() => navigate('/auth')} className="btn-primary w-full h-14 mt-auto flex items-center justify-center text-base font-bold">{l.pricing.advanced.cta}</button>
               </div>
             </ScrollFadeIn>
 
             {/* Premium */}
-            <ScrollFadeIn delay={300}>
-              <div className="relative glass-card p-8 flex flex-col border-2 border-accent/50 hover:-translate-y-2.5 hover:border-accent hover:shadow-[0_20px_40px_hsla(260,80%,60%,0.3)] transition-all duration-300 h-full" style={{ background: 'linear-gradient(180deg, hsla(260, 80%, 60%, 0.1) 0%, hsla(230, 45%, 12%, 1) 100%)' }}>
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10"><span className="bg-accent text-accent-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">{l.pricing.premium.badge}</span></div>
-                <div className="text-center mb-6 pt-4">
+            <ScrollFadeIn delay={200}>
+              <div className="relative rounded-xl p-8 flex flex-col border border-border/50 h-full" style={{ background: 'hsl(222 47% 14%)' }}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2"><span className="text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap" style={{ background: '#FFD700', color: '#0A1A2F' }}>{l.pricing.premium.badge}</span></div>
+                <div className="text-center mb-6 pt-2">
                   <h3 className="text-foreground font-bold text-xl mb-4">{l.pricing.premium.name}</h3>
-                  <span className="text-amber-400 text-4xl sm:text-5xl font-black">{l.pricing.premium.price}</span>
-                  <span className="text-muted-foreground text-base font-semibold block">{l.pricing.premium.period}</span>
+                  <div><span className="text-foreground text-3xl sm:text-4xl font-black">{l.pricing.premium.price}</span><span className="text-muted-foreground text-sm">{l.pricing.premium.period}</span></div>
                 </div>
-                <ul className="space-y-3 flex-grow mb-8">
-                  {l.pricing.premium.features.map((f: string, i: number) => (<li key={i} className="flex items-start gap-3 text-foreground"><CheckCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" /><span>{f}</span></li>))}
+                <button onClick={() => navigate('/auth')} className="w-full py-3 rounded-lg font-bold mb-6 transition-all hover:opacity-90" style={{ background: '#FFD700', color: '#0A1A2F' }}>{l.pricing.premium.cta}</button>
+                <ul className="space-y-3 flex-grow">
+                  {l.pricing.premium.features.map((f: string, i: number) => (<li key={i} className="flex items-center gap-3 text-foreground text-sm"><Check className="w-4 h-4 text-primary shrink-0" /><span>{f}</span></li>))}
                 </ul>
-                <button onClick={() => navigate('/auth')} className="w-full h-14 mt-auto rounded-lg font-bold transition-all hover:shadow-lg" style={{ background: 'linear-gradient(135deg, hsl(38 92% 50%), hsl(25 95% 53%))', color: 'hsl(0 0% 0%)' }}>{l.pricing.premium.cta}</button>
               </div>
             </ScrollFadeIn>
           </div>
         </div>
       </section>
 
-      {/* ═══════ 8. FAQ — Accordion ═══════ */}
-      <section className="py-16 sm:py-20">
+      {/* ═══════ 9. FAQ ═══════ */}
+      <section id="faq" className="py-16 sm:py-20">
         <div className="max-w-3xl mx-auto px-5">
           <ScrollFadeIn>
             <h2 className="text-2xl sm:text-3xl font-black text-center mb-10">{l.faq.title}</h2>
@@ -687,53 +706,52 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════ 9. FINAL CTA ═══════ */}
+      {/* ═══════ 10. FINAL CTA ═══════ */}
       <section className="py-16 sm:py-24">
-        <div className="max-w-2xl mx-auto px-5">
+        <div className="max-w-2xl mx-auto px-5 text-center">
           <ScrollFadeIn>
-            <div className="text-center p-10 sm:p-14 rounded-3xl border border-primary/30 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, hsla(199, 89%, 48%, 0.08) 0%, hsla(230, 45%, 12%, 0.9) 100%)', boxShadow: '0 0 60px hsla(199, 89%, 48%, 0.15)' }}>
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-              <Sparkles className="w-10 h-10 text-primary mx-auto mb-6" />
-              <h2 className="text-2xl sm:text-4xl font-black text-foreground mb-4">{l.finalCta.title}</h2>
-              <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">{l.finalCta.subtitle}</p>
-              <button 
-                onClick={() => navigate('/auth')}
-                className="px-10 py-4 text-base sm:text-lg font-black rounded-xl inline-flex items-center gap-2 transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,215,0,0.4)]"
-                style={{ background: '#FFD700', color: '#0A1A2F' }}
-              >
-                {l.finalCta.cta}
-              </button>
-              <p className="text-xs mt-4 flex items-center justify-center gap-1.5 animate-pulse font-bold" style={{ color: '#39FF14', textShadow: '0 0 10px rgba(57,255,20,0.6)' }}>
-                <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#39FF14' }} />
-                {l.hero.ctaSubtext}
-              </p>
-            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-foreground mb-4">{l.finalCta.title}</h2>
+            <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto">{l.finalCta.subtitle}</p>
+            <button 
+              onClick={() => navigate('/auth')}
+              className="px-10 py-4 text-base sm:text-lg font-black rounded-lg inline-flex items-center gap-2 transition-all hover:opacity-90"
+              style={{ background: '#FFD700', color: '#0A1A2F' }}
+            >
+              {l.finalCta.cta}
+            </button>
+            <p className="text-muted-foreground text-sm mt-4">{l.finalCta.ctaSubtext}</p>
           </ScrollFadeIn>
         </div>
       </section>
 
-      {/* ═══════ 10. FOOTER ═══════ */}
-      <footer className="relative px-5 py-12 border-t border-border/50">
+      {/* ═══════ 11. FOOTER ═══════ */}
+      <footer className="relative px-5 py-12 border-t border-border/30">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col items-center gap-6">
-            <div className="text-center">
-              <span className="font-display text-lg font-bold text-foreground">EUGINE</span>
-              <p className="text-muted-foreground text-xs mt-1 inline-flex items-center gap-1">by <USFlag3D className="w-4 h-3" /> GS ITALY INVESTMENTS LLC <USFlag3D className="w-4 h-3" /></p>
-            </div>
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-muted-foreground">
               <a href="/about" className="hover:text-foreground transition-colors">{l.footer.about}</a>
               <a href="/termos-de-uso" className="hover:text-foreground transition-colors">{l.footer.terms}</a>
               <a href="/politica-de-privacidade" className="hover:text-foreground transition-colors">{l.footer.privacy}</a>
-              <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-1"><Shield className="w-3.5 h-3.5" />{l.footer.responsible}</a>
+              <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">{l.footer.responsible}</a>
               <a href="mailto:support@eugineai.com" className="hover:text-foreground transition-colors">{l.footer.contact}</a>
             </div>
-            <div className="mt-4 pt-4 border-t border-border/30">
-              <p className="text-[10px] sm:text-xs text-muted-foreground/60 max-w-3xl mx-auto text-center leading-relaxed">{l.footer.disclaimer}</p>
-            </div>
-            <p className="text-muted-foreground/40 text-xs inline-flex items-center gap-1"><USFlag3D className="w-3.5 h-2.5" /> {l.footer.copyright} <USFlag3D className="w-3.5 h-2.5" /></p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground/60 max-w-3xl mx-auto text-center leading-relaxed">{l.footer.disclaimer}</p>
+            <p className="text-muted-foreground/40 text-xs">{l.footer.copyright}</p>
           </div>
         </div>
       </footer>
+
+      {/* ═══════ WHATSAPP FLOATING BUTTON ═══════ */}
+      <a
+        href="https://wa.me/5511999999999"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
+        style={{ background: '#25D366' }}
+        title="Abrir WhatsApp"
+      >
+        <MessageCircle className="w-7 h-7 text-white" />
+      </a>
     </div>
   );
 }
