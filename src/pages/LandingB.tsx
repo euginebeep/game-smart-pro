@@ -203,7 +203,7 @@ export default function LandingB() {
       {/* ═══════ NAV ═══════ */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 sm:px-10" style={{ height: 64, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', borderBottom: `1px solid ${C.border}` }}>
         <div className="flex items-center">
-          <img src={eugineLogo} alt="EUGINE" className="h-10 w-auto" />
+          <img src={eugineLogo} alt="EUGINE" className="h-20 w-auto" />
         </div>
         <div className="hidden md:flex items-center gap-8">
           <button onClick={() => scrollTo('b-how')} className="text-sm hover:opacity-70 transition-opacity" style={{ color: C.textSecondary }}>{l.nav.howItWorks}</button>
