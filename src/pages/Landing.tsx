@@ -1265,17 +1265,7 @@ export default function Landing() {
         </div>
       </footer>
 
-      {/* ═══════ FLOATING WHATSAPP BUTTON ═══════ */}
-      <a
-        href="https://wa.me/message/eugineai"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-        style={{ background: '#25D366' }}
-        aria-label="WhatsApp Support"
-      >
-        <MessageCircle className="w-7 h-7 text-white" />
-      </a>
+
     </div>
   );
 }
