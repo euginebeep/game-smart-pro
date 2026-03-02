@@ -43,6 +43,9 @@ export function AccumulatorCard({
     cleanTitle = t('accumulators.goalBetLabel') || 'Aposta Em Gols';
   }
 
+  // Better title readability: split in two lines when title has separator
+  const [titleMain, titleSub] = cleanTitle.split('—').map((part) => part.trim());
+
   const totalOdd = bets.reduce((acc, b) => acc * b.odd, 1);
   const potentialReturn = Math.round(betAmount * totalOdd * 100) / 100;
   const potentialProfit = Math.round((potentialReturn - betAmount) * 100) / 100;
@@ -102,15 +105,16 @@ export function AccumulatorCard({
         <div className="px-5 pt-5 pb-3">
 
           {/* Header: emoji + título + badge de risco */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <span className="text-3xl">{emoji}</span>
-              <h3 className="font-bold text-foreground text-base sm:text-lg tracking-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                {cleanTitle}
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <span className="text-3xl leading-none mt-0.5">{emoji}</span>
+              <h3 className="font-bold text-foreground text-lg sm:text-2xl tracking-tight leading-tight" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                {titleMain || cleanTitle}
+                {titleSub && <span className="block text-foreground mt-0.5">{titleSub}</span>}
               </h3>
             </div>
             <span
-              className={`text-xs sm:text-sm font-bold px-4 py-1.5 rounded-full border ${style.badge} tracking-wide`}
+              className={`text-sm sm:text-base font-extrabold px-5 py-2 rounded-full border ${style.badge} tracking-wide leading-none whitespace-nowrap`}
               style={{ fontFamily: "'Montserrat', sans-serif" }}
             >
               {style.label}
@@ -138,21 +142,21 @@ export function AccumulatorCard({
           <div className="grid grid-cols-3 gap-2">
 
             {/* Odd Total */}
-            <div className="rounded-xl bg-secondary/50 p-3 text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+            <div className="rounded-xl bg-secondary/50 p-3.5 text-center">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
                 {t('accumulators.totalOdd') || 'Cotação'}
               </p>
-              <p className={`text-xl sm:text-2xl font-extrabold ${style.accent}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              <p className={`text-2xl sm:text-3xl font-extrabold ${style.accent}`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 {totalOdd.toFixed(2)}
               </p>
             </div>
 
             {/* Chance EUGINE */}
-            <div className="rounded-xl bg-secondary/50 p-3 text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+            <div className="rounded-xl bg-secondary/50 p-3.5 text-center">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
                 {t('accumulators.chance') || 'Chance'}
               </p>
-              <p className={`text-xl sm:text-2xl font-extrabold ${
+              <p className={`text-2xl sm:text-3xl font-extrabold ${
                 chancePercent >= 40 ? 'text-emerald-400' :
                 chancePercent >= 20 ? 'text-sky-400' :
                 chancePercent >= 10 ? 'text-amber-400' :
@@ -163,13 +167,13 @@ export function AccumulatorCard({
             </div>
 
             {/* Vantagem (EFEITO VON RESTORFF) */}
-            <div className={`rounded-xl p-3 text-center relative overflow-hidden ${
+            <div className={`rounded-xl p-3.5 text-center relative overflow-hidden ${
               edge > 0 ? 'bg-emerald-500/15 border border-emerald-500/30' : 'bg-secondary/50'
             }`}>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
                 {t('accumulators.eugineEdge') || 'Vantagem'}
               </p>
-              <p className={`text-xl sm:text-2xl font-extrabold ${
+              <p className={`text-2xl sm:text-3xl font-extrabold ${
                 edge > 0 ? 'text-emerald-400' : 'text-muted-foreground'
               }`} style={{ fontFamily: "'Montserrat', sans-serif" }}>
                 {edge > 0 ? `+${edge}%` : '0%'}
