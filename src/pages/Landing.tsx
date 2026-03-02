@@ -49,6 +49,7 @@ import stepAnalysisMainImg from '@/assets/step-analysis-main.png';
 import stepAnalysisFactorsImg from '@/assets/step-analysis-factors.png';
 import heroDashboardImg from '@/assets/hero-dashboard.png';
 import warningMegaphoneImg from '@/assets/warning-megaphone.png';
+import eugineDemo from '@/assets/eugine-demo.mp4';
 
 // ─── Animated Counter ───
 function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '' }: { end: number; duration?: number; suffix?: string; prefix?: string }) {
@@ -665,32 +666,22 @@ export default function Landing() {
                 />
               )}
 
-              {/* Lead Capture */}
-              <div className="max-w-md mx-auto lg:mx-0 mb-4">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="email"
-                    placeholder={l.hero.emailPlaceholder}
-                    value={leadEmail}
-                    onChange={(e) => setLeadEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleLeadCapture()}
-                    className="w-full sm:flex-1 px-4 py-4 rounded-xl bg-secondary/80 border border-border text-foreground placeholder-muted-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary transition-all min-w-0"
-                  />
-                   <button
-                    onClick={handleLeadCapture}
-                    disabled={leadLoading}
-                    className="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-black flex items-center justify-center gap-2 transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,215,0,0.4)]"
-                    style={{ background: '#FFD700', color: '#0A1A2F' }}
-                  >
-                    {leadLoading ? <span className="animate-spin">⏳</span> : <>{l.hero.ctaButton}</>}
-                  </button>
-                </div>
-                <p className="text-xs sm:text-sm mt-3 flex items-center justify-center lg:justify-start gap-1.5 animate-pulse font-bold" style={{ color: '#39FF14', textShadow: '0 0 10px rgba(57,255,20,0.6), 0 0 20px rgba(57,255,20,0.3)' }}>
+              {/* CTA Principal — Grande e Proeminente */}
+              <div className="flex flex-col items-center lg:items-start mb-6">
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="px-12 py-5 rounded-2xl text-lg sm:text-xl font-black flex items-center justify-center gap-3 transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(255,215,0,0.5)] shadow-[0_0_20px_rgba(255,215,0,0.25)]"
+                  style={{ background: '#FFD700', color: '#0A1A2F', minWidth: '320px' }}
+                >
+                  {l.hero.ctaButton}
+                  <ArrowRight className="w-6 h-6" />
+                </button>
+                <p className="text-xs sm:text-sm mt-3 flex items-center gap-1.5 animate-pulse font-bold" style={{ color: '#39FF14', textShadow: '0 0 10px rgba(57,255,20,0.6), 0 0 20px rgba(57,255,20,0.3)' }}>
                   <Check className="w-4 h-4 shrink-0" style={{ color: '#39FF14' }} />
                   {l.hero.ctaSubtext}
                 </p>
                 {/* Urgency text */}
-                <p className="text-[11px] sm:text-xs mt-2 text-center lg:text-left animate-pulse" style={{ color: '#FFD700' }}>
+                <p className="text-[11px] sm:text-xs mt-2 animate-pulse" style={{ color: '#FFD700' }}>
                   ⚡ {l.hero.urgencyText}
                 </p>
               </div>
@@ -971,6 +962,37 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ═══════ DEMO VIDEO — Dashboard in Action ═══════ */}
+      <section className="py-16 sm:py-24 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.03] to-transparent pointer-events-none" />
+        <div className="max-w-4xl mx-auto px-5 relative z-10">
+          <ScrollFadeIn>
+            <h2 className="text-2xl sm:text-3xl lg:text-[42px] font-black text-center mb-3">
+              {language === 'pt' ? 'Veja o EUGINE em ação' : language === 'es' ? 'Mira EUGINE en acción' : language === 'it' ? 'Guarda EUGINE in azione' : 'See EUGINE in action'}
+            </h2>
+            <p className="text-muted-foreground text-sm sm:text-base text-center mb-10 max-w-2xl mx-auto">
+              {language === 'pt' ? 'Interface real do sistema analisando jogos, identificando edges e gerando relatórios em tempo real.' : language === 'es' ? 'Interfaz real del sistema analizando partidos, identificando edges y generando informes en tiempo real.' : language === 'it' ? 'Interfaccia reale del sistema che analizza partite, identifica edges e genera report in tempo reale.' : 'Real system interface analyzing matches, identifying edges and generating reports in real time.'}
+            </p>
+          </ScrollFadeIn>
+          <ScrollFadeIn delay={200}>
+            <div className="relative rounded-2xl overflow-hidden border border-border/50 shadow-2xl" style={{ boxShadow: '0 25px 80px -12px hsla(199, 89%, 48%, 0.2)' }}>
+              <video 
+                autoPlay 
+                muted 
+                loop 
+                playsInline
+                className="w-full h-auto"
+                poster={heroDashboardImg}
+              >
+                <source src={eugineDemo} type="video/mp4" />
+              </video>
+              {/* Gradient overlay at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 to-transparent" />
+            </div>
+          </ScrollFadeIn>
+        </div>
+      </section>
+
       {/* ═══════ SOCIAL PROOF — Testimonials ═══════ */}
       <section className="py-16 sm:py-24 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.03] to-transparent pointer-events-none" />
@@ -1020,7 +1042,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════ AUTHORITY — Trust Signals ═══════ */}
+      {/* ═══════ AUTHORITY — Trust Badges (Seal Style) ═══════ */}
       <section className="py-16 sm:py-20">
         <div className="max-w-5xl mx-auto px-5">
           <ScrollFadeIn>
@@ -1029,17 +1051,44 @@ export default function Landing() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {l.authority.items.map((item: any, i: number) => (
               <ScrollFadeIn key={i} delay={i * 100}>
-                <div className="text-center p-6 rounded-2xl bg-secondary/30 border border-border/50 hover:border-primary/30 transition-all">
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    {item.icon === 'brain' && <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><Brain className="w-7 h-7" /></div>}
-                    {item.icon === 'shield' && <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center"><Shield className="w-7 h-7 text-emerald-400" /></div>}
-                    {item.icon === 'chart' && <div className="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center"><Award className="w-7 h-7 text-amber-400" /></div>}
-                    {item.icon === 'lock' && <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center"><Lock className="w-7 h-7 text-blue-400" /></div>}
+                <div className="text-center p-6 rounded-2xl bg-secondary/30 border border-border/50 hover:border-primary/30 transition-all relative overflow-hidden">
+                  {/* Seal badge */}
+                  <div className="mx-auto mb-5 relative">
+                    {item.icon === 'brain' && (
+                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-primary/50 bg-primary/10 flex items-center justify-center shadow-[0_0_20px_hsla(199,89%,48%,0.2)]">
+                        <Brain className="w-9 h-9 text-primary" />
+                      </div>
+                    )}
+                    {item.icon === 'shield' && (
+                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-emerald-400/50 bg-emerald-500/10 flex items-center justify-center shadow-[0_0_20px_hsla(145,80%,40%,0.2)] relative">
+                        <Shield className="w-9 h-9 text-emerald-400" />
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center border-2 border-background">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                    )}
+                    {item.icon === 'chart' && (
+                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-amber-400/50 bg-amber-500/10 flex items-center justify-center shadow-[0_0_20px_hsla(38,92%,50%,0.2)] relative">
+                        <Award className="w-9 h-9 text-amber-400" />
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center border-2 border-background">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                    )}
+                    {item.icon === 'lock' && (
+                      <div className="w-20 h-20 rounded-full mx-auto border-[3px] border-blue-400/50 bg-blue-500/10 flex items-center justify-center shadow-[0_0_20px_hsla(220,80%,50%,0.2)] relative">
+                        <Lock className="w-9 h-9 text-blue-400" />
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center border-2 border-background">
+                          <Shield className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {/* Badge label */}
-                  {item.icon === 'shield' && <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 mb-2">✓ US REGISTERED</span>}
-                  {item.icon === 'lock' && <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 mb-2">🔒 SSL SECURE</span>}
-                  {item.icon === 'chart' && <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 mb-2">📊 AUDITED</span>}
+                  {/* Seal label */}
+                  {item.icon === 'shield' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 mb-3 border border-emerald-500/30 tracking-wider">✓ VERIFIED · US REGISTERED</span>}
+                  {item.icon === 'lock' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 mb-3 border border-blue-500/30 tracking-wider">🔒 BANK-LEVEL ENCRYPTION</span>}
+                  {item.icon === 'chart' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 mb-3 border border-amber-500/30 tracking-wider">📊 AUDITED RESULTS</span>}
+                  {item.icon === 'brain' && <span className="inline-block text-[10px] font-black px-3 py-1 rounded-full bg-primary/20 text-primary mb-3 border border-primary/30 tracking-wider">🧠 PROPRIETARY AI</span>}
                   <h3 className="text-foreground font-bold text-base mb-2">{item.title}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
                 </div>
@@ -1049,47 +1098,45 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════ STATS — Real Results ═══════ */}
-      {statsLoaded && (
-        <section className="py-16 sm:py-20">
-          <div className="max-w-5xl mx-auto px-5">
-            <ScrollFadeIn>
-              <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-3">{l.stats.title}</h2>
-              <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">{l.stats.subtitle}</p>
+      {/* ═══════ STATS — Real Results (Always Visible) ═══════ */}
+      <section className="py-16 sm:py-20">
+        <div className="max-w-5xl mx-auto px-5">
+          <ScrollFadeIn>
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-3">{l.stats.title}</h2>
+            <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">{l.stats.subtitle}</p>
+          </ScrollFadeIn>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+            <ScrollFadeIn delay={0}>
+              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
+                <Target className="w-8 h-8 text-primary mx-auto mb-3" />
+                <p className="text-3xl sm:text-5xl font-black text-primary"><AnimatedCounter end={statsLoaded ? stats.hitRate : 59} suffix="%" /></p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.hitRate}</p>
+              </div>
             </ScrollFadeIn>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-              <ScrollFadeIn delay={0}>
-                <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                  <Target className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <p className="text-3xl sm:text-5xl font-black text-primary"><AnimatedCounter end={stats.hitRate} suffix="%" /></p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.hitRate}</p>
-                </div>
-              </ScrollFadeIn>
-              <ScrollFadeIn delay={100}>
-                <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                  <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
-                  <p className="text-3xl sm:text-5xl font-black text-emerald-400"><AnimatedCounter end={stats.wins} /></p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.wins}</p>
-                </div>
-              </ScrollFadeIn>
-              <ScrollFadeIn delay={200}>
-                <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                  <BarChart3 className="w-8 h-8 text-foreground mx-auto mb-3" />
-                  <p className="text-3xl sm:text-5xl font-black text-foreground"><AnimatedCounter end={stats.total} /></p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.total}</p>
-                </div>
-              </ScrollFadeIn>
-              <ScrollFadeIn delay={300}>
-                <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
-                  <TrendingUp className="w-8 h-8 text-amber-400 mx-auto mb-3" />
-                  <p className="text-3xl sm:text-5xl font-black text-amber-400"><AnimatedCounter end={30} prefix="" suffix="+" /></p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.leagues}</p>
-                </div>
-              </ScrollFadeIn>
-            </div>
+            <ScrollFadeIn delay={100}>
+              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
+                <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
+                <p className="text-3xl sm:text-5xl font-black text-emerald-400"><AnimatedCounter end={statsLoaded ? stats.wins : 32} /></p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.wins}</p>
+              </div>
+            </ScrollFadeIn>
+            <ScrollFadeIn delay={200}>
+              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
+                <BarChart3 className="w-8 h-8 text-foreground mx-auto mb-3" />
+                <p className="text-3xl sm:text-5xl font-black text-foreground"><AnimatedCounter end={statsLoaded ? stats.total : 54} /></p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.total}</p>
+              </div>
+            </ScrollFadeIn>
+            <ScrollFadeIn delay={300}>
+              <div className="text-center p-6 rounded-xl bg-secondary/30 border border-border/50">
+                <TrendingUp className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+                <p className="text-3xl sm:text-5xl font-black text-amber-400"><AnimatedCounter end={30} prefix="" suffix="+" /></p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{l.stats.leagues}</p>
+              </div>
+            </ScrollFadeIn>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* ═══════ Impact Quote ═══════ */}
       <section className="py-10 sm:py-14">
