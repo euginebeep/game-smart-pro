@@ -867,42 +867,42 @@ export function ReportExportSection({ games, userTier, contentRef }: ReportExpor
   };
 
   return (
-    <div className="glass-card p-4 sm:p-6 mb-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="glass-card p-5 sm:p-6 mb-6">
+      <div className="flex flex-col gap-4">
         <div className="text-center sm:text-left">
-          <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-primary flex items-center justify-center sm:justify-start gap-2" style={{ fontFamily: "'Montserrat', sans-serif" }}>
             <Download className="w-5 h-5" />
             {t('export.title')}
           </h3>
-          <p className="text-sm text-muted-foreground">{t('export.subtitle')}</p>
+          <p className="text-sm text-muted-foreground mt-1">{t('export.subtitle')}</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button
             onClick={exportAsImage}
             disabled={exportingImage}
+            className="flex-1 h-12 rounded-xl font-semibold text-sm bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 transition-all"
             variant="outline"
-            className="bg-gradient-to-r from-emerald-500/20 to-green-500/20 border-emerald-500/30 hover:border-emerald-400 text-emerald-400"
           >
-            {exportingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileImage className="w-4 h-4" />}
-            <span className="ml-2">{t('export.image')}</span>
+            {exportingImage ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <FileImage className="w-4 h-4 mr-2" />}
+            {t('export.image')}
           </Button>
           <Button
             onClick={exportAsHtml}
             disabled={exportingHtml}
+            className="flex-1 h-12 rounded-xl font-semibold text-sm bg-accent/10 border border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/50 transition-all"
             variant="outline"
-            className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-blue-500/30 hover:border-blue-400 text-blue-400"
           >
-            {exportingHtml ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCode className="w-4 h-4" />}
-            <span className="ml-2">{t('export.html')}</span>
+            {exportingHtml ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <FileCode className="w-4 h-4 mr-2" />}
+            {t('export.html')}
           </Button>
           <Button
             onClick={shareViaWhatsApp}
             disabled={sharingWhatsApp}
+            className="flex-1 h-12 rounded-xl font-semibold text-sm bg-success/10 border border-success/30 text-success hover:bg-success/20 hover:border-success/50 transition-all"
             variant="outline"
-            className="bg-gradient-to-r from-green-600/20 to-green-500/20 border-green-500/30 hover:border-green-400 text-green-400"
           >
-            {sharingWhatsApp ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
-            <span className="ml-2">{t('export.whatsapp')}</span>
+            {sharingWhatsApp ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <MessageCircle className="w-4 h-4 mr-2" />}
+            {t('export.whatsapp')}
           </Button>
         </div>
       </div>
