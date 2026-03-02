@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Zap, Loader2, CreditCard } from 'lucide-react';
+import { Check, Zap, Loader2, CreditCard, Info } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -11,7 +11,7 @@ interface UnifiedPricingCardsProps {
 }
 
 export function UnifiedPricingCards({ showManageButton = true, variant = 'full' }: UnifiedPricingCardsProps) {
-  const { subscription, createCheckout, createDayUseCheckout, openCustomerPortal } = useAuth();
+  const { subscription, createCheckout, createDayUseCheckout, openCustomerPortal, profile } = useAuth();
   const { t, language } = useLanguage();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   
@@ -72,6 +72,28 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
   };
 
   const cc = currencyConfig[language] || currencyConfig.pt;
+
+  // Detect billing currency mismatch
+  const COUNTRY_TO_CURRENCY_LABEL: Record<string, { currency: string; symbol: string }> = {
+    BR: { currency: 'BRL', symbol: 'R$' },
+    US: { currency: 'USD', symbol: '$' }, GB: { currency: 'USD', symbol: '$' }, CA: { currency: 'USD', symbol: '$' }, AU: { currency: 'USD', symbol: '$' },
+    IT: { currency: 'EUR', symbol: '€' }, ES: { currency: 'EUR', symbol: '€' }, DE: { currency: 'EUR', symbol: '€' }, FR: { currency: 'EUR', symbol: '€' },
+    PT: { currency: 'EUR', symbol: '€' }, NL: { currency: 'EUR', symbol: '€' }, BE: { currency: 'EUR', symbol: '€' }, AT: { currency: 'EUR', symbol: '€' },
+    IE: { currency: 'EUR', symbol: '€' }, FI: { currency: 'EUR', symbol: '€' }, GR: { currency: 'EUR', symbol: '€' },
+  };
+  const LANG_CURRENCY: Record<string, string> = { pt: 'BRL', en: 'USD', es: 'EUR', it: 'EUR' };
+
+  const profileCountry = profile?.country_code?.toUpperCase() || null;
+  const billingInfo = profileCountry ? COUNTRY_TO_CURRENCY_LABEL[profileCountry] : null;
+  const displayedCurrency = LANG_CURRENCY[language] || 'BRL';
+  const hasCurrencyMismatch = billingInfo && billingInfo.currency !== displayedCurrency;
+
+  const mismatchMessages: Record<string, string> = {
+    pt: `Sua cobrança será em ${billingInfo?.currency} (${billingInfo?.symbol}) conforme seu país de registro.`,
+    en: `You will be billed in ${billingInfo?.currency} (${billingInfo?.symbol}) based on your registration country.`,
+    es: `Se te cobrará en ${billingInfo?.currency} (${billingInfo?.symbol}) según tu país de registro.`,
+    it: `L'addebito sarà in ${billingInfo?.currency} (${billingInfo?.symbol}) in base al tuo paese di registrazione.`,
+  };
 
   // Plan configurations matching Landing page exactly
   const plans = [
@@ -166,7 +188,14 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
   const isCompact = variant === 'compact';
 
   return (
-    <div className={`grid gap-4 sm:gap-6 ${isCompact ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
+    <div>
+      {hasCurrencyMismatch && (
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-sm">
+          <Info className="w-4 h-4 shrink-0" />
+          <span>{mismatchMessages[language] || mismatchMessages.en}</span>
+        </div>
+      )}
+      <div className={`grid gap-4 sm:gap-6 ${isCompact ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
       {plans.map((plan) => {
         const isCurrentPlan = currentTier === plan.tier;
         const isDowngrade = 
@@ -295,6 +324,7 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
           </span>
         </div>
       )}
+      </div>
     </div>
   );
 }
