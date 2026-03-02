@@ -676,9 +676,9 @@ export default function Landing() {
                     <div className="flex-1 h-6 rounded-full bg-secondary/60 overflow-hidden relative">
                       <div 
                         className="h-full rounded-full bg-muted-foreground/25 flex items-center justify-end pr-3 transition-all duration-1000"
-                        style={{ width: '53%' }}
+                        style={{ width: '42%' }}
                       >
-                        <span className="text-muted-foreground text-[11px] font-bold">~53%</span>
+                        <span className="text-muted-foreground text-[11px] font-bold">~42%</span>
                       </div>
                     </div>
                   </div>
@@ -686,7 +686,7 @@ export default function Landing() {
                   <div className="flex items-center justify-between mt-1 pt-2 border-t border-border/30">
                     <span className="text-xs text-muted-foreground">{l.hero.hitRateLabel}</span>
                     <span className="text-xs px-3 py-1 rounded-full bg-primary/15 text-primary font-bold">
-                      +{Math.round((stats.hitRate / 53 - 1) * 100)}% {l.hero.aiAdvantage}
+                      +{stats.hitRate - 42}% {l.hero.aiAdvantage}
                     </span>
                   </div>
                 </div>
