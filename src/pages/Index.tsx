@@ -383,11 +383,12 @@ const Index = () => {
               <div ref={gamesContentRef} className="space-y-6" id="eugine-report-content">
                 {/* Section Title */}
                 <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-1">
-                    <CheckCircle2 className="w-6 h-6 text-muted-foreground" />
+                  <div className="flex items-center gap-3 mb-2">
+                    <CheckCircle2 className="w-6 h-6 text-muted-foreground/70" />
                     <span className="w-3 h-3 rounded-full bg-destructive inline-block animate-pulse" />
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground uppercase tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                      {t('matchCard.gamesOf')} <span className="text-primary">{t('matchCard.today')}</span>
+                    <h2 className="text-xl sm:text-2xl font-extrabold tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+                      <span className="text-white">{t('matchCard.gamesOf')}</span>{' '}
+                      <span style={{ color: '#FFD700' }}>{t('matchCard.today')}</span>
                       {filteredGames.length !== games.length && (
                         <span className="text-muted-foreground text-base font-normal ml-2">
                           ({filteredGames.length}/{games.length})
@@ -395,7 +396,7 @@ const Index = () => {
                       )}
                     </h2>
                   </div>
-                  <p className="text-muted-foreground text-sm" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  <p className="text-muted-foreground text-sm ml-[52px]" style={{ fontFamily: "'Poppins', sans-serif" }}>
                     {isToday ? t('main.showingToday') : t('main.showingNext')}
                   </p>
                 </div>
