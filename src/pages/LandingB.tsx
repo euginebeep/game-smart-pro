@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { ActiveUsersCounter } from '@/components/ActiveUsersCounter';
 import { useNavigate } from 'react-router-dom';
 import {
   Check, Brain, Target, TrendingUp, BarChart3,
@@ -226,6 +227,9 @@ export default function LandingB() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
               <span className="text-white text-xs font-medium">{l.hero.badge}</span>
+            </div>
+            <div className="mb-4">
+              <ActiveUsersCounter />
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-extrabold leading-[1.2] mb-6 uppercase" style={{ fontFamily: "'Montserrat', sans-serif" }}>
               <span className="text-white block">{l.hero.title}</span>
