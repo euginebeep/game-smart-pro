@@ -359,11 +359,7 @@ const Index = () => {
               )}
               
               {/* Day Alert */}
-              <Alert 
-                type={isToday ? "success" : "info"} 
-                title={alertMessage} 
-                message={isToday ? t('main.showingToday') : t('main.showingNext')} 
-              />
+              
               
               {/* Export Section - Premium Only */}
               <ReportExportSection 
