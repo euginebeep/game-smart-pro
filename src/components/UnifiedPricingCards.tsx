@@ -88,7 +88,7 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
   const displayedCurrency = LANG_CURRENCY[language] || 'BRL';
   const hasCurrencyMismatch = billingInfo && billingInfo.currency !== displayedCurrency;
 
-  const mismatchMessages: Record<string, string> = {
+  const billingMessages: Record<string, string> = {
     pt: `Sua cobrança será em ${billingInfo?.currency} (${billingInfo?.symbol}) conforme seu país de registro.`,
     en: `You will be billed in ${billingInfo?.currency} (${billingInfo?.symbol}) based on your registration country.`,
     es: `Se te cobrará en ${billingInfo?.currency} (${billingInfo?.symbol}) según tu país de registro.`,
@@ -189,10 +189,10 @@ export function UnifiedPricingCards({ showManageButton = true, variant = 'full' 
 
   return (
     <div>
-      {hasCurrencyMismatch && (
-        <div className="flex items-center gap-2 mb-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-sm">
+      {billingInfo && (
+        <div className={`flex items-center gap-2 mb-4 p-3 rounded-lg border text-sm ${hasCurrencyMismatch ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-primary/30 bg-primary/10 text-primary'}`}>
           <Info className="w-4 h-4 shrink-0" />
-          <span>{mismatchMessages[language] || mismatchMessages.en}</span>
+          <span>{billingMessages[language] || billingMessages.en}</span>
         </div>
       )}
       <div className={`grid gap-4 sm:gap-6 ${isCompact ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
