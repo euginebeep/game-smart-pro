@@ -72,7 +72,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 const translations: Record<Language, any> = {
   pt: {
     auth: {
-      systemName: "Sistema Inteligente Eugine Analytics",
+      systemName: "Sistema Inteligente de Análise Esportiva Com IA",
       login: "Login",
       register: "Cadastrar",
       email: "Email",
